@@ -1,0 +1,12 @@
+{
+  "name": "tgt-automations",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "seed": "node scripts/seed.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "firebase": "^11.10.0"
+  }
+}
