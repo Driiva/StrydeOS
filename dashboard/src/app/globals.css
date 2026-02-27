@@ -79,6 +79,33 @@ body {
   animation: fade-in 0.3s ease-out forwards;
 }
 
+/* ─── Greeting chevron ambient animation ──────────────────────────────────── */
+
+@keyframes chevron-flow {
+  0%   { opacity: 0.15; transform: translateX(-3px); }
+  50%  { opacity: 0.45; }
+  100% { opacity: 0.15; transform: translateX(3px); }
+}
+
+.chevron-trail {
+  position: absolute;
+  right: -48px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 1px;
+  pointer-events: none;
+}
+
+.chevron-glyph {
+  font-family: var(--font-body);
+  font-size: 28px;
+  font-weight: 300;
+  color: rgba(11, 37, 69, 0.30);
+  animation: chevron-flow 3s ease-in-out infinite;
+  line-height: 1;
+}
+
 .recharts-tooltip-wrapper {
   outline: none !important;
 }

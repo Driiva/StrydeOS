@@ -175,23 +175,36 @@ export default function Sidebar() {
       >
         {/* Logo + notification bell row */}
         <div className="px-5 pt-5 pb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+          <Link
+            href="/dashboard"
+            onClick={(e) => {
+              if (pathname === "/dashboard" || pathname === "/") {
+                e.preventDefault();
+                router.refresh();
+              }
+            }}
+            className="group flex items-center gap-2.5 transition-all duration-200 hover:-translate-y-0.5"
+          >
             <div
-              className="h-9 w-9 rounded-[10px] flex items-center justify-center"
+              className="h-9 w-9 rounded-[10px] flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:shadow-[0_0_0_3px_rgba(59,144,255,0.25)]"
               style={{ background: "linear-gradient(135deg, #0B2545, #1A5CDB)" }}
+              title="Back to Dashboard"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <svg
+                width="16" height="16" viewBox="0 0 16 16" fill="none"
+                className="transition-all duration-200 group-hover:drop-shadow-[0_0_4px_rgba(59,144,255,0.8)]"
+              >
                 <path d="M3 13L8 3l5 10" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M5.5 9h5" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
               </svg>
             </div>
-            <span className="text-[16px] font-bold tracking-tight text-white">
+            <span className="text-[16px] font-bold tracking-tight text-white transition-all duration-200 group-hover:text-white/90">
               Stryde<span style={{ color: "#3B90FF" }}>OS</span>
             </span>
-          </div>
+          </Link>
 
           {/* Notification bell */}
-          <div ref={notifRef} className="relative">
+          <div ref={notifRef} className="relative" data-tour="notification-bell">
             <button
               onClick={() => setNotifOpen(!notifOpen)}
               className="relative w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
@@ -281,7 +294,7 @@ export default function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 overflow-y-auto">
+        <nav className="flex-1 px-3 overflow-y-auto" data-tour="sidebar-nav">
           <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/25">
             Navigation
           </p>
@@ -312,7 +325,7 @@ export default function Sidebar() {
             })}
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6" data-tour="settings-link">
             <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/25">
               System
             </p>
@@ -353,7 +366,7 @@ export default function Sidebar() {
           </div>
 
           {/* Quick search hint */}
-          <div className="mt-4 px-3">
+          <div className="mt-4 px-3" data-tour="command-palette">
             <button
               onClick={() => {
                 window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));

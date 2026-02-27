@@ -1,0 +1,194 @@
+import type { Firestore, WriteBatch } from "firebase-admin/firestore";
+import type { PMSAdapter, PMSAppointment } from "@/types/pms";
+import type { AppointmentType, AppointmentStatus } from "@/types";
+import type { StageResult, PipelineConfig } from "./types";
+import {
+  DEFAULT_APPOINTMENT_TYPE_MAP,
+  BACKFILL_WEEKS,
+  INCREMENTAL_WEEKS,
+} from "./types";
+
+const MAX_BATCH_SIZE = 500;
+
+function getDateRange(weeksBack: number): { dateFrom: string; dateTo: string } {
+  const now = new Date();
+  const from = new Date(now);
+  from.setDate(from.getDate() - weeksBack * 7);
+  return {
+    dateFrom: from.toISOString().slice(0, 10),
+    dateTo: now.toISOString().slice(0, 10),
+  };
+}
+
+function classifyAppointmentType(
+  pmsType: string | undefined,
+  typeMap: Record<string, AppointmentType>,
+  isFirstForPatient: boolean
+): { appointmentType: AppointmentType; isInitialAssessment: boolean } {
+  if (pmsType) {
+    const normalized = pmsType.trim();
+    // Try exact match first, then case-insensitive
+    const mapped =
+      typeMap[normalized] ??
+      Object.entries(typeMap).find(
+        ([k]) => k.toLowerCase() === normalized.toLowerCase()
+      )?.[1];
+
+    if (mapped) {
+      return {
+        appointmentType: mapped,
+        isInitialAssessment: mapped === "initial_assessment",
+      };
+    }
+  }
+
+  // Heuristic fallback: first appointment for this patient → IA
+  if (isFirstForPatient) {
+    return { appointmentType: "initial_assessment", isInitialAssessment: true };
+  }
+
+  return { appointmentType: "follow_up", isInitialAssessment: false };
+}
+
+/**
+ * Stage 2: Sync appointments from the PMS into Firestore.
+ *
+ * Fetches appointments for the configured lookback window, maps external IDs
+ * to internal clinician IDs, classifies IA/FU, and upserts into Firestore.
+ * Uses set-with-merge to preserve fields set by later stages (e.g. hepAssigned).
+ */
+export async function syncAppointments(
+  db: Firestore,
+  clinicId: string,
+  adapter: PMSAdapter,
+  clinicianMap: Map<string, string>,
+  options: { backfill?: boolean }
+): Promise<StageResult & { patientExternalIds: Set<string> }> {
+  const start = Date.now();
+  const errors: string[] = [];
+  let count = 0;
+  const patientExternalIds = new Set<string>();
+
+  try {
+    const pipelineSnap = await db
+      .collection("clinics")
+      .doc(clinicId)
+      .collection("integrations_config")
+      .doc("pipeline")
+      .get();
+    const pipelineConfig = (pipelineSnap.data() as PipelineConfig) ?? {};
+    const typeMap: Record<string, AppointmentType> = {
+      ...DEFAULT_APPOINTMENT_TYPE_MAP,
+      ...(pipelineConfig.appointmentTypeMap ?? {}),
+    };
+
+    const weeks = options.backfill ? BACKFILL_WEEKS : INCREMENTAL_WEEKS;
+    const { dateFrom, dateTo } = getDateRange(weeks);
+
+    const pmsAppointments = await adapter.getAppointments({ dateFrom, dateTo });
+
+    // Track per-patient earliest appointment to detect first visits
+    const patientFirstSeen = new Map<string, string>();
+    const sortedByDate = [...pmsAppointments].sort(
+      (a, b) => a.dateTime.localeCompare(b.dateTime)
+    );
+
+    // Also check existing appointments to avoid misclassifying repeats
+    const existingApptSnap = await db
+      .collection("clinics")
+      .doc(clinicId)
+      .collection("appointments")
+      .where("source", "==", "pms_sync")
+      .select("patientId")
+      .get();
+    const patientsWithHistory = new Set<string>();
+    for (const doc of existingApptSnap.docs) {
+      const pid = doc.data().patientId;
+      if (pid) patientsWithHistory.add(pid);
+    }
+
+    for (const appt of sortedByDate) {
+      const pid = appt.patientExternalId;
+      if (!patientFirstSeen.has(pid) && !patientsWithHistory.has(pid)) {
+        patientFirstSeen.set(pid, appt.externalId);
+      }
+    }
+
+    const apptRef = db
+      .collection("clinics")
+      .doc(clinicId)
+      .collection("appointments");
+
+    const now = new Date().toISOString();
+    let batch: WriteBatch = db.batch();
+    let batchCount = 0;
+
+    for (const pms of pmsAppointments) {
+      const clinicianId =
+        clinicianMap.get(pms.clinicianExternalId) ?? pms.clinicianExternalId;
+      const status = pms.status as AppointmentStatus;
+      const isFirstForPatient =
+        patientFirstSeen.get(pms.patientExternalId) === pms.externalId;
+
+      const { appointmentType, isInitialAssessment } = classifyAppointmentType(
+        pms.appointmentType,
+        typeMap,
+        isFirstForPatient
+      );
+
+      patientExternalIds.add(pms.patientExternalId);
+
+      // Merge to preserve hepAssigned / hepProgramId set by Stage 4
+      const docData: Record<string, unknown> = {
+        patientId: pms.patientExternalId,
+        clinicianId,
+        dateTime: pms.dateTime,
+        endTime: pms.endTime,
+        status,
+        appointmentType,
+        isInitialAssessment,
+        revenueAmountPence: pms.revenueAmountPence ?? 0,
+        followUpBooked: false,
+        source: "pms_sync" as const,
+        pmsExternalId: pms.externalId,
+        updatedAt: now,
+      };
+
+      const docRef = apptRef.doc(pms.externalId);
+      batch.set(docRef, docData, { merge: true });
+
+      // Ensure createdAt is set only on first write
+      batch.set(docRef, { createdAt: now }, { merge: true });
+
+      batchCount++;
+      count++;
+
+      if (batchCount >= MAX_BATCH_SIZE) {
+        await batch.commit();
+        batch = db.batch();
+        batchCount = 0;
+      }
+    }
+
+    if (batchCount > 0) {
+      await batch.commit();
+    }
+
+    // Update sync metadata on the clinic doc
+    await db.collection("clinics").doc(clinicId).update({
+      pmsLastSyncAt: now,
+      updatedAt: now,
+    });
+  } catch (err) {
+    errors.push(err instanceof Error ? err.message : String(err));
+  }
+
+  return {
+    stage: "sync-appointments",
+    ok: errors.length === 0,
+    count,
+    errors,
+    durationMs: Date.now() - start,
+    patientExternalIds,
+  };
+}

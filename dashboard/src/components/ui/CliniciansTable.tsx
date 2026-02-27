@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import type { WeeklyStats } from "@/types";
-import { getInitials, formatPercent, formatRate, getFollowUpStatus, getDnaStatus, getGenericStatus } from "@/lib/utils";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { ChevronDown, ChevronUp, Info } from "lucide-react";
+import type { WeeklyStats, MetricStatus } from "@/types";
+import { getInitials, formatPercent, formatRate } from "@/lib/utils";
 
 interface ClinicianRow {
   clinicianId: string;
@@ -17,7 +17,49 @@ interface CliniciansTableProps {
   onRowClick?: (clinicianId: string) => void;
 }
 
-type SortKey = "name" | "followUp" | "completion" | "utilisation" | "dna";
+type SortKey = "name" | "followUp" | "completion" | "utilisation" | "dna" | "sessions" | "revenue";
+
+const COLUMN_TOOLTIPS: Record<string, string> = {
+  followUp: "Mean FU sessions per IA. UK MSK benchmark: 2.9\u20133.2. Below 2.0 signals patient drop-off risk.",
+  completion: "% of patients completing full prescribed course. <75% may indicate early self-discharge. UK private MSK benchmark: 70\u201380%.",
+  utilisation: "% of booked slots attended. Target >85%. Below 75% suggests scheduling inefficiency.",
+  dna: "Did Not Attend %. <6% excellent, >10% requires intervention.",
+  sessions: "Total billable appointments this clinician delivered in the week.",
+  revenue: "Gross revenue = sessions \u00D7 avg revenue per session. Uses actual revenuePerSessionPence from weekly stats.",
+};
+
+function getFollowUpRAG(rate: number): MetricStatus {
+  if (rate >= 2.9) return "ok";
+  if (rate >= 2.0) return "warn";
+  return "danger";
+}
+
+function getDnaRAG(rate: number): MetricStatus {
+  if (rate < 0.06) return "ok";
+  if (rate <= 0.10) return "warn";
+  return "danger";
+}
+
+function getUtilisationRAG(rate: number): MetricStatus {
+  if (rate > 0.85) return "ok";
+  if (rate >= 0.75) return "warn";
+  return "danger";
+}
+
+function getCourseCompletionRAG(rate: number): MetricStatus {
+  if (rate > 0.75) return "ok";
+  if (rate >= 0.60) return "warn";
+  return "danger";
+}
+
+function ragTextClass(status: MetricStatus): string {
+  switch (status) {
+    case "ok": return "text-success";
+    case "warn": return "text-warn";
+    case "danger": return "text-danger";
+    default: return "text-navy";
+  }
+}
 
 function StatusDot({ status }: { status: string }) {
   const color =
@@ -29,9 +71,56 @@ function StatusDot({ status }: { status: string }) {
           ? "bg-danger"
           : "bg-muted";
 
+  return <div className={`w-2 h-2 rounded-full ${color}`} />;
+}
+
+function HeaderTooltip({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) close();
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open, close]);
+
   return (
-    <div className={`w-2 h-2 rounded-full ${color}`} />
+    <div ref={ref} className="relative inline-flex ml-0.5">
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        className="text-muted/40 hover:text-muted transition-colors"
+        aria-label="Metric info"
+      >
+        <Info size={11} />
+      </button>
+      {open && (
+        <div
+          className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-56 px-3 py-2.5 rounded-lg text-[11px] leading-relaxed text-white shadow-lg animate-fade-in"
+          style={{ background: "#0B2545" }}
+        >
+          {text}
+          <div
+            className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45"
+            style={{ background: "#0B2545" }}
+          />
+        </div>
+      )}
+    </div>
   );
+}
+
+function formatRevenue(pence: number): string {
+  const pounds = Math.round(pence / 100);
+  return `£${pounds.toLocaleString("en-GB")}`;
+}
+
+function clinicianRevenue(stats: WeeklyStats): number {
+  return stats.appointmentsTotal * stats.revenuePerSessionPence;
 }
 
 export default function CliniciansTable({ rows, onRowClick }: CliniciansTableProps) {
@@ -66,6 +155,12 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
       case "dna":
         cmp = a.stats.dnaRate - b.stats.dnaRate;
         break;
+      case "sessions":
+        cmp = a.stats.appointmentsTotal - b.stats.appointmentsTotal;
+        break;
+      case "revenue":
+        cmp = clinicianRevenue(a.stats) - clinicianRevenue(b.stats);
+        break;
     }
     return sortAsc ? cmp : -cmp;
   });
@@ -75,19 +170,23 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
     return sortAsc ? <ChevronUp size={12} className="text-blue" /> : <ChevronDown size={12} className="text-blue" />;
   };
 
+  const columns: { key: SortKey; label: string }[] = [
+    { key: "name", label: "Clinician" },
+    { key: "followUp", label: "Follow-up Rate" },
+    { key: "completion", label: "Course Completion" },
+    { key: "utilisation", label: "Utilisation" },
+    { key: "dna", label: "DNA Rate" },
+    { key: "sessions", label: "Sessions" },
+    { key: "revenue", label: "Revenue" },
+  ];
+
   return (
     <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              {[
-                { key: "name" as SortKey, label: "Clinician" },
-                { key: "followUp" as SortKey, label: "Follow-up Rate" },
-                { key: "completion" as SortKey, label: "Course Completion" },
-                { key: "utilisation" as SortKey, label: "Utilisation" },
-                { key: "dna" as SortKey, label: "DNA Rate" },
-              ].map(({ key, label }) => (
+              {columns.map(({ key, label }) => (
                 <th
                   key={key}
                   onClick={() => handleSort(key)}
@@ -95,6 +194,7 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
                 >
                   <div className="flex items-center gap-1">
                     {label}
+                    {COLUMN_TOOLTIPS[key] && <HeaderTooltip text={COLUMN_TOOLTIPS[key]} />}
                     <SortIcon col={key} />
                   </div>
                 </th>
@@ -106,14 +206,17 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
           </thead>
           <tbody>
             {sorted.map((row) => {
-              const fuStatus = getFollowUpStatus(row.stats.followUpRate, row.stats.followUpTarget);
-              const dnaStatus = getDnaStatus(row.stats.dnaRate);
-              const utilStatus = getGenericStatus(row.stats.utilisationRate, 0.85);
-              const worstStatus = [fuStatus, dnaStatus, utilStatus].includes("danger")
+              const fuStatus = getFollowUpRAG(row.stats.followUpRate);
+              const dnaStatus = getDnaRAG(row.stats.dnaRate);
+              const utilStatus = getUtilisationRAG(row.stats.utilisationRate);
+              const ccStatus = getCourseCompletionRAG(row.stats.courseCompletionRate);
+              const worstStatus = [fuStatus, dnaStatus, utilStatus, ccStatus].includes("danger")
                 ? "danger"
-                : [fuStatus, dnaStatus, utilStatus].includes("warn")
+                : [fuStatus, dnaStatus, utilStatus, ccStatus].includes("warn")
                   ? "warn"
                   : "ok";
+
+              const revenuePence = clinicianRevenue(row.stats);
 
               return (
                 <tr
@@ -134,17 +237,23 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
                       </span>
                     </div>
                   </td>
-                  <td className="px-5 py-3.5 text-sm font-semibold text-navy">
+                  <td className={`px-5 py-3.5 text-sm font-semibold ${ragTextClass(fuStatus)}`}>
                     {formatRate(row.stats.followUpRate)}
                   </td>
-                  <td className="px-5 py-3.5 text-sm font-semibold text-navy">
+                  <td className={`px-5 py-3.5 text-sm font-semibold ${ragTextClass(ccStatus)}`}>
                     {formatPercent(row.stats.courseCompletionRate)}
                   </td>
-                  <td className="px-5 py-3.5 text-sm font-semibold text-navy">
+                  <td className={`px-5 py-3.5 text-sm font-semibold ${ragTextClass(utilStatus)}`}>
                     {formatPercent(row.stats.utilisationRate)}
                   </td>
-                  <td className="px-5 py-3.5 text-sm font-semibold text-navy">
+                  <td className={`px-5 py-3.5 text-sm font-semibold ${ragTextClass(dnaStatus)}`}>
                     {formatPercent(row.stats.dnaRate)}
+                  </td>
+                  <td className="px-5 py-3.5 text-sm font-semibold text-navy">
+                    {row.stats.appointmentsTotal}
+                  </td>
+                  <td className="px-5 py-3.5 text-sm font-semibold text-navy">
+                    {formatRevenue(revenuePence)}
                   </td>
                   <td className="px-5 py-3.5 text-center">
                     <div className="flex justify-center">

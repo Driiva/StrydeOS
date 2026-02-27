@@ -9,7 +9,11 @@ import type { Clinician } from "@/types";
 
 const COLLECTION_APPOINTMENTS = "appointments";
 const COLLECTION_CLINICIANS = "clinicians";
+const COLLECTION_PATIENTS = "patients";
+const COLLECTION_REVIEWS = "reviews";
 const COLLECTION_METRICS_WEEKLY = "metrics_weekly";
+
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function getWeekStart(date: Date): string {
   const d = new Date(date);
@@ -30,8 +34,17 @@ function getWeeksToCompute(weeksBack: number): string[] {
   return weeks;
 }
 
+function getTimeSlot(dateTime: string): string {
+  const hour = new Date(dateTime).getHours();
+  if (hour < 10) return "early_morning";
+  if (hour < 13) return "morning";
+  if (hour < 16) return "afternoon";
+  return "evening";
+}
+
 interface AppointmentLike {
   clinicianId: string;
+  patientId?: string;
   dateTime: string;
   status: string;
   appointmentType?: string;
@@ -39,17 +52,32 @@ interface AppointmentLike {
   revenueAmountPence?: number;
 }
 
+interface PatientLike {
+  clinicianId: string;
+  sessionCount: number;
+  courseLength: number;
+  discharged: boolean;
+}
+
+interface ReviewLike {
+  rating: number;
+  date: string;
+}
+
 function aggregateWeek(
   appointments: AppointmentLike[],
   weekStart: string,
   clinicianId: string,
   clinicianName: string,
-  targets: { followUpRate: number; physitrackRate: number }
+  targets: { followUpRate: number; physitrackRate: number },
+  patients: PatientLike[],
+  reviews: ReviewLike[]
 ): Omit<WeeklyStats, "id"> {
   const completed = appointments.filter((a) => a.status === "completed");
   const total = completed.length;
   const withHep = completed.filter((a) => a.hepAssigned === true).length;
-  const dnaCount = appointments.filter((a) => a.status === "dna").length;
+  const dnas = appointments.filter((a) => a.status === "dna");
+  const dnaCount = dnas.length;
   const totalInclDna = appointments.length;
   const dnaRate = totalInclDna > 0 ? dnaCount / totalInclDna : 0;
   const initialAssessments = completed.filter(
@@ -60,7 +88,7 @@ function aggregateWeek(
   ).length;
 
   const uniquePatients = new Set(
-    appointments.map((a) => (a as AppointmentLike & { patientId?: string }).patientId)
+    appointments.map((a) => a.patientId).filter(Boolean)
   ).size;
   const followUpRate = uniquePatients > 0 ? total / uniquePatients : 0;
 
@@ -73,7 +101,42 @@ function aggregateWeek(
   );
   const revenuePerSessionPence = total > 0 ? Math.round(revenueTotal / total) : 0;
 
-  const courseCompletionRate = 0; // Requires course-length logic; stub
+  // Course completion: patients who reached sessionCount >= courseLength / total patients
+  const relevantPatients = patients.filter((p) =>
+    clinicianId === "all" ? true : p.clinicianId === clinicianId
+  );
+  const completedCourses = relevantPatients.filter(
+    (p) => p.discharged && p.sessionCount >= p.courseLength
+  ).length;
+  const totalWithCourse = relevantPatients.filter(
+    (p) => p.discharged
+  ).length;
+  const courseCompletionRate =
+    totalWithCourse > 0 ? completedCourses / totalWithCourse : 0;
+
+  // DNA breakdown by day of week and time slot
+  const dnaByDayOfWeek: Record<string, number> = {};
+  const dnaByTimeSlot: Record<string, number> = {};
+  for (const dna of dnas) {
+    const d = new Date(dna.dateTime);
+    const day = DAYS[d.getDay()];
+    dnaByDayOfWeek[day] = (dnaByDayOfWeek[day] ?? 0) + 1;
+    const slot = getTimeSlot(dna.dateTime);
+    dnaByTimeSlot[slot] = (dnaByTimeSlot[slot] ?? 0) + 1;
+  }
+
+  // Review metrics for the week
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+  const weekEndStr = weekEnd.toISOString().slice(0, 10);
+  const weekReviews = reviews.filter(
+    (r) => r.date >= weekStart && r.date < weekEndStr
+  );
+  const reviewCount = weekReviews.length;
+  const npsScore =
+    reviewCount > 0
+      ? weekReviews.reduce((s, r) => s + r.rating, 0) / reviewCount
+      : undefined;
 
   return {
     clinicianId,
@@ -91,6 +154,10 @@ function aggregateWeek(
     appointmentsTotal: total,
     initialAssessments,
     followUps,
+    npsScore,
+    reviewCount,
+    dnaByDayOfWeek,
+    dnaByTimeSlot,
     computedAt: new Date().toISOString(),
   };
 }
@@ -111,14 +178,35 @@ export async function computeWeeklyMetricsForClinic(
     targets.physitrackRate = targets.physitrackRate / 100;
   }
 
-  const cliniciansSnap = await db
-    .collection("clinics")
-    .doc(clinicId)
-    .collection(COLLECTION_CLINICIANS)
-    .get();
+  const clinicBase = db.collection("clinics").doc(clinicId);
+
+  const [cliniciansSnap, patientsSnap, reviewsSnap] = await Promise.all([
+    clinicBase.collection(COLLECTION_CLINICIANS).get(),
+    clinicBase.collection(COLLECTION_PATIENTS).get(),
+    clinicBase.collection(COLLECTION_REVIEWS).get(),
+  ]);
+
   const clinicians: { id: string; name: string }[] = cliniciansSnap.docs.map(
     (d) => ({ id: d.id, name: (d.data() as Clinician).name ?? d.id })
   );
+
+  const patients: PatientLike[] = patientsSnap.docs.map((d) => {
+    const data = d.data();
+    return {
+      clinicianId: data.clinicianId ?? "",
+      sessionCount: data.sessionCount ?? 0,
+      courseLength: data.courseLength ?? 6,
+      discharged: data.discharged ?? false,
+    };
+  });
+
+  const reviews: ReviewLike[] = reviewsSnap.docs.map((d) => {
+    const data = d.data();
+    return {
+      rating: data.rating ?? 0,
+      date: data.date ?? "",
+    };
+  });
 
   const weekStarts = getWeeksToCompute(weeksBack);
   const fromDate = weekStarts[weekStarts.length - 1];
@@ -126,9 +214,7 @@ export async function computeWeeklyMetricsForClinic(
   toDate.setDate(toDate.getDate() + 7);
   const toDateStr = toDate.toISOString().slice(0, 10);
 
-  const appointmentsSnap = await db
-    .collection("clinics")
-    .doc(clinicId)
+  const appointmentsSnap = await clinicBase
     .collection(COLLECTION_APPOINTMENTS)
     .where("dateTime", ">=", fromDate)
     .where("dateTime", "<", toDateStr)
@@ -139,10 +225,7 @@ export async function computeWeeklyMetricsForClinic(
     ...d.data(),
   })) as (Appointment & { patientId: string })[];
 
-  const metricsRef = db
-    .collection("clinics")
-    .doc(clinicId)
-    .collection(COLLECTION_METRICS_WEEKLY);
+  const metricsRef = clinicBase.collection(COLLECTION_METRICS_WEEKLY);
 
   let written = 0;
 
@@ -170,7 +253,9 @@ export async function computeWeeklyMetricsForClinic(
         weekStart,
         cid,
         cid === "all" ? "All Clinicians" : name,
-        targets
+        targets,
+        patients,
+        reviews
       );
       const docId = `${weekStart}_${cid}`;
       await metricsRef.doc(docId).set(stats);

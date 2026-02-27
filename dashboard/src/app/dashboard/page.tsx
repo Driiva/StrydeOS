@@ -12,7 +12,7 @@ import DemoBanner from "@/components/ui/DemoBanner";
 import { SkeletonCard } from "@/components/ui/EmptyState";
 import { useWeeklyStats } from "@/hooks/useWeeklyStats";
 import { useClinicians } from "@/hooks/useClinicians";
-import { getDemoLatestWeekStats } from "@/hooks/useDemoData";
+import { useClinicianSummaryStats } from "@/hooks/useClinicianSummaryStats";
 import { useAuth } from "@/hooks/useAuth";
 import { useProgress } from "@/components/TopProgressBar";
 import {
@@ -36,10 +36,34 @@ function computeTrend(current: number, previous: number | undefined): TrendDirec
   return "flat";
 }
 
-function getGreeting(): { greeting: string; subtext: string } {
+const SESSION_GREETED_KEY = "strydeos_greeted";
+
+function getGreeting(firstName: string): { greeting: string; subtext: string } {
+  let isFirstMount = false;
+  try {
+    if (!sessionStorage.getItem(SESSION_GREETED_KEY)) {
+      isFirstMount = true;
+      sessionStorage.setItem(SESSION_GREETED_KEY, "1");
+    }
+  } catch {
+    // sessionStorage unavailable
+  }
+
+  const name = firstName || "";
   const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  let greeting: string;
+  if (isFirstMount && name) {
+    greeting = `Welcome back, ${name}`;
+  } else if (hour >= 5 && hour < 12) {
+    greeting = name ? `Good morning, ${name}` : "Good morning";
+  } else if (hour >= 12 && hour < 17) {
+    greeting = name ? `Good afternoon, ${name}` : "Good afternoon";
+  } else if (hour >= 17 && hour < 22) {
+    greeting = name ? `Good evening, ${name}` : "Good evening";
+  } else {
+    greeting = name ? `Still up, ${name}?` : "Good night";
+  }
 
   const day = new Date().toLocaleDateString("en-GB", { weekday: "long" });
   const subtext =
@@ -76,9 +100,11 @@ export default function DashboardPage() {
   const effectiveClinician = isClinicianView ? user!.clinicianId! : selectedClinician;
   const { stats, loading, usedDemo } = useWeeklyStats(effectiveClinician);
   const { clinicians } = useClinicians();
+  const { rows: clinicianRows, usedDemo: summaryUsedDemo } = useClinicianSummaryStats();
   const { startLoading, stopLoading } = useProgress();
   const router = useRouter();
-  const { greeting, subtext } = getGreeting();
+  const firstName = user?.firstName || "";
+  const { greeting, subtext } = getGreeting(firstName);
 
   useEffect(() => {
     if (loading) {
@@ -99,7 +125,6 @@ export default function DashboardPage() {
   const isCurrentWeek = weekOffset === 0;
 
   const alerts = latest ? computeAlerts(latest) : [];
-  const clinicianRows = isClinicianView ? [] : getDemoLatestWeekStats();
 
   const trendWindow = stats.slice(Math.max(0, weekIndex - 5), weekIndex + 1);
 
@@ -109,8 +134,13 @@ export default function DashboardPage() {
       <div className="mb-2">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="font-display text-[32px] text-navy leading-tight">
-              {greeting}.
+            <h1 className="font-display text-[32px] text-navy leading-tight relative">
+              <span className="relative z-10">{greeting}.</span>
+              <span className="chevron-trail" aria-hidden="true">
+                <span className="chevron-glyph" style={{ animationDelay: "0s" }}>&rsaquo;</span>
+                <span className="chevron-glyph" style={{ animationDelay: "0.4s" }}>&rsaquo;</span>
+                <span className="chevron-glyph" style={{ animationDelay: "0.8s" }}>&rsaquo;</span>
+              </span>
             </h1>
             <p className="text-sm text-muted mt-0.5">{subtext}</p>
           </div>
@@ -127,7 +157,7 @@ export default function DashboardPage() {
       {usedDemo && <DemoBanner />}
 
       {/* Week navigation + clinician filter row */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-tour="clinician-filter">
         {/* Week picker */}
         <div className="flex items-center gap-2">
           <button
@@ -187,7 +217,7 @@ export default function DashboardPage() {
                       : "border border-border text-muted hover:text-navy hover:border-navy/20 bg-white"
                   }`}
                 >
-                  {c.name.split(" ").pop()}
+                  {c.name.split(" ")[0]}
                 </button>
               ))}
             </div>
@@ -199,7 +229,7 @@ export default function DashboardPage() {
       {!loading && alerts.length > 0 && <AlertBanner alerts={alerts} />}
 
       {/* Stat cards — row 1 */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4" data-tour="stat-cards">
         {loading ? (
           <>
             <SkeletonCard />
@@ -313,12 +343,19 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Clinician mini-table */}
-      {!loading && clinicianRows.length > 0 && (
+      {/* Clinician mini-table — real Firestore data, demo fallback */}
+      {!loading && !isClinicianView && clinicianRows.length > 0 && (
         <div>
-          <h3 className="font-display text-lg text-navy mb-3">
-            Clinician Summary — This Week
-          </h3>
+          <div className="flex items-center gap-2 mb-3">
+            <h3 className="font-display text-lg text-navy">
+              Clinician Summary — This Week
+            </h3>
+            {summaryUsedDemo && (
+              <span className="text-[10px] font-semibold text-muted bg-cloud-light border border-border px-2 py-0.5 rounded-full">
+                Demo
+              </span>
+            )}
+          </div>
           <CliniciansTable
             rows={clinicianRows}
             onRowClick={(id) => router.push(`/clinicians?id=${id}`)}

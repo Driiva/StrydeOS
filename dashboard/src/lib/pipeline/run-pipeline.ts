@@ -1,0 +1,194 @@
+import type { Firestore } from "firebase-admin/firestore";
+import type { PMSIntegrationConfig } from "@/types/pms";
+import type { HEPIntegrationConfig } from "@/lib/integrations/hep/types";
+import { createPMSAdapter } from "@/lib/integrations/pms/factory";
+import { createHEPAdapter } from "@/lib/integrations/hep/factory";
+import { syncClinicians, buildClinicianMap } from "./sync-clinicians";
+import { syncAppointments } from "./sync-appointments";
+import { syncPatients } from "./sync-patients";
+import { syncHep } from "./sync-hep";
+import { computePatientFields } from "./compute-patients";
+import { computeWeeklyMetricsForClinic } from "@/lib/metrics/compute-weekly";
+import { syncReviews } from "./sync-reviews";
+import type {
+  PipelineResult,
+  StageResult,
+} from "./types";
+import {
+  INTEGRATIONS_CONFIG,
+  PMS_DOC_ID,
+  HEP_DOC_ID,
+  PIPELINE_DOC_ID,
+  REVIEWS_DOC_ID,
+  BACKFILL_WEEKS,
+  INCREMENTAL_WEEKS,
+} from "./types";
+
+export async function runPipeline(
+  db: Firestore,
+  clinicId: string,
+  options: { backfill?: boolean } = {}
+): Promise<PipelineResult> {
+  const startedAt = new Date().toISOString();
+  const stages: StageResult[] = [];
+
+  const configBase = db
+    .collection("clinics")
+    .doc(clinicId)
+    .collection(INTEGRATIONS_CONFIG);
+
+  // ── Load PMS config ──────────────────────────────────────────────────────
+  const pmsSnap = await configBase.doc(PMS_DOC_ID).get();
+  const pmsConfig = pmsSnap.data() as PMSIntegrationConfig | undefined;
+
+  if (!pmsConfig?.apiKey?.trim() || !pmsConfig?.provider) {
+    return {
+      clinicId,
+      ok: true,
+      startedAt,
+      completedAt: new Date().toISOString(),
+      stages: [
+        {
+          stage: "skip",
+          ok: true,
+          count: 0,
+          errors: ["No PMS config — skipping pipeline"],
+          durationMs: 0,
+        },
+      ],
+    };
+  }
+
+  const pmsAdapter = createPMSAdapter(pmsConfig);
+
+  // ── Stage 1: Sync Clinicians ─────────────────────────────────────────────
+  const s1 = await syncClinicians(db, clinicId, pmsAdapter);
+  stages.push(s1);
+
+  const clinicianMap = await buildClinicianMap(db, clinicId);
+
+  // ── Stage 2: Sync Appointments ───────────────────────────────────────────
+  const s2 = await syncAppointments(
+    db,
+    clinicId,
+    pmsAdapter,
+    clinicianMap,
+    options
+  );
+  stages.push(s2);
+
+  // ── Stage 3: Resolve Patients ────────────────────────────────────────────
+  const s3 = await syncPatients(
+    db,
+    clinicId,
+    pmsAdapter,
+    s2.patientExternalIds,
+    clinicianMap
+  );
+  stages.push(s3);
+
+  // ── Stage 4: Enrich HEP Data ────────────────────────────────────────────
+  const hepSnap = await configBase.doc(HEP_DOC_ID).get();
+  const hepConfig = hepSnap.data() as HEPIntegrationConfig | undefined;
+
+  if (hepConfig?.apiKey?.trim() && hepConfig?.provider) {
+    const hepAdapter = createHEPAdapter(hepConfig);
+    const s4 = await syncHep(db, clinicId, hepAdapter);
+    stages.push(s4);
+  } else {
+    stages.push({
+      stage: "sync-hep",
+      ok: true,
+      count: 0,
+      errors: ["No HEP config — skipping"],
+      durationMs: 0,
+    });
+  }
+
+  // ── Stage 5: Compute Patient Fields ──────────────────────────────────────
+  const s5 = await computePatientFields(db, clinicId);
+  stages.push(s5);
+
+  // ── Stage 6: Compute Weekly Metrics ──────────────────────────────────────
+  const metricsStart = Date.now();
+  try {
+    const weeksBack = options.backfill ? BACKFILL_WEEKS : INCREMENTAL_WEEKS + 2;
+    const { written } = await computeWeeklyMetricsForClinic(
+      db,
+      clinicId,
+      weeksBack
+    );
+    stages.push({
+      stage: "compute-metrics",
+      ok: true,
+      count: written,
+      errors: [],
+      durationMs: Date.now() - metricsStart,
+    });
+  } catch (err) {
+    stages.push({
+      stage: "compute-metrics",
+      ok: false,
+      count: 0,
+      errors: [err instanceof Error ? err.message : String(err)],
+      durationMs: Date.now() - metricsStart,
+    });
+  }
+
+  // ── Stage 7: Sync Google Reviews ─────────────────────────────────────────
+  const reviewsSnap = await configBase.doc(REVIEWS_DOC_ID).get();
+  const reviewsConfig = reviewsSnap.data() as
+    | { apiKey?: string; placeId?: string }
+    | undefined;
+
+  if (reviewsConfig?.apiKey?.trim() && reviewsConfig?.placeId?.trim()) {
+    const s7 = await syncReviews(
+      db,
+      clinicId,
+      reviewsConfig.apiKey!,
+      reviewsConfig.placeId!,
+      clinicianMap
+    );
+    stages.push(s7);
+  } else {
+    stages.push({
+      stage: "sync-reviews",
+      ok: true,
+      count: 0,
+      errors: ["No Google Reviews config — skipping"],
+      durationMs: 0,
+    });
+  }
+
+  // ── Update pipeline config ───────────────────────────────────────────────
+  const completedAt = new Date().toISOString();
+  const allOk = stages.every((s) => s.ok);
+
+  const pipelineUpdate: Record<string, unknown> = {
+    lastFullRunAt: completedAt,
+    lastFullRunStatus: allOk ? "success" : "error",
+  };
+  if (options.backfill) {
+    pipelineUpdate.backfillCompleted = true;
+    pipelineUpdate.backfillCompletedAt = completedAt;
+  }
+  await configBase.doc(PIPELINE_DOC_ID).set(pipelineUpdate, { merge: true });
+
+  // Update PMS sync metadata
+  await configBase.doc(PMS_DOC_ID).set(
+    {
+      lastSyncAt: completedAt,
+      lastSyncStatus: allOk ? "success" : "error",
+      syncErrors: allOk ? null : stages.flatMap((s) => s.errors).filter(Boolean),
+    },
+    { merge: true }
+  );
+
+  return {
+    clinicId,
+    ok: allOk,
+    startedAt,
+    completedAt,
+    stages,
+  };
+}

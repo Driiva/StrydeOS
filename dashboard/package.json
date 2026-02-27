@@ -4,13 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:mobile": "next dev --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "seed:spires": "node scripts/seed-spires-user.js",
+    "seed:production": "npx tsx scripts/seed-spires-production.ts",
     "seed:clinic": "npx tsx scripts/seed-clinic.ts",
     "promote:superadmin": "npx tsx scripts/promote-superadmin.ts",
-    "setup:superadmin": "npx tsx scripts/setup-superadmin.ts"
+    "setup:superadmin": "npx tsx scripts/setup-superadmin.ts",
+    "fix:joe": "npx tsx scripts/fix-joe-user.ts"
   },
   "dependencies": {
     "firebase": "^12.9.0",
@@ -22,12 +25,14 @@
     "recharts": "^2.15.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^17.3.1",
     "firebase-admin": "^13.6.1",
+    "playwright": "^1.58.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

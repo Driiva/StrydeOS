@@ -16,7 +16,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { getFirebaseAuth, db, isFirebaseConfigured } from "@/lib/firebase";
-import type { AuthUser, ClinicProfile, UserRole, FeatureFlags } from "@/types";
+import type { AuthUser, ClinicProfile, UserRole, UserStatus, FeatureFlags } from "@/types";
 
 const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   intelligence: true,
@@ -29,6 +29,11 @@ const DEMO_USER: AuthUser = {
   email: "demo@strydeos.com",
   clinicId: "demo-clinic",
   role: "owner",
+  firstName: "Demo",
+  lastName: "User",
+  firstLogin: true,
+  tourCompleted: true,
+  status: "registered",
   clinicProfile: {
     id: "demo-clinic",
     name: "Demo Clinic",
@@ -88,6 +93,11 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
       email: fbUser.email ?? "",
       clinicId: "",
       role: "owner",
+      firstName: "",
+      lastName: "",
+      firstLogin: true,
+      tourCompleted: false,
+      status: "registered",
       clinicProfile: null,
     };
   }
@@ -99,6 +109,11 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
         email: fbUser.email ?? "",
         clinicId: "",
         role: "owner",
+        firstName: "",
+        lastName: "",
+        firstLogin: true,
+        tourCompleted: false,
+        status: "registered",
         clinicProfile: null,
       };
     }
@@ -107,6 +122,11 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
       clinicId: string;
       clinicianId?: string;
       role: UserRole;
+      firstName?: string;
+      lastName?: string;
+      firstLogin?: boolean;
+      tourCompleted?: boolean;
+      status?: UserStatus;
     };
 
     let clinicProfile: ClinicProfile | null = null;
@@ -153,6 +173,11 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
       clinicId: userData.clinicId,
       clinicianId: userData.clinicianId,
       role: userData.role ?? "owner",
+      firstName: userData.firstName ?? "",
+      lastName: userData.lastName ?? "",
+      firstLogin: userData.firstLogin ?? true,
+      tourCompleted: userData.tourCompleted ?? false,
+      status: userData.status ?? "registered",
       clinicProfile,
     };
   } catch {
@@ -161,6 +186,11 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
       email: fbUser.email ?? "",
       clinicId: "",
       role: "owner",
+      firstName: "",
+      lastName: "",
+      firstLogin: true,
+      tourCompleted: false,
+      status: "registered",
       clinicProfile: null,
     };
   }

@@ -4,12 +4,12 @@
   "outputDirectory": ".next",
   "crons": [
     {
-      "path": "/api/pms/sync",
+      "path": "/api/pipeline/run",
       "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/metrics/compute",
-      "schedule": "0 2 * * *"
+      "schedule": "0 */6 * * *"
     }
   ]
 }

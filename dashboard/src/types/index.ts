@@ -1,6 +1,23 @@
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 export type UserRole = "owner" | "admin" | "clinician" | "superadmin";
+export type UserStatus = "invited" | "onboarding" | "registered";
+
+export interface UserDocument {
+  clinicId: string;
+  clinicianId?: string;
+  role: UserRole;
+  firstName: string;
+  lastName: string;
+  email: string;
+  status: UserStatus;
+  firstLogin: boolean;
+  tourCompleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
 
 export interface AuthUser {
   uid: string;
@@ -8,6 +25,11 @@ export interface AuthUser {
   clinicId: string;
   clinicianId?: string;
   role: UserRole;
+  firstName: string;
+  lastName: string;
+  firstLogin: boolean;
+  tourCompleted: boolean;
+  status: UserStatus;
   clinicProfile: ClinicProfile | null;
 }
 
@@ -188,6 +210,8 @@ export interface WeeklyStats {
   dnaByDayOfWeek?: Record<string, number>;
   dnaByTimeSlot?: Record<string, number>;
   computedAt?: string;
+  statisticallyRepresentative?: boolean;
+  caveatNote?: string;
 }
 
 // ─── Comms ───────────────────────────────────────────────────────────────────

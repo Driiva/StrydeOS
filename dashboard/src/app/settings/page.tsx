@@ -33,8 +33,76 @@ import {
   ArrowRight,
   AlertTriangle,
   Shield,
+  Sparkles,
 } from "lucide-react";
-import type { ClinicProfile } from "@/types";
+import type { ClinicProfile, PmsProvider } from "@/types";
+
+interface PmsProviderOption {
+  id: PmsProvider;
+  label: string;
+  icon: string;
+  comingSoon: boolean;
+}
+
+const PMS_PROVIDERS: PmsProviderOption[] = [
+  { id: "writeupp", label: "WriteUpp", icon: "📋", comingSoon: false },
+  { id: "cliniko", label: "Cliniko", icon: "🗂️", comingSoon: false },
+  { id: "tm3", label: "TM3", icon: "⚕️", comingSoon: true },
+  { id: "jane", label: "Jane App", icon: "🌿", comingSoon: true },
+  { id: "powerdiary", label: "Power Diary", icon: "📓", comingSoon: true },
+  { id: "pabau", label: "Pabau", icon: "🏥", comingSoon: true },
+  { id: "halaxy", label: "Halaxy", icon: "💙", comingSoon: true },
+];
+
+function RetriggerTourButton() {
+  const { user, refreshClinicProfile } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function handleRetrigger() {
+    if (!user?.uid || !db) return;
+    setLoading(true);
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        firstLogin: false,
+        tourCompleted: false,
+        updatedAt: new Date().toISOString(),
+        updatedBy: user.uid,
+      });
+      await refreshClinicProfile();
+      setDone(true);
+      // Small delay then reload so the tour fires
+      setTimeout(() => window.location.replace("/dashboard"), 800);
+    } catch (err) {
+      console.error("[RetriggerTour]", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={handleRetrigger}
+        disabled={loading || done}
+        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-border text-navy bg-white hover:bg-cloud-light transition-all disabled:opacity-50"
+      >
+        {loading ? (
+          <Loader2 size={14} className="animate-spin" />
+        ) : done ? (
+          <Check size={14} className="text-success" />
+        ) : (
+          <Sparkles size={14} />
+        )}
+        {done ? "Heading to dashboard…" : loading ? "Resetting…" : "Replay welcome tour"}
+      </button>
+      <p className="text-[11px] text-muted mt-1.5">
+        Resets your tour state and redirects to the dashboard so the welcome screen fires again.
+      </p>
+    </div>
+  );
+}
 
 function fallbackTargets(cp: ClinicProfile | null) {
   return {
@@ -110,9 +178,21 @@ export default function SettingsPage() {
   const [pmsConnected, setPmsConnected] = useState(false);
   const [pmsTesting, setPmsTesting] = useState(false);
 
+  const [hepProvider, setHepProvider] = useState<string>("");
+  const [hepApiKey, setHepApiKey] = useState("");
+  const [hepConnected, setHepConnected] = useState(false);
+  const [hepTesting, setHepTesting] = useState(false);
+
   const [addingClinician, setAddingClinician] = useState(false);
   const [newClinicianName, setNewClinicianName] = useState("");
   const [newClinicianRole, setNewClinicianRole] = useState("Physiotherapist");
+
+  // Clinician row expand/edit/delete state
+  const [expandedClinicianId, setExpandedClinicianId] = useState<string | null>(null);
+  const [editingEmail, setEditingEmail] = useState<Record<string, string>>({});
+  const [sendingInvite, setSendingInvite] = useState<Record<string, boolean>>({});
+  const [inviteResult, setInviteResult] = useState<Record<string, string>>({});
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!cp) return;
@@ -122,7 +202,7 @@ export default function SettingsPage() {
     setFollowUpTarget(String(t.followUpRate));
     setPhysitrackTarget(String(t.physitrackRate));
     setUtilisationTarget(String(t.utilisationRate));
-    setPmsProvider(cp.pmsType === "writeupp" || cp.pmsType === "cliniko" ? cp.pmsType : "");
+    setPmsProvider(cp.pmsType ?? "");
     setPmsConnected(cp.onboarding?.pmsConnected ?? false);
     // API key is never read from server (stored in integrations_config only)
   }, [cp]);
@@ -222,6 +302,51 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleTestHep() {
+    if (!hepProvider || !hepApiKey.trim()) {
+      toast("Select a provider and enter your API key", "error");
+      return;
+    }
+    if (!clinicId || !firebaseUser) {
+      toast("HEP connected (demo mode)", "success");
+      setHepConnected(true);
+      return;
+    }
+    setHepTesting(true);
+    try {
+      const token = await firebaseUser.getIdToken();
+      const base = typeof window !== "undefined" ? window.location.origin : "";
+      const testRes = await fetch(`${base}/api/hep/test-connection`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ provider: hepProvider, apiKey: hepApiKey.trim() }),
+      });
+      const testData = await testRes.json().catch(() => ({}));
+      if (!testRes.ok || !testData.ok) {
+        toast(testData.error ?? "Connection failed. Check your API key.", "error");
+        setHepTesting(false);
+        return;
+      }
+      const saveRes = await fetch(`${base}/api/hep/save-config`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ provider: hepProvider, apiKey: hepApiKey.trim() }),
+      });
+      if (!saveRes.ok) {
+        toast("Connection verified but save failed. Try again.", "error");
+        setHepTesting(false);
+        return;
+      }
+      setHepConnected(true);
+      setHepApiKey("");
+      toast("HEP platform connected and key saved securely", "success");
+    } catch {
+      toast("Connection failed. Check your API key and try again.", "error");
+    } finally {
+      setHepTesting(false);
+    }
+  }
+
   async function handleAddClinician() {
     if (!newClinicianName.trim()) return;
     if (!clinicId || !db) {
@@ -283,6 +408,46 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleSendInvite(clinicianId: string) {
+    const email = editingEmail[clinicianId]?.trim();
+    if (!email || !firebaseUser) {
+      setInviteResult((prev) => ({ ...prev, [clinicianId]: "Enter a valid email first." }));
+      return;
+    }
+    setSendingInvite((prev) => ({ ...prev, [clinicianId]: true }));
+    setInviteResult((prev) => ({ ...prev, [clinicianId]: "" }));
+    try {
+      const token = await firebaseUser.getIdToken();
+      const base = typeof window !== "undefined" ? window.location.origin : "";
+      const res = await fetch(`${base}/api/clinic/resend-invite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ clinicianId, email }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setInviteResult((prev) => ({
+          ...prev,
+          [clinicianId]: data.sent
+            ? `Invite sent to ${email}`
+            : `Link generated — no email provider configured. Link: ${data.link ?? ""}`,
+        }));
+      } else {
+        setInviteResult((prev) => ({
+          ...prev,
+          [clinicianId]: data.error ?? "Failed to send invite.",
+        }));
+      }
+    } catch {
+      setInviteResult((prev) => ({ ...prev, [clinicianId]: "Network error — try again." }));
+    } finally {
+      setSendingInvite((prev) => ({ ...prev, [clinicianId]: false }));
+    }
+  }
+
+  const canManageTeam =
+    user?.role === "owner" || user?.role === "admin" || user?.role === "superadmin";
+
   const onboarding = cp?.onboarding ?? { pmsConnected: false, cliniciansConfirmed: false, targetsSet: false };
   const onboardingComplete = onboarding.pmsConnected && onboarding.cliniciansConfirmed && onboarding.targetsSet;
   const showOnboarding = cp?.status === "onboarding" && !onboardingComplete;
@@ -320,6 +485,9 @@ export default function SettingsPage() {
         <p className="text-xs text-navy mb-1">
           <span className="text-muted">Role:</span> <strong>{user?.role ?? "—"}</strong>
         </p>
+        {/* Retrigger tour */}
+        <RetriggerTourButton />
+
         {user?.role !== "superadmin" && (
           <>
             <button
@@ -543,7 +711,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-navy">
-                {pmsProvider === "writeupp" ? "WriteUpp" : pmsProvider === "cliniko" ? "Cliniko" : "PMS"} — Connected
+                {PMS_PROVIDERS.find((p) => p.id === pmsProvider)?.label ?? "PMS"} — Connected
               </p>
               <p className="text-[11px] text-muted">
                 {cp?.pmsLastSyncAt
@@ -565,26 +733,36 @@ export default function SettingsPage() {
               <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">
                 PMS Provider
               </label>
-              <div className="flex gap-3">
-                {(["writeupp", "cliniko"] as const).map((p) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                {PMS_PROVIDERS.map((p) => (
                   <button
-                    key={p}
-                    onClick={() => setPmsProvider(p)}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
-                      pmsProvider === p
+                    key={p.id}
+                    onClick={() => setPmsProvider(p.id)}
+                    className={`relative flex flex-col items-center justify-center gap-1 px-3 py-3 rounded-xl border text-sm font-medium transition-all ${
+                      pmsProvider === p.id
                         ? "border-blue bg-blue/5 text-blue"
-                        : "border-border hover:border-blue/30 text-navy"
+                        : p.comingSoon
+                          ? "border-border/50 text-muted/50 cursor-default"
+                          : "border-border hover:border-blue/30 text-navy"
                     }`}
+                    title={p.comingSoon ? "Coming soon — integration in development" : undefined}
                   >
-                    {p === "writeupp" ? "📋" : "🗂️"}
-                    {p === "writeupp" ? "WriteUpp" : "Cliniko"}
-                    {pmsProvider === p && <Check size={14} />}
+                    <span className="text-lg leading-none">{p.icon}</span>
+                    <span className="text-[12px] font-semibold leading-tight text-center">{p.label}</span>
+                    {pmsProvider === p.id && !p.comingSoon && (
+                      <Check size={11} className="absolute top-1.5 right-1.5 text-blue" />
+                    )}
+                    {p.comingSoon && (
+                      <span className="text-[9px] font-semibold text-muted/60 uppercase tracking-wide">
+                        Soon
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
-            {pmsProvider && (
+            {pmsProvider && !PMS_PROVIDERS.find((p) => p.id === pmsProvider)?.comingSoon && (
               <div>
                 <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">
                   API Key
@@ -593,7 +771,7 @@ export default function SettingsPage() {
                   type="password"
                   value={pmsApiKey}
                   onChange={(e) => setPmsApiKey(e.target.value)}
-                  placeholder={`Enter your ${pmsProvider === "writeupp" ? "WriteUpp" : "Cliniko"} API key`}
+                  placeholder={`Enter your ${PMS_PROVIDERS.find((p) => p.id === pmsProvider)?.label ?? pmsProvider} API key`}
                   className="w-full px-3 py-2.5 rounded-[var(--radius-inner)] border border-border bg-cloud-light text-sm text-navy focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/20 transition-colors"
                 />
                 <button
@@ -611,14 +789,104 @@ export default function SettingsPage() {
                 </button>
               </div>
             )}
+
+            {pmsProvider && PMS_PROVIDERS.find((p) => p.id === pmsProvider)?.comingSoon && (
+              <div className="p-4 rounded-xl border border-warn/20 bg-warn/5">
+                <p className="text-sm font-medium text-navy">
+                  {PMS_PROVIDERS.find((p) => p.id === pmsProvider)?.label} integration is coming soon
+                </p>
+                <p className="text-[12px] text-muted mt-1">
+                  We&apos;re building the API adapter for this provider. You&apos;ll be notified when it&apos;s ready.
+                  In the meantime, contact support to discuss early access.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Clinician Management */}
+      {/* HEP Integration */}
       <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg text-navy">Clinician Management</h3>
+        <h3 className="font-display text-lg text-navy mb-4">HEP Integration</h3>
+
+        {hepConnected ? (
+          <div className="flex items-center gap-4 p-4 rounded-xl border border-success/20 bg-success/5">
+            <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+              <Link2 size={18} className="text-success" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-navy">
+                {hepProvider === "physitrack" ? "Physitrack" : "HEP Platform"} — Connected
+              </p>
+              <p className="text-[11px] text-muted">
+                Exercise compliance data syncs automatically with the pipeline
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">
+                HEP Provider
+              </label>
+              <div className="flex gap-3">
+                {(["physitrack"] as const).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setHepProvider(p)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
+                      hepProvider === p
+                        ? "border-blue bg-blue/5 text-blue"
+                        : "border-border hover:border-blue/30 text-navy"
+                    }`}
+                  >
+                    Physitrack
+                    {hepProvider === p && <Check size={14} />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {hepProvider && (
+              <div>
+                <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">
+                  API Key
+                </label>
+                <input
+                  type="password"
+                  value={hepApiKey}
+                  onChange={(e) => setHepApiKey(e.target.value)}
+                  placeholder="Enter your Physitrack API key"
+                  className="w-full px-3 py-2.5 rounded-[var(--radius-inner)] border border-border bg-cloud-light text-sm text-navy focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/20 transition-colors"
+                />
+                <button
+                  onClick={handleTestHep}
+                  disabled={!hepApiKey.trim() || hepTesting}
+                  className="mt-3 flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-50"
+                  style={{ background: "#059669" }}
+                >
+                  {hepTesting ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Link2 size={14} />
+                  )}
+                  {hepTesting ? "Testing..." : "Test Connection"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Clinic Management */}
+      <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
+        <div className="flex items-center justify-between mb-1">
+          <div>
+            <h3 className="font-display text-lg text-navy">Clinic Management</h3>
+            {cp?.name && (
+              <p className="text-[12px] text-muted italic mt-0.5">{cp.name} team</p>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             {showOnboarding && clinicians.length > 0 && !onboarding.cliniciansConfirmed && (
               <button
@@ -630,18 +898,20 @@ export default function SettingsPage() {
                 Confirm team
               </button>
             )}
-            <button
-              onClick={() => setAddingClinician(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-blue border border-blue/20 hover:bg-blue/5 transition-colors"
-            >
-              <Plus size={12} />
-              Add Clinician
-            </button>
+            {canManageTeam && (
+              <button
+                onClick={() => setAddingClinician(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-blue border border-blue/20 hover:bg-blue/5 transition-colors"
+              >
+                <Plus size={12} />
+                Add Clinician
+              </button>
+            )}
           </div>
         </div>
 
         {addingClinician && (
-          <div className="mb-4 p-4 rounded-xl border border-blue/20 bg-blue/5 animate-fade-in">
+          <div className="mb-4 mt-4 p-4 rounded-xl border border-blue/20 bg-blue/5 animate-fade-in">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
               <div>
                 <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1">
@@ -669,6 +939,7 @@ export default function SettingsPage() {
                   <option>Senior Physiotherapist</option>
                   <option>Sports Therapist</option>
                   <option>Practice Owner</option>
+                  <option>Admin</option>
                 </select>
               </div>
             </div>
@@ -693,37 +964,140 @@ export default function SettingsPage() {
           </div>
         )}
 
-        <div className="space-y-2">
-          {clinicians.map((c) => (
-            <div
-              key={c.id}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border/50 hover:bg-cloud-light/50 transition-colors group"
-            >
-              <div className="w-9 h-9 rounded-full bg-navy flex items-center justify-center text-[10px] font-bold text-white shrink-0">
-                {getInitials(c.name)}
+        <div className="space-y-2 mt-4">
+          {clinicians.map((c) => {
+            const isExpanded = expandedClinicianId === c.id;
+            const isConfirmingDelete = confirmDeleteId === c.id;
+
+            return (
+              <div key={c.id} className="rounded-xl border border-border/50 overflow-hidden">
+                {/* Row header — click to expand */}
+                <button
+                  onClick={() => {
+                    setExpandedClinicianId(isExpanded ? null : c.id);
+                    setConfirmDeleteId(null);
+                    setInviteResult((prev) => ({ ...prev, [c.id]: "" }));
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cloud-light/50 transition-colors text-left"
+                >
+                  <div className="w-9 h-9 rounded-full bg-navy flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                    {getInitials(c.name)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-navy">{c.name}</p>
+                    <p className="text-[11px] text-muted">{c.role}</p>
+                  </div>
+                  <span
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                      c.active ? "bg-success/10 text-success" : "bg-muted/10 text-muted"
+                    }`}
+                  >
+                    {c.active ? "Active" : "Inactive"}
+                  </span>
+                  <div
+                    className={`transition-transform duration-200 text-muted shrink-0 ${isExpanded ? "rotate-180" : ""}`}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                </button>
+
+                {/* Expanded panel */}
+                {isExpanded && (
+                  <div className="border-t border-border/50 px-4 py-4 bg-cloud-light/30 animate-fade-in space-y-4">
+
+                    {/* Send invite email */}
+                    <div>
+                      <p className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-2">
+                        Invite / Re-invite
+                      </p>
+                      <p className="text-[12px] text-muted mb-2">
+                        Enter this clinician&apos;s email address to send them a login invite link directly in-app — no need to contact support.
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="email"
+                          value={editingEmail[c.id] ?? ""}
+                          onChange={(e) =>
+                            setEditingEmail((prev) => ({ ...prev, [c.id]: e.target.value }))
+                          }
+                          placeholder="clinician@example.com"
+                          className="flex-1 px-3 py-2 rounded-lg border border-border bg-white text-sm text-navy focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/20 transition-colors"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSendInvite(c.id);
+                          }}
+                        />
+                        <button
+                          onClick={() => handleSendInvite(c.id)}
+                          disabled={!editingEmail[c.id]?.trim() || sendingInvite[c.id]}
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 shrink-0"
+                          style={{ background: "#1A5CDB" }}
+                        >
+                          {sendingInvite[c.id] ? (
+                            <Loader2 size={12} className="animate-spin" />
+                          ) : (
+                            <ArrowRight size={12} />
+                          )}
+                          {sendingInvite[c.id] ? "Sending…" : "Send invite"}
+                        </button>
+                      </div>
+                      {inviteResult[c.id] && (
+                        <p
+                          className={`text-[11px] mt-2 ${
+                            inviteResult[c.id].startsWith("Invite sent") ||
+                            inviteResult[c.id].startsWith("Link generated")
+                              ? "text-success"
+                              : "text-danger"
+                          }`}
+                        >
+                          {inviteResult[c.id]}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Remove clinician */}
+                    {canManageTeam && (
+                      <div className="pt-2 border-t border-border/30">
+                        {!isConfirmingDelete ? (
+                          <button
+                            onClick={() => setConfirmDeleteId(c.id)}
+                            className="flex items-center gap-1.5 text-[12px] font-medium text-muted hover:text-danger transition-colors"
+                          >
+                            <Trash2 size={13} />
+                            Remove {c.name.split(" ")[0]} from team
+                          </button>
+                        ) : (
+                          <div className="flex items-center gap-3 p-3 rounded-xl border border-danger/20 bg-danger/5 animate-fade-in">
+                            <p className="text-[12px] text-navy flex-1">
+                              Remove <strong>{c.name}</strong> permanently?
+                            </p>
+                            <button
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-muted border border-border hover:bg-white transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => {
+                                handleDeactivateClinician(c.id, c.name);
+                                setConfirmDeleteId(null);
+                                setExpandedClinicianId(null);
+                              }}
+                              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white transition-all hover:opacity-90"
+                              style={{ background: "#DC2626" }}
+                            >
+                              Yes, remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-navy">{c.name}</p>
-                <p className="text-[11px] text-muted">{c.role}</p>
-              </div>
-              <span
-                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                  c.active
-                    ? "bg-success/10 text-success"
-                    : "bg-muted/10 text-muted"
-                }`}
-              >
-                {c.active ? "Active" : "Inactive"}
-              </span>
-              <button
-                onClick={() => handleDeactivateClinician(c.id, c.name)}
-                className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-danger/10 text-muted hover:text-danger transition-all"
-                title={`Remove ${c.name}`}
-              >
-                <Trash2 size={13} />
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

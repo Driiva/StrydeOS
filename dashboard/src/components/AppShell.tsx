@@ -6,6 +6,7 @@ import Sidebar from "@/components/ui/Sidebar";
 import AuthGuard from "@/components/AuthGuard";
 import PageTransition from "@/components/PageTransition";
 import OnboardingWidget from "@/components/OnboardingWidget";
+import FirstLoginTour from "@/components/FirstLoginTour";
 import CommandPalette from "@/components/CommandPalette";
 import TopProgressBar, { ProgressProvider } from "@/components/TopProgressBar";
 
@@ -31,6 +32,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             </main>
             <OnboardingWidget />
+            <FirstLoginTour />
             <CommandPalette />
           </>
         )}
