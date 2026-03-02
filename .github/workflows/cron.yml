@@ -1,0 +1,32 @@
+name: Scheduled Crons
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # pipeline/run — every 15 minutes
+    - cron: '0 */6 * * *'   # metrics/compute — every 6 hours
+  workflow_dispatch:          # allow manual trigger from GitHub UI
+
+jobs:
+  pipeline-run:
+    if: github.event.schedule == '*/15 * * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Trigger pipeline sync
+        run: |
+          curl -sf -X POST https://strydeos.vercel.app/api/pipeline/run \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{}'
+
+  metrics-compute:
+    if: github.event.schedule == '0 */6 * * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Compute weekly metrics
+        run: |
+          curl -sf -X POST https://strydeos.vercel.app/api/metrics/compute \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{}'
