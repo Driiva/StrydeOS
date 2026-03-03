@@ -15,6 +15,7 @@ import {
   LogOut,
   ArrowRight,
   Command,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClinicians } from "@/hooks/useClinicians";
@@ -75,10 +76,11 @@ export default function CommandPalette() {
     const pages: PaletteItem[] = [
       { id: "dashboard", label: "Dashboard", icon: LayoutGrid, action: () => { router.push("/dashboard"); close(); }, section: "pages" },
       { id: "clinicians", label: "Clinicians", icon: Users, action: () => { router.push("/clinicians"); close(); }, section: "pages" },
-      { id: "continuity", label: "Patient Continuity", icon: RefreshCw, action: () => { router.push("/continuity"); close(); }, section: "pages" },
-      { id: "receptionist", label: "Receptionist", icon: Phone, action: () => { router.push("/receptionist"); close(); }, section: "pages" },
+      { id: "continuity", label: "Pulse", icon: RefreshCw, action: () => { router.push("/continuity"); close(); }, section: "pages" },
+      { id: "receptionist", label: "Ava", icon: Phone, action: () => { router.push("/receptionist"); close(); }, section: "pages" },
       { id: "intelligence", label: "Intelligence", icon: BarChart3, action: () => { router.push("/intelligence"); close(); }, section: "pages" },
       { id: "settings", label: "Settings", icon: Settings, action: () => { router.push("/settings"); close(); }, section: "pages" },
+      { id: "onboarding", label: "Setup Wizard", icon: Zap, action: () => { router.push("/onboarding"); close(); }, section: "pages" },
     ];
 
     if (isSuperAdmin) {

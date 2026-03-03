@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Patient Continuity",
+  title: "Pulse",
 };
 
 export default function ContinuityLayout({ children }: { children: React.ReactNode }) {

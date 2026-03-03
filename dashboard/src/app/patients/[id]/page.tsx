@@ -118,7 +118,7 @@ export default function PatientDetailPage({
       <div className="p-8 text-center">
         <p className="text-muted">Patient not found</p>
         <Link href="/continuity" className="text-blue text-sm mt-2 inline-block">
-          Back to Continuity
+          Back to Pulse
         </Link>
       </div>
     );
@@ -133,7 +133,7 @@ export default function PatientDetailPage({
         className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-navy transition-colors"
       >
         <ArrowLeft size={14} />
-        Back to Continuity
+        Back to Pulse
       </Link>
 
       <DemoBanner />

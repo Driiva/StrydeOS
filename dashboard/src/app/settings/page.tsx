@@ -878,6 +878,65 @@ export default function SettingsPage() {
         )}
       </div>
 
+      {/* Compatible Data Sources */}
+      <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
+        <h3 className="font-display text-lg text-navy mb-1">Compatible Data Sources</h3>
+        <p className="text-xs text-muted mb-5">
+          These tools enrich StrydeOS Intelligence with clinical data. They are not PMS integrations — they layer additional signals into your analytics.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Heidi */}
+          <div className="rounded-xl border border-border p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center shrink-0 text-lg">
+                🎙️
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 mb-0.5">
+                  <p className="text-sm font-semibold text-navy">Heidi</p>
+                  <span className="text-[9px] font-semibold text-muted uppercase tracking-wide px-2 py-0.5 rounded-full bg-cloud-dark border border-border">
+                    Enrichment layer
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted mb-2 leading-relaxed">
+                  Clinical documentation (SOAP notes, session summaries). When connected, StrydeOS reads session complexity signals to personalise Pulse follow-up timing and tone.
+                </p>
+                <div className="flex items-center gap-1.5 text-[11px] text-muted">
+                  <span className="w-1.5 h-1.5 rounded-full bg-warn inline-block" />
+                  Connects via webhook · Documentation bridge in development
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* TM3 — elevated from PMS list */}
+          <div className="rounded-xl border border-warn/30 bg-warn/5 p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-warn/10 flex items-center justify-center shrink-0 text-lg">
+                ⚕️
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 mb-0.5">
+                  <p className="text-sm font-semibold text-navy">TM3 (Blue Zinc)</p>
+                  <span className="text-[9px] font-semibold text-warn uppercase tracking-wide px-2 py-0.5 rounded-full bg-warn/10 border border-warn/20">
+                    Coming soon
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted mb-2 leading-relaxed">
+                  Full PMS integration for TM3 clinics. TM3 dominates UK MSK and insurance-funded practices. API access is being scoped — CSV bridge available as interim.
+                </p>
+                <button
+                  onClick={() => {}}
+                  className="text-[11px] font-semibold text-blue hover:text-blue-bright transition-colors"
+                >
+                  Join the waitlist →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Clinic Management */}
       <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
         <div className="flex items-center justify-between mb-1">

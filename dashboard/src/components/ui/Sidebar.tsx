@@ -30,8 +30,8 @@ import type { AlertFlagProps } from "@/types";
 const NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutGrid, href: "/dashboard", accent: undefined },
   { label: "Clinicians", icon: Users, href: "/clinicians", accent: undefined },
-  { label: "Continuity", icon: RefreshCw, href: "/continuity", accent: "#0891B2" },
-  { label: "Receptionist", icon: Phone, href: "/receptionist", accent: "#1A5CDB" },
+  { label: "Pulse", icon: RefreshCw, href: "/continuity", accent: "#0891B2" },
+  { label: "Ava", icon: Phone, href: "/receptionist", accent: "#1A5CDB" },
   { label: "Intelligence", icon: BarChart3, href: "/intelligence", accent: "#8B5CF6" },
 ];
 

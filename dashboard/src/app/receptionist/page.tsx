@@ -12,7 +12,15 @@ import {
   CheckCircle,
   Mic,
   BarChart3,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  ShieldCheck,
+  Voicemail,
+  Moon,
+  PoundSterling,
 } from "lucide-react";
+import { AVA_PROMPT_TEMPLATE } from "@/lib/retell/ava-prompt";
 import {
   ResponsiveContainer,
   BarChart,
@@ -38,16 +46,20 @@ interface DemoCallLog {
   outcome: "booked" | "cancelled" | "info" | "missed" | "transferred";
   patientName: string;
   clinicianName?: string;
+  insurer?: string;
+  voicemailTranscript?: string;
 }
 
+const AVG_APPOINTMENT_VALUE = 85;
+
 const DEMO_CALLS: DemoCallLog[] = [
-  { id: "rc1", time: "09:15", callerPhone: "07912 *** 482", duration: 185, outcome: "booked", patientName: "Sarah Mitchell", clinicianName: "Andrew" },
+  { id: "rc1", time: "09:15", callerPhone: "07912 *** 482", duration: 185, outcome: "booked", patientName: "Sarah Mitchell", clinicianName: "Andrew", insurer: "Bupa" },
   { id: "rc2", time: "09:42", callerPhone: "07834 *** 119", duration: 95, outcome: "info", patientName: "Unknown (new enquiry)" },
   { id: "rc3", time: "10:08", callerPhone: "07701 *** 655", duration: 220, outcome: "booked", patientName: "Tom Edwards", clinicianName: "Max" },
-  { id: "rc4", time: "11:30", callerPhone: "07456 *** 823", duration: 140, outcome: "cancelled", patientName: "Lisa Wang" },
-  { id: "rc5", time: "12:15", callerPhone: "07923 *** 091", duration: 45, outcome: "missed", patientName: "Unknown" },
+  { id: "rc4", time: "11:30", callerPhone: "07456 *** 823", duration: 140, outcome: "cancelled", patientName: "Lisa Wang", insurer: "AXA Health" },
+  { id: "rc5", time: "12:15", callerPhone: "07923 *** 091", duration: 45, outcome: "missed", patientName: "Unknown", voicemailTranscript: "Hi, it's James calling from 07923 *** 091. I wanted to book an appointment for my lower back — I've been having issues for about three weeks. Please give me a call back when you get a chance. Thanks." },
   { id: "rc6", time: "14:02", callerPhone: "07812 *** 334", duration: 310, outcome: "transferred", patientName: "Mark Jeffries" },
-  { id: "rc7", time: "15:20", callerPhone: "07665 *** 712", duration: 175, outcome: "booked", patientName: "Amy Richardson", clinicianName: "Jamal" },
+  { id: "rc7", time: "15:20", callerPhone: "07665 *** 712", duration: 175, outcome: "booked", patientName: "Amy Richardson", clinicianName: "Jamal", insurer: "Vitality" },
   { id: "rc8", time: "16:45", callerPhone: "07534 *** 208", duration: 120, outcome: "booked", patientName: "David Chen", clinicianName: "Andrew" },
 ];
 
@@ -81,22 +93,26 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 export default function ReceptionistPage() {
   const [isConnected] = useState(true);
   const [activeView, setActiveView] = useState<View>("dashboard");
+  const [promptExpanded, setPromptExpanded] = useState(false);
+  const [expandedCallId, setExpandedCallId] = useState<string | null>(null);
+  const [digestExpanded, setDigestExpanded] = useState(false);
 
   const totalCalls = DEMO_CALLS.length;
   const booked = DEMO_CALLS.filter((c) => c.outcome === "booked").length;
   const missed = DEMO_CALLS.filter((c) => c.outcome === "missed").length;
   const infoOnly = DEMO_CALLS.filter((c) => c.outcome === "info").length;
   const avgDuration = Math.round(DEMO_CALLS.reduce((s, c) => s + c.duration, 0) / totalCalls);
+  const revenueCaptured = booked * AVG_APPOINTMENT_VALUE;
 
   if (!isConnected) {
     return (
       <div className="space-y-6 animate-fade-in">
-        <PageHeader title="Receptionist" subtitle="AI call handling, booking stats, and call intelligence" />
+        <PageHeader title="Ava" subtitle="AI call handling, booking stats, and call intelligence" />
         <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-8 text-center">
           <div className="w-16 h-16 rounded-2xl bg-blue/10 flex items-center justify-center mx-auto mb-5">
             <Phone size={28} className="text-blue" />
           </div>
-          <h2 className="font-display text-2xl text-navy mb-2">StrydeOS Receptionist isn&apos;t connected yet</h2>
+          <h2 className="font-display text-2xl text-navy mb-2">Ava isn&apos;t connected yet</h2>
           <p className="text-sm text-muted max-w-lg mx-auto mb-8 leading-relaxed">
             Once connected, this page will show real-time call logs, booking outcomes, and 7-day call volume trends.
           </p>
@@ -115,7 +131,7 @@ export default function ReceptionistPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <PageHeader title="Receptionist" subtitle="AI call handling — today&apos;s calls, booking outcomes, and 7-day volume" />
+      <PageHeader title="Ava" subtitle="AI call handling — today&apos;s calls, booking outcomes, and 7-day volume" />
       <DemoBanner />
 
       {/* View toggle */}
@@ -139,19 +155,27 @@ export default function ReceptionistPage() {
 
       {activeView === "dashboard" && (
         <>
-          {/* Stats row */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Stats row — 6 cards including revenue captured */}
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
             <StatCard label="Total Calls" value={totalCalls} unit="today" status="neutral" />
             <StatCard label="Booked" value={booked} status="ok" insight={formatPercent(booked / totalCalls)} />
             <StatCard label="Missed" value={missed} status={missed > 2 ? "danger" : missed > 0 ? "warn" : "ok"} />
             <StatCard label="Info Only" value={infoOnly} status="neutral" />
             <StatCard label="Avg Duration" value={`${Math.floor(avgDuration / 60)}:${String(avgDuration % 60).padStart(2, "0")}`} unit="min:sec" status="neutral" />
+            <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-4 flex flex-col gap-1">
+              <div className="flex items-center gap-1.5 mb-1">
+                <PoundSterling size={13} className="text-success" />
+                <span className="text-xs font-semibold text-muted uppercase tracking-wide">Revenue Captured</span>
+              </div>
+              <span className="font-display text-2xl text-navy">£{revenueCaptured}</span>
+              <span className="text-[11px] text-muted">est. from {booked} bookings · £{AVG_APPOINTMENT_VALUE} avg</span>
+            </div>
           </div>
 
           {/* 7-day call volume chart */}
           <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
             <h3 className="font-display text-lg text-navy mb-1">7-Day Call Volume</h3>
-            <p className="text-xs text-muted mb-4">Calls handled by your AI receptionist this week</p>
+            <p className="text-xs text-muted mb-4">Calls handled by Ava this week</p>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={CALL_VOLUME_DATA} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
                 <CartesianGrid strokeDasharray="4 4" stroke="#DDD9D3" vertical={false} />
@@ -171,7 +195,7 @@ export default function ReceptionistPage() {
           <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] overflow-hidden">
             <div className="p-6 pb-0">
               <h3 className="font-display text-lg text-navy mb-1">Today&apos;s Calls</h3>
-              <p className="text-xs text-muted mb-4">Real-time log of AI-handled calls</p>
+              <p className="text-xs text-muted mb-4">Real-time log of Ava-handled calls</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -182,6 +206,7 @@ export default function ReceptionistPage() {
                     <th className="text-left py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wide">Phone</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wide">Duration</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wide">Clinician</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wide">Insurance</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wide">Outcome</th>
                   </tr>
                 </thead>
@@ -190,27 +215,102 @@ export default function ReceptionistPage() {
                     const oc = OUTCOME_COLORS[call.outcome];
                     const mins = Math.floor(call.duration / 60);
                     const secs = call.duration % 60;
+                    const isExpanded = expandedCallId === call.id;
                     return (
-                      <tr key={call.id} className="border-b border-border/50 hover:bg-cloud-light/30 transition-colors">
-                        <td className="py-3 px-4 text-navy font-medium flex items-center gap-2">
-                          <Clock size={12} className="text-muted" />
-                          {call.time}
-                        </td>
-                        <td className="py-3 px-4 text-navy">{call.patientName}</td>
-                        <td className="py-3 px-4 text-muted text-xs">{call.callerPhone}</td>
-                        <td className="py-3 px-4 text-muted">{mins}:{String(secs).padStart(2, "0")}</td>
-                        <td className="py-3 px-4 text-navy">{call.clinicianName ?? "—"}</td>
-                        <td className="py-3 px-4">
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${oc.bg} ${oc.text}`}>
-                            {oc.label}
-                          </span>
-                        </td>
-                      </tr>
+                      <>
+                        <tr
+                          key={call.id}
+                          className={`border-b border-border/50 transition-colors ${call.voicemailTranscript ? "cursor-pointer hover:bg-cloud-light/40" : "hover:bg-cloud-light/30"} ${isExpanded ? "bg-cloud-light/40" : ""}`}
+                          onClick={() => call.voicemailTranscript && setExpandedCallId(isExpanded ? null : call.id)}
+                        >
+                          <td className="py-3 px-4 text-navy font-medium">
+                            <div className="flex items-center gap-2">
+                              <Clock size={12} className="text-muted" />
+                              {call.time}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-navy">
+                            <div className="flex items-center gap-2">
+                              {call.voicemailTranscript && (
+                                <Voicemail size={13} className="text-warn shrink-0" />
+                              )}
+                              {call.patientName}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-muted text-xs">{call.callerPhone}</td>
+                          <td className="py-3 px-4 text-muted">{mins}:{String(secs).padStart(2, "0")}</td>
+                          <td className="py-3 px-4 text-navy">{call.clinicianName ?? "—"}</td>
+                          <td className="py-3 px-4">
+                            {call.insurer ? (
+                              <div className="flex items-center gap-1.5">
+                                <ShieldCheck size={13} className="text-blue shrink-0" />
+                                <span className="text-[11px] font-medium text-blue">{call.insurer}</span>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-muted">Self-pay</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${oc.bg} ${oc.text}`}>
+                              {oc.label}
+                            </span>
+                          </td>
+                        </tr>
+                        {isExpanded && call.voicemailTranscript && (
+                          <tr key={`${call.id}-transcript`} className="border-b border-border/50 bg-warn/5">
+                            <td colSpan={7} className="px-4 pb-4 pt-2">
+                              <div className="flex items-start gap-2.5">
+                                <Voicemail size={14} className="text-warn mt-0.5 shrink-0" />
+                                <div>
+                                  <p className="text-[11px] font-semibold text-warn mb-1 uppercase tracking-wide">Voicemail transcript</p>
+                                  <p className="text-sm text-navy leading-relaxed italic">&ldquo;{call.voicemailTranscript}&rdquo;</p>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
                     );
                   })}
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* After-hours digest preview */}
+          <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] overflow-hidden">
+            <button
+              onClick={() => setDigestExpanded((v) => !v)}
+              className="w-full flex items-center justify-between p-5 text-left hover:bg-cloud-light/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-navy/5 flex items-center justify-center">
+                  <Moon size={15} className="text-navy" />
+                </div>
+                <div>
+                  <h3 className="font-display text-base text-navy">After-Hours Digest</h3>
+                  <p className="text-[11px] text-muted">Preview of your morning summary · Sent 08:00 daily</p>
+                </div>
+              </div>
+              {digestExpanded ? (
+                <ChevronUp size={16} className="text-muted" />
+              ) : (
+                <ChevronDown size={16} className="text-muted" />
+              )}
+            </button>
+            {digestExpanded && (
+              <div className="border-t border-border p-5">
+                <div className="rounded-xl border border-border bg-cloud-light p-5 max-w-xl font-mono text-[12px] leading-relaxed text-navy">
+                  <p className="font-bold mb-3">📋 Ava Overnight Summary — Mon 3 Mar</p>
+                  <p className="mb-2">Calls received after 18:00: <strong>3</strong></p>
+                  <p className="mb-1">• 18:42 — James (07923 *** 091) — voicemail re: lower back pain. <em>Needs callback.</em></p>
+                  <p className="mb-1">• 20:15 — Unknown (07334 *** 882) — disconnected before leaving message.</p>
+                  <p className="mb-3">• 22:03 — Rachel Hume (07567 *** 441) — enquiry about pricing, added to waitlist.</p>
+                  <p className="mb-2">Action required: <strong>1 callback</strong> · <strong>1 waitlist follow-up</strong></p>
+                  <p className="text-muted">— Ava, StrydeOS</p>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -218,7 +318,7 @@ export default function ReceptionistPage() {
       {activeView === "config" && (
         <div className="space-y-6">
           <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
-            <h3 className="font-display text-lg text-navy mb-4">Voice Agent Configuration</h3>
+            <h3 className="font-display text-lg text-navy mb-4">Ava Configuration</h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
@@ -258,6 +358,40 @@ export default function ReceptionistPage() {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Ava system prompt preview */}
+          <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] overflow-hidden">
+            <button
+              onClick={() => setPromptExpanded((v) => !v)}
+              className="w-full flex items-center justify-between p-6 text-left hover:bg-cloud-light/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue/10 flex items-center justify-center">
+                  <FileText size={15} className="text-blue" />
+                </div>
+                <div>
+                  <h3 className="font-display text-base text-navy">Ava System Prompt</h3>
+                  <p className="text-[11px] text-muted">Read-only · Variables injected per clinic at deployment</p>
+                </div>
+              </div>
+              {promptExpanded ? (
+                <ChevronUp size={16} className="text-muted" />
+              ) : (
+                <ChevronDown size={16} className="text-muted" />
+              )}
+            </button>
+            {promptExpanded && (
+              <div className="border-t border-border px-6 pb-6 pt-4">
+                <pre className="text-[11px] text-muted leading-relaxed whitespace-pre-wrap font-mono bg-cloud-light rounded-xl p-4 max-h-[480px] overflow-y-auto border border-border/50">
+                  {AVA_PROMPT_TEMPLATE}
+                </pre>
+                <p className="text-[11px] text-muted mt-3">
+                  Template variables (<code className="text-navy bg-cloud-light px-1 py-0.5 rounded">{"{{clinic_name}}"}</code>,{" "}
+                  <code className="text-navy bg-cloud-light px-1 py-0.5 rounded">{"{{ia_price}}"}</code>, etc.) are resolved from your clinic settings before deployment to Retell AI.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

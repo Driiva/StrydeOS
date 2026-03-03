@@ -120,7 +120,7 @@ export default function OnboardingWidget() {
 
   function handleGoToSettings() {
     setModalOpen(false);
-    router.push("/settings");
+    router.push("/onboarding");
   }
 
   return (

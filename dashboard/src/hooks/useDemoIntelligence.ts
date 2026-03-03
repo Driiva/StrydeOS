@@ -183,3 +183,121 @@ export function getDemoReviewVelocity(): ReviewVelocity {
     ],
   };
 }
+
+// ─── Clinician KPI Sparklines ─────────────────────────────────────────────────
+
+export interface ClinicianKpiRow {
+  clinicianId: string;
+  clinicianName: string;
+  rebookRate: number;
+  utilisationRate: number;
+  dnaRate: number;
+  activePatients: number;
+  rebookTrend: number[];
+  utilisationTrend: number[];
+  dnaTrend: number[];
+  drilldown: {
+    active: { name: string; sessions: string; lastSeen: string }[];
+    droppedOff: { name: string; lastSeen: string; reason: string }[];
+    completed: { name: string; sessions: number }[];
+  };
+}
+
+export function getDemoClinicianKpis(): ClinicianKpiRow[] {
+  return [
+    {
+      clinicianId: "c-andrew",
+      clinicianName: "Andrew",
+      rebookRate: 0.79,
+      utilisationRate: 0.88,
+      dnaRate: 0.04,
+      activePatients: 24,
+      rebookTrend: [0.71, 0.74, 0.76, 0.77, 0.78, 0.79],
+      utilisationTrend: [0.82, 0.84, 0.87, 0.85, 0.88, 0.88],
+      dnaTrend: [0.08, 0.06, 0.05, 0.05, 0.04, 0.04],
+      drilldown: {
+        active: [
+          { name: "Sarah Mitchell", sessions: "3/6", lastSeen: "2d" },
+          { name: "David Chen", sessions: "2/5", lastSeen: "4d" },
+          { name: "Mark Jeffries", sessions: "5/8", lastSeen: "1d" },
+        ],
+        droppedOff: [
+          { name: "Rachel Hume", lastSeen: "24d", reason: "No rebooking after session 3" },
+          { name: "Oliver Park", lastSeen: "18d", reason: "No rebooking after session 2" },
+        ],
+        completed: [
+          { name: "Karen Walsh", sessions: 6 },
+          { name: "Brendan Lee", sessions: 8 },
+        ],
+      },
+    },
+    {
+      clinicianId: "c-max",
+      clinicianName: "Max",
+      rebookRate: 0.72,
+      utilisationRate: 0.84,
+      dnaRate: 0.07,
+      activePatients: 23,
+      rebookTrend: [0.68, 0.69, 0.70, 0.70, 0.71, 0.72],
+      utilisationTrend: [0.80, 0.81, 0.82, 0.83, 0.83, 0.84],
+      dnaTrend: [0.09, 0.09, 0.08, 0.08, 0.07, 0.07],
+      drilldown: {
+        active: [
+          { name: "Tom Edwards", sessions: "4/6", lastSeen: "2d" },
+          { name: "Priya Nair", sessions: "1/5", lastSeen: "6d" },
+        ],
+        droppedOff: [
+          { name: "George Morton", lastSeen: "31d", reason: "No rebooking after session 4" },
+        ],
+        completed: [
+          { name: "Sophie Clarke", sessions: 5 },
+        ],
+      },
+    },
+    {
+      clinicianId: "c-jamal",
+      clinicianName: "Jamal",
+      rebookRate: 0.83,
+      utilisationRate: 0.76,
+      dnaRate: 0.03,
+      activePatients: 21,
+      rebookTrend: [0.78, 0.80, 0.81, 0.82, 0.82, 0.83],
+      utilisationTrend: [0.71, 0.72, 0.74, 0.75, 0.75, 0.76],
+      dnaTrend: [0.06, 0.05, 0.04, 0.04, 0.03, 0.03],
+      drilldown: {
+        active: [
+          { name: "Amy Richardson", sessions: "2/6", lastSeen: "3d" },
+          { name: "Dan O'Brien", sessions: "6/8", lastSeen: "1d" },
+          { name: "Chloe Evans", sessions: "1/5", lastSeen: "5d" },
+        ],
+        droppedOff: [],
+        completed: [
+          { name: "James Patel", sessions: 6 },
+          { name: "Natalie Ross", sessions: 4 },
+          { name: "Will Chambers", sessions: 8 },
+        ],
+      },
+    },
+  ];
+}
+
+// ─── Peer Benchmark Data ──────────────────────────────────────────────────────
+
+export interface BenchmarkComparison {
+  metric: string;
+  yourValue: number;
+  peerMedian: number;
+  peerTop25: number;
+  unit: "percent" | "number" | "pence";
+  higherIsBetter: boolean;
+}
+
+export function getDemoBenchmarks(): BenchmarkComparison[] {
+  return [
+    { metric: "Rebook Rate", yourValue: 0.78, peerMedian: 0.65, peerTop25: 0.82, unit: "percent", higherIsBetter: true },
+    { metric: "DNA Rate", yourValue: 0.05, peerMedian: 0.08, peerTop25: 0.04, unit: "percent", higherIsBetter: false },
+    { metric: "Utilisation", yourValue: 0.83, peerMedian: 0.74, peerTop25: 0.90, unit: "percent", higherIsBetter: true },
+    { metric: "NPS Score", yourValue: 72, peerMedian: 58, peerTop25: 78, unit: "number", higherIsBetter: true },
+    { metric: "Rev / Session", yourValue: 8340, peerMedian: 7500, peerTop25: 9000, unit: "pence", higherIsBetter: true },
+  ];
+}

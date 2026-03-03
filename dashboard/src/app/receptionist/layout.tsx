@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Receptionist",
+  title: "Ava",
 };
 
 export default function ReceptionistLayout({ children }: { children: React.ReactNode }) {

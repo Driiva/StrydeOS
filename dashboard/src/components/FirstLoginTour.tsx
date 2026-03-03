@@ -12,7 +12,7 @@ const TOUR_STEPS: TourStepDef[] = [
   {
     target: "[data-tour='sidebar-nav']",
     title: "Your navigation",
-    body: "Everything lives here — Dashboard, Clinicians, Continuity, Receptionist, and Intelligence. Each module tracks a different dimension of your practice.",
+    body: "Everything lives here — Dashboard, Clinicians, Pulse, Ava, and Intelligence. Each module tracks a different dimension of your practice.",
     placement: "right",
   },
   {

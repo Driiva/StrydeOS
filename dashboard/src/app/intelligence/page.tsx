@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -28,6 +28,8 @@ import {
   getDemoOutcomeTrends,
   getDemoNps,
   getDemoReviewVelocity,
+  getDemoClinicianKpis,
+  getDemoBenchmarks,
 } from "@/hooks/useDemoIntelligence";
 import { formatPence, formatPercent, formatWeekDate } from "@/lib/utils";
 import {
@@ -40,6 +42,9 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   GitBranch,
+  ChevronDown,
+  ChevronUp,
+  BarChart2,
 } from "lucide-react";
 
 type Tab = "revenue" | "dna" | "referrals" | "outcomes" | "reputation";
@@ -78,9 +83,147 @@ function ChartTooltip({
   );
 }
 
+const OUTCOME_MEASURES = [
+  { key: "nprs", label: "NPRS — Pain", description: "0 = no pain, 10 = worst pain", min: 0, max: 10, lowerIsBetter: true },
+  { key: "psfs", label: "PSFS — Function", description: "0 = unable to perform, 10 = fully able", min: 0, max: 10, lowerIsBetter: false },
+  { key: "quickdash", label: "QuickDASH — Upper Limb", description: "0 = no disability, 100 = complete disability", min: 0, max: 100, lowerIsBetter: true },
+  { key: "odi", label: "ODI — Lumbar Spine", description: "0 = no disability, 100 = complete disability", min: 0, max: 100, lowerIsBetter: true },
+  { key: "ndi", label: "NDI — Cervical Spine", description: "0 = no disability, 50 = complete disability", min: 0, max: 50, lowerIsBetter: true },
+] as const;
+
+function OutcomeScoreEntry() {
+  const [scores, setScores] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitted(true);
+    setTimeout(() => setSubmitted(false), 3000);
+    setScores({});
+  };
+
+  return (
+    <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
+      <h3 className="font-display text-lg text-navy mb-1">Record Outcome Scores</h3>
+      <p className="text-xs text-muted mb-5">
+        Enter standardised outcome measure scores for a patient session. Scores are stored per-session and aggregated at practice level.
+      </p>
+      {submitted ? (
+        <div className="flex items-center gap-2.5 p-4 rounded-xl bg-success/10 border border-success/20">
+          <Activity size={16} className="text-success" />
+          <p className="text-sm font-semibold text-success">Outcome scores recorded successfully</p>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">Patient</label>
+              <select className="w-full px-3 py-2.5 rounded-lg border border-border bg-cloud-light text-sm text-navy focus:outline-none focus:ring-2 focus:ring-blue/30">
+                <option>Sarah Mitchell</option>
+                <option>Tom Edwards</option>
+                <option>Amy Richardson</option>
+                <option>David Chen</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">Session date</label>
+              <input
+                type="date"
+                defaultValue={new Date().toISOString().split("T")[0]}
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-cloud-light text-sm text-navy focus:outline-none focus:ring-2 focus:ring-blue/30"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {OUTCOME_MEASURES.map((m) => (
+              <div key={m.key} className="rounded-xl border border-border p-3 bg-cloud-light/40">
+                <label className="block text-xs font-semibold text-navy mb-0.5">{m.label}</label>
+                <p className="text-[10px] text-muted mb-2">{m.description}</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={m.min}
+                    max={m.max}
+                    step={0.1}
+                    value={scores[m.key] ?? ""}
+                    onChange={(e) => setScores((s) => ({ ...s, [m.key]: e.target.value }))}
+                    placeholder="—"
+                    className="w-20 px-2 py-1.5 rounded-lg border border-border bg-white text-sm text-navy focus:outline-none focus:ring-2 focus:ring-blue/30 text-center"
+                  />
+                  <span className="text-[11px] text-muted">/ {m.max}</span>
+                  {scores[m.key] && (
+                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                      m.lowerIsBetter
+                        ? Number(scores[m.key]) <= m.max * 0.4 ? "bg-success/10 text-success" : Number(scores[m.key]) <= m.max * 0.6 ? "bg-warn/10 text-warn" : "bg-danger/10 text-danger"
+                        : Number(scores[m.key]) >= m.max * 0.6 ? "bg-success/10 text-success" : Number(scores[m.key]) >= m.max * 0.4 ? "bg-warn/10 text-warn" : "bg-danger/10 text-danger"
+                    }`}>
+                      {m.lowerIsBetter
+                        ? Number(scores[m.key]) <= m.max * 0.4 ? "Good" : Number(scores[m.key]) <= m.max * 0.6 ? "Moderate" : "Severe"
+                        : Number(scores[m.key]) >= m.max * 0.6 ? "Good" : Number(scores[m.key]) >= m.max * 0.4 ? "Moderate" : "Severe"}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between pt-1">
+            <p className="text-[11px] text-muted">Leave blank for any measures not used this session</p>
+            <button
+              type="submit"
+              disabled={Object.keys(scores).length === 0}
+              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: "#1A5CDB" }}
+            >
+              Save Scores
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
+function MiniSparkline({ data, color, higherIsBetter }: { data: number[]; color: string; higherIsBetter?: boolean }) {
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const w = 72;
+  const h = 28;
+  const points = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / range) * h;
+    return `${x},${y}`;
+  }).join(" ");
+  const lastUp = data[data.length - 1] >= data[data.length - 2];
+  const trending = higherIsBetter ? lastUp : !lastUp;
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
+      <polyline
+        points={points}
+        fill="none"
+        stroke={trending ? color : "#DC2626"}
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        opacity={0.85}
+      />
+      {data.map((v, i) => {
+        const x = (i / (data.length - 1)) * w;
+        const y = h - ((v - min) / range) * h;
+        return i === data.length - 1 ? (
+          <circle key={i} cx={x} cy={y} r={3} fill={trending ? color : "#DC2626"} />
+        ) : null;
+      })}
+    </svg>
+  );
+}
+
 export default function IntelligencePage() {
   const [activeTab, setActiveTab] = useState<Tab>("revenue");
   const [selectedClinician, setSelectedClinician] = useState("all");
+  const [expandedClinician, setExpandedClinician] = useState<string | null>(null);
   const { clinicians } = useClinicians();
   const { stats, usedDemo } = useWeeklyStats(selectedClinician);
   const latest = stats.length > 0 ? stats[stats.length - 1] : null;
@@ -93,12 +236,18 @@ export default function IntelligencePage() {
   const outcomeTrends = getDemoOutcomeTrends();
   const nps = getDemoNps();
   const reviews = getDemoReviewVelocity();
+  const clinicianKpis = getDemoClinicianKpis();
+  const benchmarks = getDemoBenchmarks();
 
   const totalRevenue = revByClinician.reduce((s, r) => s + r.totalRevenuePence, 0);
   const totalSessions = revByClinician.reduce((s, r) => s + r.sessionsDelivered, 0);
   const avgRevPerSession = totalSessions > 0 ? Math.round(totalRevenue / totalSessions) : 0;
   const totalReferrals = referrals.reduce((s, r) => s + r.patientsReferred, 0);
   const totalConverted = referrals.reduce((s, r) => s + r.convertedToBooking, 0);
+
+  const toggleClinician = useCallback((id: string) => {
+    setExpandedClinician((prev) => (prev === id ? null : id));
+  }, []);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -144,6 +293,181 @@ export default function IntelligencePage() {
           status={totalConverted / totalReferrals >= 0.8 ? "ok" : "warn"}
           insight={`${totalReferrals} referred, ${totalConverted} booked`}
         />
+      </div>
+
+      {/* Clinician KPI table with sparklines + drill-down */}
+      <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] overflow-hidden">
+        <div className="p-6 pb-0">
+          <h3 className="font-display text-lg text-navy mb-1">Clinician Performance</h3>
+          <p className="text-xs text-muted mb-4">6-week trends — click a row to see patient-level breakdown</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-cloud-light/50">
+                <th className="text-left py-3 px-5 text-xs font-semibold text-muted uppercase tracking-wide">Clinician</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wide">Rebook Rate</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wide">Utilisation</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wide">DNA Rate</th>
+                <th className="text-right py-3 px-5 text-xs font-semibold text-muted uppercase tracking-wide">Active Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              {clinicianKpis.map((c) => {
+                const isExpanded = expandedClinician === c.clinicianId;
+                return (
+                  <>
+                    <tr
+                      key={c.clinicianId}
+                      onClick={() => toggleClinician(c.clinicianId)}
+                      className={`border-b border-border/50 cursor-pointer transition-colors ${isExpanded ? "bg-cloud-light/50" : "hover:bg-cloud-light/30"}`}
+                    >
+                      <td className="py-4 px-5">
+                        <div className="flex items-center gap-2.5">
+                          {isExpanded ? <ChevronUp size={14} className="text-muted" /> : <ChevronDown size={14} className="text-muted" />}
+                          <div className="w-8 h-8 rounded-full bg-navy flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+                            {c.clinicianName.slice(0, 2).toUpperCase()}
+                          </div>
+                          <span className="font-semibold text-navy">{c.clinicianName}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-4">
+                          <span className={`font-semibold text-sm ${c.rebookRate >= 0.75 ? "text-success" : c.rebookRate >= 0.65 ? "text-warn" : "text-danger"}`}>
+                            {Math.round(c.rebookRate * 100)}%
+                          </span>
+                          <MiniSparkline data={c.rebookTrend} color="#059669" higherIsBetter />
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-4">
+                          <span className={`font-semibold text-sm ${c.utilisationRate >= 0.85 ? "text-success" : c.utilisationRate >= 0.70 ? "text-warn" : "text-danger"}`}>
+                            {Math.round(c.utilisationRate * 100)}%
+                          </span>
+                          <MiniSparkline data={c.utilisationTrend} color="#1A5CDB" higherIsBetter />
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-4">
+                          <span className={`font-semibold text-sm ${c.dnaRate <= 0.04 ? "text-success" : c.dnaRate <= 0.08 ? "text-warn" : "text-danger"}`}>
+                            {Math.round(c.dnaRate * 100)}%
+                          </span>
+                          <MiniSparkline data={c.dnaTrend} color="#DC2626" higherIsBetter={false} />
+                        </div>
+                      </td>
+                      <td className="py-4 px-5 text-right font-semibold text-navy">{c.activePatients}</td>
+                    </tr>
+                    {isExpanded && (
+                      <tr key={`${c.clinicianId}-drill`} className="border-b border-border/50 bg-cloud-light/30">
+                        <td colSpan={5} className="px-5 pb-5 pt-3">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <p className="text-[11px] font-semibold text-blue uppercase tracking-wide mb-2 flex items-center gap-1">
+                                <Users size={11} /> Active ({c.drilldown.active.length})
+                              </p>
+                              <div className="space-y-1.5">
+                                {c.drilldown.active.map((p) => (
+                                  <div key={p.name} className="flex items-center justify-between text-xs">
+                                    <span className="text-navy font-medium">{p.name}</span>
+                                    <div className="flex items-center gap-2 text-muted">
+                                      <span>{p.sessions}</span>
+                                      <span className="text-[10px]">{p.lastSeen} ago</span>
+                                    </div>
+                                  </div>
+                                ))}
+                                {c.drilldown.active.length === 0 && <p className="text-xs text-muted">None</p>}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-semibold text-warn uppercase tracking-wide mb-2 flex items-center gap-1">
+                                <AlertTriangle size={11} /> Dropped Off ({c.drilldown.droppedOff.length})
+                              </p>
+                              <div className="space-y-1.5">
+                                {c.drilldown.droppedOff.map((p) => (
+                                  <div key={p.name} className="flex items-start justify-between text-xs">
+                                    <span className="text-navy font-medium">{p.name}</span>
+                                    <span className="text-muted text-[10px] text-right max-w-[120px]">{p.lastSeen} ago</span>
+                                  </div>
+                                ))}
+                                {c.drilldown.droppedOff.length === 0 && <p className="text-xs text-success font-medium">None — great retention</p>}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-2 flex items-center gap-1">
+                                <Activity size={11} /> Completed ({c.drilldown.completed.length})
+                              </p>
+                              <div className="space-y-1.5">
+                                {c.drilldown.completed.map((p) => (
+                                  <div key={p.name} className="flex items-center justify-between text-xs">
+                                    <span className="text-navy font-medium">{p.name}</span>
+                                    <span className="text-muted">{p.sessions} sessions</span>
+                                  </div>
+                                ))}
+                                {c.drilldown.completed.length === 0 && <p className="text-xs text-muted">None this period</p>}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Benchmark comparison */}
+      <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
+        <div className="flex items-center gap-2 mb-1">
+          <BarChart2 size={16} className="text-purple-600" />
+          <h3 className="font-display text-lg text-navy">Benchmark Comparison</h3>
+        </div>
+        <p className="text-xs text-muted mb-5">Your clinic vs. similar UK private physio practices (3–5 clinicians) · anonymised aggregate data</p>
+        <div className="space-y-4">
+          {benchmarks.map((b) => {
+            const formatVal = (v: number) =>
+              b.unit === "percent" ? `${Math.round(v * 100)}%` :
+              b.unit === "pence" ? `£${(v / 100).toFixed(0)}` :
+              String(v);
+            const yourPct = b.higherIsBetter
+              ? Math.min(100, (b.yourValue / b.peerTop25) * 100)
+              : Math.min(100, ((b.peerTop25 * 2 - b.yourValue) / (b.peerTop25 * 2 - b.peerTop25)) * 100);
+            const peerPct = b.higherIsBetter
+              ? Math.min(100, (b.peerMedian / b.peerTop25) * 100)
+              : 50;
+            const beating = b.higherIsBetter ? b.yourValue > b.peerMedian : b.yourValue < b.peerMedian;
+            return (
+              <div key={b.metric}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm font-medium text-navy">{b.metric}</span>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className={`font-bold ${beating ? "text-success" : "text-warn"}`}>
+                      You: {formatVal(b.yourValue)}
+                    </span>
+                    <span className="text-muted">Peers: {formatVal(b.peerMedian)}</span>
+                    <span className="text-muted">Top 25%: {formatVal(b.peerTop25)}</span>
+                  </div>
+                </div>
+                <div className="relative h-2.5 bg-cloud-dark rounded-full overflow-hidden">
+                  <div
+                    className="absolute left-0 top-0 h-full rounded-full opacity-25"
+                    style={{ width: `${peerPct}%`, background: "#6B7280" }}
+                  />
+                  <div
+                    className="absolute left-0 top-0 h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${yourPct}%`,
+                      background: beating ? "#059669" : "#F59E0B",
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-[11px] text-muted mt-4 italic">Benchmark data initialised with Spires MSK baseline. Expands automatically as more practices join StrydeOS.</p>
       </div>
 
       {/* Tab navigation */}
@@ -398,6 +722,60 @@ export default function IntelligencePage() {
 
         {activeTab === "outcomes" && (
           <div className="space-y-6">
+            {/* Correlation insight */}
+            <div className="rounded-[var(--radius-card)] border border-purple-200 bg-purple-50 p-5">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
+                  <Activity size={16} className="text-purple-600" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-navy mb-1">Clinical outcomes correlate with revenue</h4>
+                  <p className="text-xs text-muted leading-relaxed">
+                    Patients who improve <span className="font-semibold text-navy">≥3 points on NPRS</span> are <span className="font-semibold text-success">2.4×</span> more likely to complete their full course and <span className="font-semibold text-success">1.8×</span> more likely to leave a Google review.
+                    Tracking outcomes turns clinical quality into a measurable revenue signal.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Per-clinician outcome aggregation */}
+            <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
+              <h3 className="font-display text-lg text-navy mb-1">Average Improvement by Clinician</h3>
+              <p className="text-xs text-muted mb-4">NPRS change (lower = better) and PSFS change (higher = better) averaged across completed courses</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { name: "Andrew", nprsChange: -2.8, psfsChange: 2.4, courses: 12, color: "#1A5CDB" },
+                  { name: "Max", nprsChange: -2.1, psfsChange: 2.0, courses: 9, color: "#0891B2" },
+                  { name: "Jamal", nprsChange: -3.2, psfsChange: 2.9, courses: 11, color: "#8B5CF6" },
+                ].map((c) => (
+                  <div key={c.name} className="rounded-xl border border-border p-4">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white" style={{ background: c.color }}>
+                        {c.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-navy">{c.name}</p>
+                        <p className="text-[11px] text-muted">{c.courses} completed courses</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-center p-2 rounded-lg bg-success/5">
+                        <p className="font-display text-xl text-success">{c.nprsChange}</p>
+                        <p className="text-[10px] text-muted">NPRS change</p>
+                      </div>
+                      <div className="text-center p-2 rounded-lg bg-blue/5">
+                        <p className="font-display text-xl text-blue">+{c.psfsChange}</p>
+                        <p className="text-[10px] text-muted">PSFS change</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Score entry component */}
+            <OutcomeScoreEntry />
+
             {/* Outcome measure trends */}
             <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
               <h3 className="font-display text-lg text-navy mb-1">Outcome Measure Trends</h3>
