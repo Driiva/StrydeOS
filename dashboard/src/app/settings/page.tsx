@@ -181,6 +181,8 @@ export default function SettingsPage() {
   const [pmsTesting, setPmsTesting] = useState(false);
   const [syncRunning, setSyncRunning] = useState(false);
   const [syncResult, setSyncResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [csvUploading, setCsvUploading] = useState(false);
+  const [csvResult, setCsvResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const [hepProvider, setHepProvider] = useState<string>("");
   const [hepApiKey, setHepApiKey] = useState("");
@@ -340,6 +342,38 @@ export default function SettingsPage() {
       toast(msg, "error");
     } finally {
       setSyncRunning(false);
+    }
+  }
+
+  async function handleImportCSV(file: File, fileType: "appointments" | "patients") {
+    if (!firebaseUser) {
+      toast("Sign in required", "error");
+      return;
+    }
+    setCsvUploading(true);
+    setCsvResult(null);
+    try {
+      const token = await firebaseUser.getIdToken();
+      const base = typeof window !== "undefined" ? window.location.origin : "";
+      const form = new FormData();
+      form.append("file", file);
+      form.append("fileType", fileType);
+      const res = await fetch(`${base}/api/pms/import-csv`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error ?? "Import failed");
+      setCsvResult({ ok: true, msg: data.message ?? `Imported ${data.written} records` });
+      toast(data.message ?? "Import complete", "success");
+      await refreshClinicProfile();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Import failed";
+      setCsvResult({ ok: false, msg });
+      toast(msg, "error");
+    } finally {
+      setCsvUploading(false);
     }
   }
 
@@ -874,6 +908,61 @@ export default function SettingsPage() {
             )}
           </div>
         )}
+      </div>
+
+      {/* CSV Import — WriteUpp / any PMS */}
+      <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
+        <div className="flex items-start justify-between mb-1">
+          <h3 className="font-display text-lg text-navy">Import from CSV</h3>
+          <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-blue/10 text-blue">WriteUpp &amp; others</span>
+        </div>
+        <p className="text-[12px] text-muted mb-5">
+          No API? No problem. Export your appointment or patient data from WriteUpp (Tools → Data Export → Appointments → Export to CSV) and drop it here. Data populates instantly.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {(["appointments", "patients"] as const).map((type) => (
+            <label
+              key={type}
+              className={`relative flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-dashed transition-all cursor-pointer ${
+                csvUploading ? "opacity-50 pointer-events-none" : "border-border hover:border-blue/40 hover:bg-blue/2"
+              }`}
+            >
+              <input
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                className="sr-only"
+                disabled={csvUploading}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleImportCSV(f, type);
+                  e.target.value = "";
+                }}
+              />
+              <div className="w-10 h-10 rounded-xl bg-cloud-light flex items-center justify-center">
+                {csvUploading ? <Loader2 size={18} className="animate-spin text-blue" /> : <ArrowRight size={18} className="text-navy rotate-90" />}
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold text-navy capitalize">{type} CSV</p>
+                <p className="text-[11px] text-muted mt-0.5">
+                  {type === "appointments" ? "Appointments + auto-recomputes metrics" : "Patient demographics"}
+                </p>
+              </div>
+            </label>
+          ))}
+        </div>
+
+        {csvResult && (
+          <div className={`flex items-start gap-2 mt-4 p-3 rounded-xl border text-[12px] ${csvResult.ok ? "border-success/20 bg-success/5 text-success" : "border-danger/20 bg-danger/5 text-danger"}`}>
+            {csvResult.ok ? <CheckCircle2 size={14} className="mt-0.5 shrink-0" /> : <XCircle size={14} className="mt-0.5 shrink-0" />}
+            <span>{csvResult.msg}</span>
+          </div>
+        )}
+
+        <p className="text-[11px] text-muted mt-4">
+          WriteUpp: Menu (top-left) → Tools → Data Export → Appointments tab → Export to CSV.
+          Repeat monthly or whenever you want fresh data. Uploading again merges — it won&apos;t create duplicates.
+        </p>
       </div>
 
       {/* HEP Integration */}
