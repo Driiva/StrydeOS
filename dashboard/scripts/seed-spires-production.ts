@@ -83,8 +83,9 @@ const CLINICIANS = [
 // ─── Metrics data — 6 weeks per clinician ───────────────────────────────────
 
 const WEEKS = [
-  "2026-01-12", "2026-01-19", "2026-01-26",
-  "2026-02-02", "2026-02-09", "2026-02-17",
+  "2026-01-05", "2026-01-12", "2026-01-19", "2026-01-26",
+  "2026-02-02", "2026-02-09", "2026-02-16", "2026-02-23",
+  "2026-03-02",
 ];
 
 interface MetricRow {
@@ -104,34 +105,46 @@ interface MetricRow {
 
 const METRICS: Record<string, MetricRow[]> = {
   "c-andrew": [
+    { followUpRate: 1.82, physitrackRate: 0.80, appointmentsTotal: 21, utilisationRate: 0.78, dnaRate: 0.13, courseCompletionRate: 0.66, revenuePerSessionPence: 8100, initialAssessments: 3, followUps: 18, hepComplianceRate: 0.80 },
     { followUpRate: 1.90, physitrackRate: 0.82, appointmentsTotal: 22, utilisationRate: 0.80, dnaRate: 0.12, courseCompletionRate: 0.68, revenuePerSessionPence: 8200, initialAssessments: 3, followUps: 19, hepComplianceRate: 0.82 },
     { followUpRate: 1.98, physitrackRate: 0.84, appointmentsTotal: 23, utilisationRate: 0.82, dnaRate: 0.11, courseCompletionRate: 0.70, revenuePerSessionPence: 8200, initialAssessments: 3, followUps: 20, hepComplianceRate: 0.84 },
     { followUpRate: 2.10, physitrackRate: 0.85, appointmentsTotal: 23, utilisationRate: 0.84, dnaRate: 0.10, courseCompletionRate: 0.72, revenuePerSessionPence: 8300, initialAssessments: 3, followUps: 20, hepComplianceRate: 0.85 },
     { followUpRate: 2.22, physitrackRate: 0.87, appointmentsTotal: 22, utilisationRate: 0.85, dnaRate: 0.09, courseCompletionRate: 0.73, revenuePerSessionPence: 8400, initialAssessments: 3, followUps: 19, hepComplianceRate: 0.87 },
     { followUpRate: 2.35, physitrackRate: 0.89, appointmentsTotal: 23, utilisationRate: 0.86, dnaRate: 0.08, courseCompletionRate: 0.74, revenuePerSessionPence: 8400, initialAssessments: 4, followUps: 19, hepComplianceRate: 0.89 },
+    { followUpRate: 2.44, physitrackRate: 0.90, appointmentsTotal: 24, utilisationRate: 0.87, dnaRate: 0.07, courseCompletionRate: 0.75, revenuePerSessionPence: 8450, initialAssessments: 4, followUps: 20, hepComplianceRate: 0.90 },
     { followUpRate: 2.50, physitrackRate: 0.91, appointmentsTotal: 24, utilisationRate: 0.88, dnaRate: 0.07, courseCompletionRate: 0.76, revenuePerSessionPence: 8500, initialAssessments: 4, followUps: 20, hepComplianceRate: 0.91 },
+    { followUpRate: 2.58, physitrackRate: 0.92, appointmentsTotal: 25, utilisationRate: 0.89, dnaRate: 0.06, courseCompletionRate: 0.77, revenuePerSessionPence: 8550, initialAssessments: 4, followUps: 21, hepComplianceRate: 0.92 },
   ],
   "c-max": [
+    { followUpRate: 2.80, physitrackRate: 0.91, appointmentsTotal: 19, utilisationRate: 0.83, dnaRate: 0.08, courseCompletionRate: 0.76, revenuePerSessionPence: 7450, initialAssessments: 3, followUps: 16, hepComplianceRate: 0.91 },
     { followUpRate: 2.90, physitrackRate: 0.92, appointmentsTotal: 20, utilisationRate: 0.85, dnaRate: 0.07, courseCompletionRate: 0.78, revenuePerSessionPence: 7500, initialAssessments: 3, followUps: 17, hepComplianceRate: 0.92 },
     { followUpRate: 2.98, physitrackRate: 0.93, appointmentsTotal: 21, utilisationRate: 0.87, dnaRate: 0.06, courseCompletionRate: 0.79, revenuePerSessionPence: 7550, initialAssessments: 3, followUps: 18, hepComplianceRate: 0.93 },
     { followUpRate: 3.08, physitrackRate: 0.93, appointmentsTotal: 22, utilisationRate: 0.89, dnaRate: 0.06, courseCompletionRate: 0.80, revenuePerSessionPence: 7600, initialAssessments: 3, followUps: 19, hepComplianceRate: 0.93 },
     { followUpRate: 3.18, physitrackRate: 0.94, appointmentsTotal: 22, utilisationRate: 0.90, dnaRate: 0.05, courseCompletionRate: 0.81, revenuePerSessionPence: 7650, initialAssessments: 3, followUps: 19, hepComplianceRate: 0.94 },
     { followUpRate: 3.28, physitrackRate: 0.95, appointmentsTotal: 22, utilisationRate: 0.91, dnaRate: 0.05, courseCompletionRate: 0.82, revenuePerSessionPence: 7700, initialAssessments: 3, followUps: 19, hepComplianceRate: 0.95 },
+    { followUpRate: 3.35, physitrackRate: 0.95, appointmentsTotal: 23, utilisationRate: 0.91, dnaRate: 0.04, courseCompletionRate: 0.82, revenuePerSessionPence: 7750, initialAssessments: 3, followUps: 20, hepComplianceRate: 0.95 },
     { followUpRate: 3.40, physitrackRate: 0.95, appointmentsTotal: 23, utilisationRate: 0.92, dnaRate: 0.04, courseCompletionRate: 0.83, revenuePerSessionPence: 7800, initialAssessments: 3, followUps: 20, hepComplianceRate: 0.95 },
+    { followUpRate: 3.48, physitrackRate: 0.96, appointmentsTotal: 24, utilisationRate: 0.93, dnaRate: 0.03, courseCompletionRate: 0.84, revenuePerSessionPence: 7850, initialAssessments: 4, followUps: 20, hepComplianceRate: 0.96 },
   ],
   "c-jamal": [
+    { followUpRate: 3.15, physitrackRate: 0.93, appointmentsTotal: 18, utilisationRate: 0.82, dnaRate: 0.07, courseCompletionRate: 0.79, revenuePerSessionPence: 7550, initialAssessments: 2, followUps: 16, hepComplianceRate: 0.93 },
     { followUpRate: 3.20, physitrackRate: 0.94, appointmentsTotal: 19, utilisationRate: 0.84, dnaRate: 0.06, courseCompletionRate: 0.80, revenuePerSessionPence: 7600, initialAssessments: 3, followUps: 16, hepComplianceRate: 0.94 },
     { followUpRate: 3.22, physitrackRate: 0.94, appointmentsTotal: 20, utilisationRate: 0.86, dnaRate: 0.05, courseCompletionRate: 0.81, revenuePerSessionPence: 7620, initialAssessments: 3, followUps: 17, hepComplianceRate: 0.94 },
     { followUpRate: 3.26, physitrackRate: 0.95, appointmentsTotal: 21, utilisationRate: 0.88, dnaRate: 0.05, courseCompletionRate: 0.82, revenuePerSessionPence: 7650, initialAssessments: 3, followUps: 18, hepComplianceRate: 0.95 },
     { followUpRate: 3.30, physitrackRate: 0.95, appointmentsTotal: 21, utilisationRate: 0.89, dnaRate: 0.04, courseCompletionRate: 0.83, revenuePerSessionPence: 7680, initialAssessments: 3, followUps: 18, hepComplianceRate: 0.95 },
     { followUpRate: 3.35, physitrackRate: 0.96, appointmentsTotal: 22, utilisationRate: 0.90, dnaRate: 0.04, courseCompletionRate: 0.84, revenuePerSessionPence: 7700, initialAssessments: 3, followUps: 19, hepComplianceRate: 0.96 },
+    { followUpRate: 3.38, physitrackRate: 0.96, appointmentsTotal: 21, utilisationRate: 0.91, dnaRate: 0.03, courseCompletionRate: 0.85, revenuePerSessionPence: 7710, initialAssessments: 3, followUps: 18, hepComplianceRate: 0.96 },
     { followUpRate: 3.40, physitrackRate: 0.96, appointmentsTotal: 21, utilisationRate: 0.92, dnaRate: 0.03, courseCompletionRate: 0.85, revenuePerSessionPence: 7720, initialAssessments: 3, followUps: 18, hepComplianceRate: 0.96 },
+    { followUpRate: 3.45, physitrackRate: 0.97, appointmentsTotal: 22, utilisationRate: 0.93, dnaRate: 0.03, courseCompletionRate: 0.86, revenuePerSessionPence: 7740, initialAssessments: 3, followUps: 19, hepComplianceRate: 0.97 },
   ],
   "c-joe": [
     { followUpRate: 3.8, physitrackRate: 1.0, appointmentsTotal: 2, utilisationRate: 0.20, dnaRate: 0.0, courseCompletionRate: 1.0, revenuePerSessionPence: 7500, initialAssessments: 0, followUps: 2, hepComplianceRate: 1.0, statisticallyRepresentative: false, caveatNote: "Sample size < 10 patients; metrics are directionally indicative only" },
     { followUpRate: 3.8, physitrackRate: 1.0, appointmentsTotal: 2, utilisationRate: 0.20, dnaRate: 0.0, courseCompletionRate: 1.0, revenuePerSessionPence: 7500, initialAssessments: 0, followUps: 2, hepComplianceRate: 1.0, statisticallyRepresentative: false, caveatNote: "Sample size < 10 patients; metrics are directionally indicative only" },
     { followUpRate: 3.8, physitrackRate: 1.0, appointmentsTotal: 2, utilisationRate: 0.20, dnaRate: 0.0, courseCompletionRate: 1.0, revenuePerSessionPence: 7500, initialAssessments: 0, followUps: 2, hepComplianceRate: 1.0, statisticallyRepresentative: false, caveatNote: "Sample size < 10 patients; metrics are directionally indicative only" },
+    { followUpRate: 3.8, physitrackRate: 1.0, appointmentsTotal: 2, utilisationRate: 0.20, dnaRate: 0.0, courseCompletionRate: 1.0, revenuePerSessionPence: 7500, initialAssessments: 0, followUps: 2, hepComplianceRate: 1.0, statisticallyRepresentative: false, caveatNote: "Sample size < 10 patients; metrics are directionally indicative only" },
     { followUpRate: 3.8, physitrackRate: 1.0, appointmentsTotal: 2, utilisationRate: 0.20, dnaRate: 0.0, courseCompletionRate: 1.0, revenuePerSessionPence: 7500, initialAssessments: 1, followUps: 1, hepComplianceRate: 1.0, statisticallyRepresentative: false, caveatNote: "Sample size < 10 patients; metrics are directionally indicative only" },
+    { followUpRate: 3.8, physitrackRate: 1.0, appointmentsTotal: 2, utilisationRate: 0.20, dnaRate: 0.0, courseCompletionRate: 1.0, revenuePerSessionPence: 7500, initialAssessments: 0, followUps: 2, hepComplianceRate: 1.0, statisticallyRepresentative: false, caveatNote: "Sample size < 10 patients; metrics are directionally indicative only" },
+    { followUpRate: 3.8, physitrackRate: 1.0, appointmentsTotal: 2, utilisationRate: 0.20, dnaRate: 0.0, courseCompletionRate: 1.0, revenuePerSessionPence: 7500, initialAssessments: 0, followUps: 2, hepComplianceRate: 1.0, statisticallyRepresentative: false, caveatNote: "Sample size < 10 patients; metrics are directionally indicative only" },
     { followUpRate: 3.8, physitrackRate: 1.0, appointmentsTotal: 2, utilisationRate: 0.20, dnaRate: 0.0, courseCompletionRate: 1.0, revenuePerSessionPence: 7500, initialAssessments: 0, followUps: 2, hepComplianceRate: 1.0, statisticallyRepresentative: false, caveatNote: "Sample size < 10 patients; metrics are directionally indicative only" },
     { followUpRate: 3.8, physitrackRate: 1.0, appointmentsTotal: 2, utilisationRate: 0.20, dnaRate: 0.0, courseCompletionRate: 1.0, revenuePerSessionPence: 7500, initialAssessments: 0, followUps: 2, hepComplianceRate: 1.0, statisticallyRepresentative: false, caveatNote: "Sample size < 10 patients; metrics are directionally indicative only" },
   ],

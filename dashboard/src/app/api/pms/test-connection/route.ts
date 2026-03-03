@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (!result.ok) {
       return NextResponse.json({ ok: false, error: result.error }, { status: 400 });
     }
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, resolvedBase: (result as { resolvedBase?: string }).resolvedBase });
   } catch (e) {
     return handleApiError(e);
   }

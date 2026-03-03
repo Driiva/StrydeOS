@@ -34,6 +34,8 @@ import {
   AlertTriangle,
   Shield,
   Sparkles,
+  RefreshCw,
+  XCircle,
 } from "lucide-react";
 import type { ClinicProfile, PmsProvider } from "@/types";
 
@@ -177,6 +179,8 @@ export default function SettingsPage() {
   const [pmsApiKey, setPmsApiKey] = useState("");
   const [pmsConnected, setPmsConnected] = useState(false);
   const [pmsTesting, setPmsTesting] = useState(false);
+  const [syncRunning, setSyncRunning] = useState(false);
+  const [syncResult, setSyncResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   const [hepProvider, setHepProvider] = useState<string>("");
   const [hepApiKey, setHepApiKey] = useState("");
@@ -264,7 +268,7 @@ export default function SettingsPage() {
       const saveRes = await fetch(`${base}/api/pms/save-config`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ provider: pmsProvider, apiKey: pmsApiKey.trim() }),
+        body: JSON.stringify({ provider: pmsProvider, apiKey: pmsApiKey.trim(), baseUrl: testData.resolvedBase }),
       });
       if (!saveRes.ok) {
         toast("Connection verified but save failed. Try again.", "error");
@@ -299,6 +303,43 @@ export default function SettingsPage() {
       toast("PMS disconnected", "success");
     } catch {
       toast("Failed to disconnect", "error");
+    }
+  }
+
+  async function handleRunSync(backfill = false) {
+    if (!firebaseUser) {
+      toast("Sign in required to trigger sync", "error");
+      return;
+    }
+    setSyncRunning(true);
+    setSyncResult(null);
+    try {
+      const token = await firebaseUser.getIdToken();
+      const base = typeof window !== "undefined" ? window.location.origin : "";
+      const res = await fetch(`${base}/api/pipeline/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ clinicId: user?.clinicId, ...(backfill ? { backfill: true } : {}) }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error ?? "Sync failed");
+      const stages: Array<{ stage: string; ok: boolean; count: number; errors?: string[] }> = data?.stages ?? [];
+      const failed = stages.filter((s) => !s.ok);
+      if (failed.length) {
+        setSyncResult({ ok: false, msg: `${failed.length} stage(s) failed: ${failed.map((s) => s.stage).join(", ")}` });
+        toast("Sync completed with errors — see details below", "error");
+      } else {
+        const totalRecords = stages.reduce((sum, s) => sum + (s.count ?? 0), 0);
+        setSyncResult({ ok: true, msg: `Sync complete — ${totalRecords} records processed` });
+        toast("Sync complete", "success");
+        await refreshClinicProfile();
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Sync failed";
+      setSyncResult({ ok: false, msg });
+      toast(msg, "error");
+    } finally {
+      setSyncRunning(false);
     }
   }
 
@@ -705,27 +746,57 @@ export default function SettingsPage() {
         <h3 className="font-display text-lg text-navy mb-4">PMS Connection</h3>
 
         {pmsConnected ? (
-          <div className="flex items-center gap-4 p-4 rounded-xl border border-success/20 bg-success/5">
-            <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
-              <Link2 size={18} className="text-success" />
+          <div className="space-y-3">
+            <div className="flex items-center gap-4 p-4 rounded-xl border border-success/20 bg-success/5">
+              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+                <Link2 size={18} className="text-success" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-navy">
+                  {PMS_PROVIDERS.find((p) => p.id === pmsProvider)?.label ?? "PMS"} — Connected
+                </p>
+                <p className="text-[11px] text-muted">
+                  {cp?.pmsLastSyncAt
+                    ? `Last synced ${new Date(cp.pmsLastSyncAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`
+                    : "Awaiting first sync"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleRunSync(false)}
+                  disabled={syncRunning}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-blue border border-blue/20 hover:bg-blue/5 transition-colors disabled:opacity-50"
+                  title="Pull latest data from your PMS now"
+                >
+                  <RefreshCw size={12} className={syncRunning ? "animate-spin" : ""} />
+                  {syncRunning ? "Syncing…" : "Sync now"}
+                </button>
+                <button
+                  onClick={handleDisconnectPms}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-danger border border-danger/20 hover:bg-danger/5 transition-colors"
+                >
+                  <Unplug size={12} />
+                  Disconnect
+                </button>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-navy">
-                {PMS_PROVIDERS.find((p) => p.id === pmsProvider)?.label ?? "PMS"} — Connected
-              </p>
-              <p className="text-[11px] text-muted">
-                {cp?.pmsLastSyncAt
-                  ? `Last synced ${new Date(cp.pmsLastSyncAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`
-                  : "Awaiting first sync"}
-              </p>
+
+            {syncResult && (
+              <div className={`flex items-start gap-2 p-3 rounded-xl border text-[12px] ${syncResult.ok ? "border-success/20 bg-success/5 text-success" : "border-danger/20 bg-danger/5 text-danger"}`}>
+                {syncResult.ok ? <CheckCircle2 size={14} className="mt-0.5 shrink-0" /> : <XCircle size={14} className="mt-0.5 shrink-0" />}
+                <span>{syncResult.msg}</span>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 pt-1">
+              <button
+                onClick={() => handleRunSync(true)}
+                disabled={syncRunning}
+                className="text-[11px] text-muted hover:text-navy underline underline-offset-2 transition-colors disabled:opacity-50"
+              >
+                Run full backfill (13 weeks of history)
+              </button>
             </div>
-            <button
-              onClick={handleDisconnectPms}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-danger border border-danger/20 hover:bg-danger/5 transition-colors"
-            >
-              <Unplug size={12} />
-              Disconnect
-            </button>
           </div>
         ) : (
           <div className="space-y-4">

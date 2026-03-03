@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const provider = (body.provider as PmsProvider) ?? "writeupp";
     const apiKey = body.apiKey as string | undefined;
+    const baseUrl = body.baseUrl as string | undefined;
     if (!apiKey?.trim()) {
       return NextResponse.json({ error: "API key is required" }, { status: 400 });
     }
@@ -35,6 +36,8 @@ export async function POST(request: NextRequest) {
         {
           provider,
           apiKey: apiKey.trim(),
+          ...(baseUrl ? { baseUrl } : {}),
+          connectedAt: now,
           lastSyncAt: null,
           lastSyncStatus: null,
           syncErrors: null,
@@ -47,7 +50,6 @@ export async function POST(request: NextRequest) {
     const onboarding = clinicSnap.data()?.onboarding ?? {};
     await clinicRef.update({
       pmsType: provider,
-      pmsLastSyncAt: now,
       onboarding: {
         ...onboarding,
         pmsConnected: true,
