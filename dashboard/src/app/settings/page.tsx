@@ -18,6 +18,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import { getInitials } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { normalizeApiError } from "@/lib/api-errors";
 import { AnimatePresence, motion } from "motion/react";
 import {
   Save,
@@ -263,7 +264,7 @@ export default function SettingsPage() {
       });
       const testData = await testRes.json().catch(() => ({}));
       if (!testRes.ok || !testData.ok) {
-        toast(testData.error ?? "Connection failed. Check your API key.", "error");
+        toast(normalizeApiError(testRes.status, testData.error, "Connection failed. Check your API key."), "error");
         setPmsTesting(false);
         return;
       }
@@ -297,7 +298,11 @@ export default function SettingsPage() {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Disconnect failed");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast(normalizeApiError(res.status, data?.error, "Failed to disconnect"), "error");
+        return;
+      }
       setPmsConnected(false);
       setPmsApiKey("");
       setPmsProvider("");
@@ -324,7 +329,7 @@ export default function SettingsPage() {
         body: JSON.stringify({ clinicId: user?.clinicId, ...(backfill ? { backfill: true } : {}) }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error ?? "Sync failed");
+      if (!res.ok) throw new Error(normalizeApiError(res.status, data?.error, "Sync failed"));
       const stages: Array<{ stage: string; ok: boolean; count: number; errors?: string[] }> = data?.stages ?? [];
       const failed = stages.filter((s) => !s.ok);
       if (failed.length) {
@@ -364,7 +369,7 @@ export default function SettingsPage() {
         body: form,
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error ?? "Import failed");
+      if (!res.ok) throw new Error(normalizeApiError(res.status, data?.error, "Import failed"));
       setCsvResult({ ok: true, msg: data.message ?? `Imported ${data.written} records` });
       toast(data.message ?? "Import complete", "success");
       await refreshClinicProfile();
@@ -398,7 +403,7 @@ export default function SettingsPage() {
       });
       const testData = await testRes.json().catch(() => ({}));
       if (!testRes.ok || !testData.ok) {
-        toast(testData.error ?? "Connection failed. Check your API key.", "error");
+        toast(normalizeApiError(testRes.status, testData.error, "Connection failed. Check your API key."), "error");
         setHepTesting(false);
         return;
       }
@@ -510,7 +515,7 @@ export default function SettingsPage() {
       } else {
         setInviteResult((prev) => ({
           ...prev,
-          [clinicianId]: data.error ?? "Failed to send invite.",
+          [clinicianId]: normalizeApiError(res.status, data?.error, "Failed to send invite."),
         }));
       }
     } catch {

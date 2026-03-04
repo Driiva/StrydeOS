@@ -2,8 +2,8 @@
  * Production seed script for Spires Physiotherapy London.
  *
  * Seeds all 4 real users (Jamal, Andrew Henry, Max Hubbard, Joe Korge)
- * into Firebase Auth + Firestore, along with clinician records and
- * 6 weeks of metrics_weekly data per clinician.
+ * into Firebase Auth + Firestore, along with clinician records,
+ * metrics_weekly data per clinician, and patients so Patients/Pulse show real data.
  *
  * Idempotent — safe to re-run. Resets all accounts for first-login flow.
  *
@@ -78,6 +78,39 @@ const CLINICIANS = [
   { id: "c-andrew", name: "Andrew Henry", role: "Physiotherapist", pmsExternalId: "andrew-1" },
   { id: "c-max", name: "Max Hubbard", role: "Physiotherapist", pmsExternalId: "max-1" },
   { id: "c-joe", name: "Joe Korge", role: "Admin", pmsExternalId: "joe-1" },
+];
+
+// ─── Patient seed (for Patients page and Pulse board) ────────────────────────
+
+interface PatientSeed {
+  id: string;
+  name: string;
+  clinicianId: string;
+  contact: { email?: string; phone?: string };
+  insuranceFlag: boolean;
+  insurerName?: string;
+  preAuthStatus: "pending" | "confirmed" | "rejected" | "not_required";
+  lastSessionDate?: string;
+  nextSessionDate?: string;
+  sessionCount: number;
+  courseLength: number;
+  discharged: boolean;
+  churnRisk: boolean;
+}
+
+const PATIENTS: PatientSeed[] = [
+  { id: "p1", name: "James Whitfield", clinicianId: "c-andrew", contact: {}, insuranceFlag: false, preAuthStatus: "not_required", lastSessionDate: "2026-02-18", nextSessionDate: "2026-02-25", sessionCount: 3, courseLength: 6, discharged: false, churnRisk: false },
+  { id: "p2", name: "Catherine Bose", clinicianId: "c-andrew", contact: {}, insuranceFlag: false, preAuthStatus: "not_required", lastSessionDate: "2026-02-14", nextSessionDate: "2026-02-21", sessionCount: 4, courseLength: 6, discharged: false, churnRisk: false },
+  { id: "p3", name: "Daniel Marr", clinicianId: "c-max", contact: {}, insuranceFlag: true, insurerName: "Bupa", preAuthStatus: "confirmed", lastSessionDate: "2026-02-01", sessionCount: 2, courseLength: 6, discharged: false, churnRisk: true },
+  { id: "p4", name: "Emma Richardson", clinicianId: "c-max", contact: {}, insuranceFlag: false, preAuthStatus: "not_required", lastSessionDate: "2026-02-17", nextSessionDate: "2026-02-24", sessionCount: 5, courseLength: 6, discharged: false, churnRisk: false },
+  { id: "p5", name: "Oliver Shaw", clinicianId: "c-andrew", contact: {}, insuranceFlag: false, preAuthStatus: "not_required", lastSessionDate: "2026-01-28", sessionCount: 3, courseLength: 6, discharged: false, churnRisk: true },
+  { id: "p6", name: "Sophie Turner", clinicianId: "c-jamal", contact: {}, insuranceFlag: false, preAuthStatus: "not_required", lastSessionDate: "2026-02-19", nextSessionDate: "2026-02-26", sessionCount: 2, courseLength: 4, discharged: false, churnRisk: false },
+  { id: "p7", name: "Liam Bradshaw", clinicianId: "c-andrew", contact: {}, insuranceFlag: false, preAuthStatus: "not_required", lastSessionDate: "2026-02-10", sessionCount: 6, courseLength: 6, discharged: true, churnRisk: false },
+  { id: "p8", name: "Rachel Obi", clinicianId: "c-max", contact: {}, insuranceFlag: true, insurerName: "AXA Health", preAuthStatus: "confirmed", lastSessionDate: "2026-02-12", sessionCount: 4, courseLength: 4, discharged: true, churnRisk: false },
+  { id: "p9", name: "Marcus Thorne", clinicianId: "c-andrew", contact: {}, insuranceFlag: false, preAuthStatus: "not_required", lastSessionDate: "2026-01-30", sessionCount: 2, courseLength: 8, discharged: false, churnRisk: true },
+  { id: "p10", name: "Nina Aslam", clinicianId: "c-jamal", contact: {}, insuranceFlag: false, preAuthStatus: "not_required", lastSessionDate: "2026-02-15", nextSessionDate: "2026-02-22", sessionCount: 1, courseLength: 6, discharged: false, churnRisk: false },
+  { id: "p11", name: "George Kemp", clinicianId: "c-max", contact: {}, insuranceFlag: false, preAuthStatus: "not_required", lastSessionDate: "2026-01-25", sessionCount: 3, courseLength: 6, discharged: false, churnRisk: true },
+  { id: "p12", name: "Helen Corr", clinicianId: "c-jamal", contact: {}, insuranceFlag: false, preAuthStatus: "not_required", lastSessionDate: "2026-02-05", sessionCount: 6, courseLength: 6, discharged: true, churnRisk: false },
 ];
 
 // ─── Metrics data — 6 weeks per clinician ───────────────────────────────────
@@ -443,6 +476,20 @@ async function main() {
   }
 
   console.log(`\nSeeded ${metricsWritten} metrics_weekly documents across ${WEEKS.length} weeks.`);
+
+  // ── 5. Seed patients (for Patients page and Pulse board) ───────────────────
+
+  const patientsRef = clinicRef.collection("patients");
+  for (const p of PATIENTS) {
+    const { id, ...data } = p;
+    await patientsRef.doc(id).set({
+      ...data,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+  console.log(`Seeded ${PATIENTS.length} patients.`);
+
   console.log("\nDone. All users set to firstLogin: false, status: onboarding.");
   console.log("Sign in to trigger the first-login tour for each user.");
 }
