@@ -37,6 +37,7 @@ import {
   Sparkles,
   RefreshCw,
   XCircle,
+  Lock,
 } from "lucide-react";
 import type { ClinicProfile, PmsProvider } from "@/types";
 
@@ -128,6 +129,12 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const [promoting, setPromoting] = useState(false);
   const router = useRouter();
+
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   async function handleMakeSuperAdmin() {
     if (!user?.uid || !db) return;
@@ -532,6 +539,61 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleChangePassword() {
+    if (!firebaseUser || !currentPassword || !newPassword || !confirmPassword) {
+      toast("All password fields are required", "error");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast("New passwords don't match", "error");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      toast("New password must be at least 8 characters", "error");
+      return;
+    }
+
+    if (newPassword === currentPassword) {
+      toast("New password must be different from current password", "error");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const { updatePassword, reauthenticateWithCredential, EmailAuthProvider } = await import("firebase/auth");
+      
+      // Reauthenticate user first for security
+      const credential = EmailAuthProvider.credential(
+        firebaseUser.email!,
+        currentPassword
+      );
+      await reauthenticateWithCredential(firebaseUser, credential);
+
+      // Update password
+      await updatePassword(firebaseUser, newPassword);
+
+      // Clear form
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+
+      toast("Password updated successfully", "success");
+    } catch (err: unknown) {
+      const error = err as { code?: string; message?: string };
+      if (error.code === "auth/wrong-password" || error.code === "auth/invalid-credential") {
+        toast("Current password is incorrect", "error");
+      } else if (error.code === "auth/weak-password") {
+        toast("Password is too weak. Use a stronger password.", "error");
+      } else {
+        toast(error.message ?? "Failed to update password", "error");
+      }
+    } finally {
+      setChangingPassword(false);
+    }
+  }
+
   const canManageTeam =
     user?.role === "owner" || user?.role === "admin" || user?.role === "superadmin";
 
@@ -593,6 +655,82 @@ export default function SettingsPage() {
           </>
         )}
       </div>
+
+      {/* Change Password */}
+      {user?.uid !== "demo" && firebaseUser && (
+        <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 rounded-xl bg-blue/10 flex items-center justify-center">
+              <Lock size={16} className="text-blue" />
+            </div>
+            <div>
+              <h3 className="font-display text-lg text-navy">Change Password</h3>
+              <p className="text-xs text-muted">Update your account password</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">
+                Current Password
+              </label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+                className="w-full px-3 py-2.5 rounded-[var(--radius-inner)] border border-border bg-cloud-light text-sm text-navy focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/20 transition-colors"
+                disabled={changingPassword}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">
+                New Password
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password (min 8 characters)"
+                className="w-full px-3 py-2.5 rounded-[var(--radius-inner)] border border-border bg-cloud-light text-sm text-navy focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/20 transition-colors"
+                disabled={changingPassword}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                className="w-full px-3 py-2.5 rounded-[var(--radius-inner)] border border-border bg-cloud-light text-sm text-navy focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/20 transition-colors"
+                disabled={changingPassword}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleChangePassword();
+                }}
+              />
+            </div>
+
+            <button
+              onClick={handleChangePassword}
+              disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-50"
+              style={{ background: "#1C54F2" }}
+            >
+              {changingPassword ? <Loader2 size={14} className="animate-spin" /> : <Lock size={14} />}
+              {changingPassword ? "Updating..." : "Update Password"}
+            </button>
+
+            <p className="text-[11px] text-muted mt-2">
+              Your password must be at least 8 characters long and different from your current password.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Unsaved changes dialog */}
       <AnimatePresence>
