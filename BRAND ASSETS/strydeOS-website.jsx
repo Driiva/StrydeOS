@@ -1,18 +1,25 @@
 import { useState, useEffect, useRef } from "react";
 
 const C = {
+  // Backgrounds
   cloudDancer: "#F2F1EE",
   cloudLight:  "#F9F8F6",
   cloudDark:   "#E8E6E0",
+  cream:       "#FAF9F7",
+
+  // Brand blues — canonical values
   navy:        "#0B2545",
   navyMid:     "#132D5E",
-  blue:        "#1A5CDB",
-  blueBright:  "#2E7DF0",
-  blueGlow:    "#3B90FF",
-  teal:        "#0891B2",
-  cream:       "#FAF9F7",
+  blue:        "#1C54F2",      // Royal Blue — PRIMARY
+  blueBright:  "#2E6BFF",
+  blueGlow:    "#4B8BF5",
+  teal:        "#0891B2",      // Pulse module accent
+
+  // Typography
   ink:         "#111827",
   muted:       "#6B7280",
+
+  // Utility
   success:     "#059669",
   border:      "#E2DFDA",
 };
