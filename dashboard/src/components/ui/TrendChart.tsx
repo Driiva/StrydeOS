@@ -80,12 +80,12 @@ export default function TrendChart({
       </p>
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-          <CartesianGrid strokeDasharray="4 4" stroke="#DDD9D3" vertical={false} />
+          <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
           <XAxis
             dataKey="weekLabel"
             tick={{ fontSize: 11, fill: "#6B7280" }}
             tickLine={false}
-            axisLine={{ stroke: "#DDD9D3" }}
+            axisLine={{ stroke: "#E2DFDA" }}
           />
           {hasRateLines && (
             <YAxis

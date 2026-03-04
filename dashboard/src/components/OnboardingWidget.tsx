@@ -35,7 +35,7 @@ function ProgressRing({ progress, size = 28, stroke = 3 }: { progress: number; s
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="#3B90FF"
+        stroke="#4B8BF5"
         strokeWidth={stroke}
         strokeDasharray={circumference}
         strokeDashoffset={offset}
@@ -184,7 +184,7 @@ export default function OnboardingWidget() {
                 <div className="flex items-center gap-3 mb-3">
                   <div
                     className="h-10 w-10 rounded-xl flex items-center justify-center"
-                    style={{ background: "linear-gradient(135deg, #1A5CDB, #3B90FF)" }}
+                    style={{ background: "linear-gradient(135deg, #1C54F2, #4B8BF5)" }}
                   >
                     <Zap size={18} className="text-white" />
                   </div>
@@ -201,7 +201,7 @@ export default function OnboardingWidget() {
                 <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
                   <motion.div
                     className="h-full rounded-full"
-                    style={{ background: "#3B90FF" }}
+                    style={{ background: "#4B8BF5" }}
                     initial={{ width: 0 }}
                     animate={{ width: `${progress * 100}%` }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
@@ -248,7 +248,7 @@ export default function OnboardingWidget() {
                 <button
                   onClick={handleGoToSettings}
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:opacity-90"
-                  style={{ background: "#1A5CDB" }}
+                  style={{ background: "#1C54F2" }}
                 >
                   {completedCount === 0 ? "Let's get started" : "Continue setup"}
                   <ArrowRight size={14} />

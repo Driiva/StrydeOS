@@ -58,7 +58,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "reputation", label: "Reputation", icon: Star },
 ];
 
-const BAR_COLORS = ["#1A5CDB", "#0891B2", "#8B5CF6", "#059669", "#F59E0B"];
+const BAR_COLORS = ["#1C54F2", "#0891B2", "#8B5CF6", "#059669", "#F59E0B"];
 
 function ChartTooltip({
   active,
@@ -175,7 +175,7 @@ function OutcomeScoreEntry() {
               type="submit"
               disabled={Object.keys(scores).length === 0}
               className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: "#1A5CDB" }}
+              style={{ background: "#1C54F2" }}
             >
               Save Scores
             </button>
@@ -204,7 +204,7 @@ function MiniSparkline({ data, color, higherIsBetter }: { data: number[]; color:
       <polyline
         points={points}
         fill="none"
-        stroke={trending ? color : "#DC2626"}
+        stroke={trending ? color : "#EF4444"}
         strokeWidth={1.8}
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -214,7 +214,7 @@ function MiniSparkline({ data, color, higherIsBetter }: { data: number[]; color:
         const x = (i / (data.length - 1)) * w;
         const y = h - ((v - min) / range) * h;
         return i === data.length - 1 ? (
-          <circle key={i} cx={x} cy={y} r={3} fill={trending ? color : "#DC2626"} />
+          <circle key={i} cx={x} cy={y} r={3} fill={trending ? color : "#EF4444"} />
         ) : null;
       })}
     </svg>
@@ -259,6 +259,7 @@ export default function IntelligencePage() {
         clinicians={clinicians}
         selectedClinician={selectedClinician}
         onClinicianChange={setSelectedClinician}
+        accentColor="#8B5CF6"
       />
 
       {(user?.uid === "demo" || usedDemo) && <DemoBanner />}
@@ -346,7 +347,7 @@ export default function IntelligencePage() {
                           <span className={`font-semibold text-sm ${c.utilisationRate >= 0.85 ? "text-success" : c.utilisationRate >= 0.70 ? "text-warn" : "text-danger"}`}>
                             {Math.round(c.utilisationRate * 100)}%
                           </span>
-                          <MiniSparkline data={c.utilisationTrend} color="#1A5CDB" higherIsBetter />
+                          <MiniSparkline data={c.utilisationTrend} color="#1C54F2" higherIsBetter />
                         </div>
                       </td>
                       <td className="py-4 px-4">
@@ -354,7 +355,7 @@ export default function IntelligencePage() {
                           <span className={`font-semibold text-sm ${c.dnaRate <= 0.04 ? "text-success" : c.dnaRate <= 0.08 ? "text-warn" : "text-danger"}`}>
                             {Math.round(c.dnaRate * 100)}%
                           </span>
-                          <MiniSparkline data={c.dnaTrend} color="#DC2626" higherIsBetter={false} />
+                          <MiniSparkline data={c.dnaTrend} color="#EF4444" higherIsBetter={false} />
                         </div>
                       </td>
                       <td className="py-4 px-5 text-right font-semibold text-navy">{c.activePatients}</td>
@@ -500,8 +501,8 @@ export default function IntelligencePage() {
               <p className="text-xs text-muted mb-4">This week&apos;s total revenue attributed per clinician</p>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={revByClinician} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#DDD9D3" vertical={false} />
-                  <XAxis dataKey="clinicianName" tick={{ fontSize: 12, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#DDD9D3" }} />
+                  <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
+                  <XAxis dataKey="clinicianName" tick={{ fontSize: 12, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E2DFDA" }} />
                   <YAxis
                     tickFormatter={(v: number) => `£${(v / 100).toFixed(0)}`}
                     tick={{ fontSize: 11, fill: "#6B7280" }}
@@ -564,13 +565,13 @@ export default function IntelligencePage() {
                 <p className="text-xs text-muted mb-4">Which days see the most no-shows</p>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={dnaByDay} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
-                    <CartesianGrid strokeDasharray="4 4" stroke="#DDD9D3" vertical={false} />
-                    <XAxis dataKey="shortDay" tick={{ fontSize: 12, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#DDD9D3" }} />
+                    <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
+                    <XAxis dataKey="shortDay" tick={{ fontSize: 12, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E2DFDA" }} />
                     <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={false} width={30} />
                     <Tooltip content={<ChartTooltip />} />
                     <Bar dataKey="dnaCount" name="DNAs" radius={[6, 6, 0, 0]}>
                       {dnaByDay.map((d) => (
-                        <Cell key={d.day} fill={d.dnaRate > 0.1 ? "#DC2626" : d.dnaRate > 0 ? "#F59E0B" : "#059669"} />
+                        <Cell key={d.day} fill={d.dnaRate > 0.1 ? "#EF4444" : d.dnaRate > 0 ? "#F59E0B" : "#059669"} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -583,8 +584,8 @@ export default function IntelligencePage() {
                 <p className="text-xs text-muted mb-4">Early morning and late afternoon are highest risk</p>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={dnaBySlot} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
-                    <CartesianGrid strokeDasharray="4 4" stroke="#DDD9D3" vertical={false} />
-                    <XAxis dataKey="slot" tick={{ fontSize: 10, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#DDD9D3" }} />
+                    <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
+                    <XAxis dataKey="slot" tick={{ fontSize: 10, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E2DFDA" }} />
                     <YAxis
                       tickFormatter={(v: number) => `${Math.round(v * 100)}%`}
                       tick={{ fontSize: 11, fill: "#6B7280" }}
@@ -599,7 +600,7 @@ export default function IntelligencePage() {
                     />
                     <Bar dataKey="dnaRate" name="DNA Rate" radius={[6, 6, 0, 0]}>
                       {dnaBySlot.map((d) => (
-                        <Cell key={d.slot} fill={d.dnaRate > 0.1 ? "#DC2626" : d.dnaRate > 0 ? "#F59E0B" : "#059669"} />
+                        <Cell key={d.slot} fill={d.dnaRate > 0.1 ? "#EF4444" : d.dnaRate > 0 ? "#F59E0B" : "#059669"} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -618,7 +619,7 @@ export default function IntelligencePage() {
                   return [
                     {
                       icon: AlertTriangle,
-                      color: "#DC2626",
+                      color: "#EF4444",
                       title: "Highest DNA day",
                       text: `${worstDay.day} at ${formatPercent(worstDay.dnaRate)} — ${worstDay.dnaCount} of ${worstDay.totalAppointments} appointments`,
                     },
@@ -746,7 +747,7 @@ export default function IntelligencePage() {
               <p className="text-xs text-muted mb-4">NPRS change (lower = better) and PSFS change (higher = better) averaged across completed courses</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { name: "Andrew", nprsChange: -2.8, psfsChange: 2.4, courses: 12, color: "#1A5CDB" },
+                  { name: "Andrew", nprsChange: -2.8, psfsChange: 2.4, courses: 12, color: "#1C54F2" },
                   { name: "Max", nprsChange: -2.1, psfsChange: 2.0, courses: 9, color: "#0891B2" },
                   { name: "Jamal", nprsChange: -3.2, psfsChange: 2.9, courses: 11, color: "#8B5CF6" },
                 ].map((c) => (
@@ -784,13 +785,13 @@ export default function IntelligencePage() {
               <p className="text-xs text-muted mb-4">Clinic-wide average scores across all active patients</p>
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={outcomeTrends[0]?.dataPoints ?? []} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#DDD9D3" vertical={false} />
+                  <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
                   <XAxis
                     dataKey="weekStart"
                     tickFormatter={formatWeekDate}
                     tick={{ fontSize: 11, fill: "#6B7280" }}
                     tickLine={false}
-                    axisLine={{ stroke: "#DDD9D3" }}
+                    axisLine={{ stroke: "#E2DFDA" }}
                   />
                   <YAxis
                     domain={[0, 10]}
@@ -864,7 +865,7 @@ export default function IntelligencePage() {
                     {[
                       { label: "Promoters (9-10)", count: nps.promoters, color: "#059669" },
                       { label: "Passives (7-8)", count: nps.passives, color: "#F59E0B" },
-                      { label: "Detractors (0-6)", count: nps.detractors, color: "#DC2626" },
+                      { label: "Detractors (0-6)", count: nps.detractors, color: "#EF4444" },
                     ].map((seg) => (
                       <div key={seg.label} className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-sm" style={{ background: seg.color }} />
@@ -877,10 +878,10 @@ export default function IntelligencePage() {
 
                 <ResponsiveContainer width="100%" height={160}>
                   <LineChart data={nps.trend} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
-                    <CartesianGrid strokeDasharray="4 4" stroke="#DDD9D3" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#DDD9D3" }} />
+                    <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E2DFDA" }} />
                     <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={false} width={30} />
-                    <Line type="monotone" dataKey="score" stroke="#1A5CDB" strokeWidth={2.5} dot={{ r: 3, fill: "#1A5CDB", strokeWidth: 0 }} />
+                    <Line type="monotone" dataKey="score" stroke="#1C54F2" strokeWidth={2.5} dot={{ r: 3, fill: "#1C54F2", strokeWidth: 0 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -912,8 +913,8 @@ export default function IntelligencePage() {
 
                 <ResponsiveContainer width="100%" height={160}>
                   <BarChart data={reviews.monthlyVelocity} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
-                    <CartesianGrid strokeDasharray="4 4" stroke="#DDD9D3" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#DDD9D3" }} />
+                    <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E2DFDA" }} />
                     <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={false} width={20} />
                     <Tooltip content={<ChartTooltip />} />
                     <Bar dataKey="count" name="Reviews" fill="#FBBF24" radius={[6, 6, 0, 0]} />

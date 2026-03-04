@@ -138,7 +138,7 @@ function CliniciansPage() {
             <TrendChart
               data={stats}
               lines={[
-                { key: "followUpRate", color: "#3B90FF", label: "Follow-up Rate" },
+                { key: "followUpRate", color: "#4B8BF5", label: "Follow-up Rate" },
                 { key: "utilisationRate", color: "#8B5CF6", label: "Utilisation" },
                 { key: "courseCompletionRate", color: "#059669", label: "Course Completion" },
               ]}

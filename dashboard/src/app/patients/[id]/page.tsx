@@ -53,7 +53,7 @@ function buildTimeline(patientId: string): TimelineEvent[] {
     title: "HEP programme updated",
     detail: "6 exercises assigned via Physitrack. Phase 2 - strengthening.",
     icon: Clipboard,
-    color: "#1A5CDB",
+    color: "#1C54F2",
   });
 
   events.push({
@@ -95,7 +95,7 @@ function buildTimeline(patientId: string): TimelineEvent[] {
     title: "Initial assessment",
     detail: "Low back pain. NPRS 5/10. 6-session course planned.",
     icon: Calendar,
-    color: "#1A5CDB",
+    color: "#1C54F2",
   });
 
   return events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -219,7 +219,7 @@ export default function PatientDetailPage({
             className="h-full rounded-full transition-all duration-700"
             style={{
               width: `${progress}%`,
-              background: progress >= 80 ? "#059669" : progress >= 50 ? "#1A5CDB" : "#F59E0B",
+              background: progress >= 80 ? "#059669" : progress >= 50 ? "#1C54F2" : "#F59E0B",
             }}
           />
         </div>

@@ -336,7 +336,7 @@ export default function DashboardPage() {
         <TrendChart
           data={trendWindow}
           lines={[
-            { key: "followUpRate", color: "#3B90FF", label: "Follow-up Rate" },
+            { key: "followUpRate", color: "#4B8BF5", label: "Follow-up Rate" },
             { key: "physitrackRate", color: "#0891B2", label: "Physitrack Rate" },
             { key: "utilisationRate", color: "#8B5CF6", label: "Utilisation" },
           ]}

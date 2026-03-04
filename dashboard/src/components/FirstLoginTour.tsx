@@ -198,7 +198,7 @@ export default function FirstLoginTour() {
               <div
                 className="px-8 pt-8 pb-6"
                 style={{
-                  background: "linear-gradient(135deg, #0B2545 0%, #132D5E 60%, #1A5CDB 100%)",
+                  background: "linear-gradient(135deg, #0B2545 0%, #132D5E 60%, #1C54F2 100%)",
                 }}
               >
                 <div className="flex items-center gap-3 mb-5">
@@ -235,7 +235,7 @@ export default function FirstLoginTour() {
                 <button
                   onClick={handleStartTour}
                   className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl text-[14px] font-semibold text-white transition-all duration-200 hover:opacity-90"
-                  style={{ background: "#1A5CDB" }}
+                  style={{ background: "#1C54F2" }}
                 >
                   <Compass size={16} />
                   Show me around

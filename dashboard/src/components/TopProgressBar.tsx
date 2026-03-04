@@ -48,7 +48,7 @@ export default function TopProgressBar() {
         >
           <motion.div
             className="h-full rounded-r-full"
-            style={{ background: "linear-gradient(90deg, #3B90FF, #1A5CDB)" }}
+            style={{ background: "linear-gradient(90deg, #4B8BF5, #1C54F2)" }}
             initial={{ x: "-100%" }}
             animate={{ x: "100%" }}
             transition={{

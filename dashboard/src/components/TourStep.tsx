@@ -208,7 +208,7 @@ export default function TourStep({
                     className="h-1.5 rounded-full transition-all duration-300"
                     style={{
                       width: i === stepIndex ? 16 : 6,
-                      background: i === stepIndex ? "#1A5CDB" : "#DDD9D3",
+                      background: i === stepIndex ? "#1C54F2" : "#E2DFDA",
                     }}
                   />
                 ))}
@@ -228,7 +228,7 @@ export default function TourStep({
                 <button
                   onClick={onNext}
                   className="flex items-center gap-1 px-4 py-2 rounded-xl text-[12px] font-semibold text-white transition-all hover:opacity-90"
-                  style={{ background: "#1A5CDB" }}
+                  style={{ background: "#1C54F2" }}
                 >
                   {isLast ? "Finish" : "Next"}
                   {!isLast && <ChevronRight size={12} />}

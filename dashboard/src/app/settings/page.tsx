@@ -582,7 +582,7 @@ export default function SettingsPage() {
               onClick={handleMakeSuperAdmin}
               disabled={promoting}
               className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: "#1A5CDB" }}
+              style={{ background: "#1C54F2" }}
             >
               {promoting ? <Loader2 size={16} className="animate-spin" /> : <Shield size={16} />}
               {promoting ? "Updating…" : "Make me Stryde Super User"}
@@ -633,7 +633,7 @@ export default function SettingsPage() {
                 <button
                   onClick={confirmLeave}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors hover:opacity-90"
-                  style={{ background: "#DC2626" }}
+                  style={{ background: "#EF4444" }}
                 >
                   Discard & leave
                 </button>
@@ -779,7 +779,7 @@ export default function SettingsPage() {
             onClick={handleSaveWithOnboarding}
             disabled={saving}
             className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-50"
-            style={{ background: "#1A5CDB" }}
+            style={{ background: "#1C54F2" }}
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             {saving ? "Saving..." : "Save Targets"}
@@ -1179,7 +1179,7 @@ export default function SettingsPage() {
                 onClick={handleAddClinician}
                 disabled={!newClinicianName.trim()}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
-                style={{ background: "#1A5CDB" }}
+                style={{ background: "#1C54F2" }}
               >
                 <Check size={12} />
                 Add
@@ -1263,7 +1263,7 @@ export default function SettingsPage() {
                           onClick={() => handleSendInvite(c.id)}
                           disabled={!editingEmail[c.id]?.trim() || sendingInvite[c.id]}
                           className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 shrink-0"
-                          style={{ background: "#1A5CDB" }}
+                          style={{ background: "#1C54F2" }}
                         >
                           {sendingInvite[c.id] ? (
                             <Loader2 size={12} className="animate-spin" />
@@ -1316,7 +1316,7 @@ export default function SettingsPage() {
                                 setExpandedClinicianId(null);
                               }}
                               className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white transition-all hover:opacity-90"
-                              style={{ background: "#DC2626" }}
+                              style={{ background: "#EF4444" }}
                             >
                               Yes, remove
                             </button>

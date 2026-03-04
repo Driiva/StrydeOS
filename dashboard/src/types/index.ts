@@ -285,6 +285,7 @@ export interface StatCardProps {
   status: MetricStatus;
   insight?: string;
   color?: string;
+  progress?: number;
   onClick?: () => void;
 }
 

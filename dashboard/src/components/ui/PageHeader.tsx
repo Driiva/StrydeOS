@@ -10,6 +10,7 @@ interface PageHeaderProps {
   clinicians?: Clinician[];
   selectedClinician?: string;
   onClinicianChange?: (id: string) => void;
+  accentColor?: string;
 }
 
 export default function PageHeader({
@@ -18,6 +19,7 @@ export default function PageHeader({
   clinicians,
   selectedClinician,
   onClinicianChange,
+  accentColor,
 }: PageHeaderProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -38,11 +40,30 @@ export default function PageHeader({
       : clinicians?.find((c) => c.id === selectedClinician)?.name ?? "All Clinicians";
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <div
+      className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6"
+      style={accentColor ? { borderTop: `3px solid ${accentColor}`, paddingTop: 16 } : undefined}
+    >
       <div>
-        <h1 className="font-display text-[32px] text-navy leading-tight">
-          {title}
-        </h1>
+        <div className="flex items-center gap-2.5">
+          {accentColor && (
+            <span
+              className="relative flex h-2.5 w-2.5"
+            >
+              <span
+                className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-50"
+                style={{ backgroundColor: accentColor }}
+              />
+              <span
+                className="relative inline-flex rounded-full h-2.5 w-2.5"
+                style={{ backgroundColor: accentColor, boxShadow: `0 0 8px ${accentColor}80` }}
+              />
+            </span>
+          )}
+          <h1 className="font-display text-[32px] text-navy leading-tight">
+            {title}
+          </h1>
+        </div>
         {subtitle && (
           <p className="text-sm text-muted mt-1">{subtitle}</p>
         )}

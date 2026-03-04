@@ -107,6 +107,7 @@ function ContinuityPage() {
         clinicians={clinicians}
         selectedClinician={selectedClinician}
         onClinicianChange={setSelectedClinician}
+        accentColor="#0891B2"
       />
 
       <DemoBanner />
@@ -273,7 +274,7 @@ function ContinuityPage() {
                     ))}
                   </div>
                 ) : (
-                  <EmptyState icon={<Users size={24} />} heading="No active patients" subtext="All patients are either at risk or post-discharge." />
+                  <EmptyState module="pulse" heading="No active patients" subtext="All patients are either at risk or post-discharge." />
                 )}
               </div>
 
@@ -296,7 +297,7 @@ function ContinuityPage() {
                     ))}
                   </div>
                 ) : (
-                  <EmptyState icon={<AlertTriangle size={24} />} heading="No churn risks" subtext="All patients with 2+ sessions have active rebookings." />
+                  <EmptyState module="pulse" heading="No churn risks" subtext="All patients with 2+ sessions have active rebookings." />
                 )}
               </div>
 
@@ -319,7 +320,7 @@ function ContinuityPage() {
                     ))}
                   </div>
                 ) : (
-                  <EmptyState icon={<CheckCircle size={24} />} heading="No recent discharges" subtext="Post-discharge patients within the last 6 weeks will appear here." />
+                  <EmptyState module="pulse" heading="No recent discharges" subtext="Post-discharge patients within the last 6 weeks will appear here." />
                 )}
               </div>
             </div>
@@ -524,7 +525,7 @@ function ContinuityPage() {
                   <div className="flex justify-end">
                     <div
                       className="max-w-[85%] rounded-2xl rounded-br-sm px-4 py-3 text-[13px] leading-relaxed text-white"
-                      style={{ background: "#1A5CDB" }}
+                      style={{ background: "#1C54F2" }}
                     >
                       {previewData.body}
                     </div>

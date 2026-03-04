@@ -31,7 +31,7 @@ const STEPS: WizardStep[] = [
     title: "Connect your PMS",
     subtitle: "Sync patient data from WriteUpp or Cliniko",
     icon: Plug,
-    color: "#1A5CDB",
+    color: "#1C54F2",
   },
   {
     id: "ava",
@@ -115,7 +115,7 @@ export default function OnboardingPage() {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: "linear-gradient(135deg, #0B2545 0%, #132D5E 60%, #1A5CDB 100%)" }}
+      style={{ background: "linear-gradient(135deg, #0B2545 0%, #132D5E 60%, #1C54F2 100%)" }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-5">
@@ -385,7 +385,7 @@ export default function OnboardingPage() {
                       {[
                         {
                           icon: Plug,
-                          color: "#1A5CDB",
+                          color: "#1C54F2",
                           title: `PMS: ${selectedPms ? PMS_OPTIONS.find((p) => p.id === selectedPms)?.label ?? selectedPms : "Not configured"}`,
                           status: selectedPms ? "ready" : "skipped",
                         },

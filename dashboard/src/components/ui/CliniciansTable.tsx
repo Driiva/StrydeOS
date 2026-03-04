@@ -52,13 +52,23 @@ function getCourseCompletionRAG(rate: number): MetricStatus {
   return "danger";
 }
 
-function ragTextClass(status: MetricStatus): string {
-  switch (status) {
-    case "ok": return "text-success";
-    case "warn": return "text-warn";
-    case "danger": return "text-danger";
-    default: return "text-navy";
-  }
+const RAG_BADGE: Record<MetricStatus, { bg: string; text: string }> = {
+  ok:      { bg: "rgba(5,150,105,0.09)",  text: "#059669" },
+  warn:    { bg: "rgba(245,158,11,0.09)", text: "#F59E0B" },
+  danger:  { bg: "rgba(239,68,68,0.09)",  text: "#EF4444" },
+  neutral: { bg: "rgba(107,114,128,0.09)", text: "#6B7280" },
+};
+
+function RagBadge({ value, status }: { value: string; status: MetricStatus }) {
+  const style = RAG_BADGE[status];
+  return (
+    <span
+      className="inline-flex px-2 py-0.5 rounded-md text-xs font-semibold"
+      style={{ backgroundColor: style.bg, color: style.text }}
+    >
+      {value}
+    </span>
+  );
 }
 
 function StatusDot({ status }: { status: string }) {
@@ -190,7 +200,7 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
                 <th
                   key={key}
                   onClick={() => handleSort(key)}
-                  className="text-left px-5 py-3 text-[11px] font-semibold text-muted uppercase tracking-wide cursor-pointer hover:text-navy transition-colors select-none"
+                  className="text-left px-5 py-3 text-[10px] font-semibold text-muted uppercase tracking-[0.1em] cursor-pointer hover:text-navy transition-colors select-none"
                 >
                   <div className="flex items-center gap-1">
                     {label}
@@ -199,7 +209,7 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
                   </div>
                 </th>
               ))}
-              <th className="px-5 py-3 text-[11px] font-semibold text-muted uppercase tracking-wide text-center">
+              <th className="px-5 py-3 text-[10px] font-semibold text-muted uppercase tracking-[0.1em] text-center">
                 Status
               </th>
             </tr>
@@ -216,6 +226,10 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
                   ? "warn"
                   : "ok";
 
+              const dangerCount = [fuStatus, dnaStatus, utilStatus, ccStatus].filter(s => s === "danger").length;
+              const warnCount = [fuStatus, dnaStatus, utilStatus, ccStatus].filter(s => s === "warn").length;
+              const hasAlert = dangerCount >= 2 || (dangerCount >= 1 && warnCount >= 1);
+
               const revenuePence = clinicianRevenue(row.stats);
 
               return (
@@ -225,9 +239,15 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
                     if (onRowClick) onRowClick(row.clinicianId);
                     setExpandedId(expandedId === row.clinicianId ? null : row.clinicianId);
                   }}
-                  className="border-b border-border/50 hover:bg-cloud-light/50 cursor-pointer transition-colors"
+                  className="border-b border-border/50 cursor-pointer transition-colors"
+                  style={{
+                    height: 52,
+                    borderLeft: hasAlert ? "3px solid #F59E0B" : undefined,
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(28,84,242,0.04)"}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}
                 >
-                  <td className="px-5 py-3.5">
+                  <td className="px-5 py-2">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-navy flex items-center justify-center text-[10px] font-bold text-white shrink-0">
                         {getInitials(row.clinicianName)}
@@ -237,25 +257,25 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
                       </span>
                     </div>
                   </td>
-                  <td className={`px-5 py-3.5 text-sm font-semibold ${ragTextClass(fuStatus)}`}>
-                    {formatRate(row.stats.followUpRate)}
+                  <td className="px-5 py-2">
+                    <RagBadge value={formatRate(row.stats.followUpRate)} status={fuStatus} />
                   </td>
-                  <td className={`px-5 py-3.5 text-sm font-semibold ${ragTextClass(ccStatus)}`}>
-                    {formatPercent(row.stats.courseCompletionRate)}
+                  <td className="px-5 py-2">
+                    <RagBadge value={formatPercent(row.stats.courseCompletionRate)} status={ccStatus} />
                   </td>
-                  <td className={`px-5 py-3.5 text-sm font-semibold ${ragTextClass(utilStatus)}`}>
-                    {formatPercent(row.stats.utilisationRate)}
+                  <td className="px-5 py-2">
+                    <RagBadge value={formatPercent(row.stats.utilisationRate)} status={utilStatus} />
                   </td>
-                  <td className={`px-5 py-3.5 text-sm font-semibold ${ragTextClass(dnaStatus)}`}>
-                    {formatPercent(row.stats.dnaRate)}
+                  <td className="px-5 py-2">
+                    <RagBadge value={formatPercent(row.stats.dnaRate)} status={dnaStatus} />
                   </td>
-                  <td className="px-5 py-3.5 text-sm font-semibold text-navy">
+                  <td className="px-5 py-2 text-sm font-semibold text-navy">
                     {row.stats.appointmentsTotal}
                   </td>
-                  <td className="px-5 py-3.5 text-sm font-semibold text-navy">
+                  <td className="px-5 py-2 text-sm font-semibold text-navy">
                     {formatRevenue(revenuePence)}
                   </td>
-                  <td className="px-5 py-3.5 text-center">
+                  <td className="px-5 py-2 text-center">
                     <div className="flex justify-center">
                       <StatusDot status={worstStatus} />
                     </div>

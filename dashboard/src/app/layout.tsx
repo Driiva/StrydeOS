@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Serif_Display, Outfit } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import AppShell from "@/components/AppShell";
 import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
@@ -53,13 +54,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${dmSerif.variable} ${outfit.variable}`}>
+    <html lang="en" className={`${dmSerif.variable} ${outfit.variable}`} suppressHydrationWarning>
       <body className="font-body antialiased">
-        <AuthProvider>
-          <ToastProvider>
-            <AppShell>{children}</AppShell>
-          </ToastProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <AppShell>{children}</AppShell>
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

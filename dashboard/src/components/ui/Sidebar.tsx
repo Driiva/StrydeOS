@@ -20,7 +20,11 @@ import {
   Shield,
   CheckCheck,
   Command,
+  Moon,
+  Sun,
 } from "lucide-react";
+import { LogoNav } from "@/components/MonolithLogo";
+import { useTheme } from "@/components/ThemeProvider";
 import { getDemoLatestWeekStats } from "@/hooks/useDemoData";
 import { useWeeklyStats } from "@/hooks/useWeeklyStats";
 import { computeAlerts, getInitials } from "@/lib/utils";
@@ -28,10 +32,10 @@ import { useAuth } from "@/hooks/useAuth";
 import type { AlertFlagProps } from "@/types";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", icon: LayoutGrid, href: "/dashboard", accent: undefined },
-  { label: "Clinicians", icon: Users, href: "/clinicians", accent: undefined },
+  { label: "Dashboard", icon: LayoutGrid, href: "/dashboard", accent: "#1C54F2" },
+  { label: "Clinicians", icon: Users, href: "/clinicians", accent: "#1C54F2" },
   { label: "Pulse", icon: RefreshCw, href: "/continuity", accent: "#0891B2" },
-  { label: "Ava", icon: Phone, href: "/receptionist", accent: "#1A5CDB" },
+  { label: "Ava", icon: Phone, href: "/receptionist", accent: "#1C54F2" },
   { label: "Intelligence", icon: BarChart3, href: "/intelligence", accent: "#8B5CF6" },
 ];
 
@@ -95,6 +99,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -171,7 +176,7 @@ export default function Sidebar() {
       <aside
         className={`fixed top-0 left-0 z-40 h-full w-60 flex flex-col transition-transform duration-200 ease-out
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
-        style={{ background: "#0B2545" }}
+        style={{ background: theme === "dark" ? "#0D1F3C" : "#0B2545" }}
       >
         {/* Logo + notification bell row */}
         <div className="px-5 pt-5 pb-4 flex items-center justify-between">
@@ -183,24 +188,9 @@ export default function Sidebar() {
                 router.refresh();
               }
             }}
-            className="group flex items-center gap-2.5 transition-all duration-200 hover:-translate-y-0.5"
+            className="group transition-all duration-200 hover:-translate-y-0.5"
           >
-            <div
-              className="h-9 w-9 rounded-[10px] flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:shadow-[0_0_0_3px_rgba(59,144,255,0.25)]"
-              style={{ background: "linear-gradient(135deg, #0B2545, #1A5CDB)" }}
-              title="Back to Dashboard"
-            >
-              <svg
-                width="16" height="16" viewBox="0 0 16 16" fill="none"
-                className="transition-all duration-200 group-hover:drop-shadow-[0_0_4px_rgba(59,144,255,0.8)]"
-              >
-                <path d="M3 13L8 3l5 10" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M5.5 9h5" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
-            </div>
-            <span className="text-[16px] font-bold tracking-tight text-white transition-all duration-200 group-hover:text-white/90">
-              Stryde<span style={{ color: "#3B90FF" }}>OS</span>
-            </span>
+            <LogoNav theme="dark" />
           </Link>
 
           {/* Notification bell */}
@@ -214,7 +204,7 @@ export default function Sidebar() {
               {unreadCount > 0 && (
                 <span
                   className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
-                  style={{ background: "#DC2626" }}
+                  style={{ background: "#EF4444" }}
                 >
                   {unreadCount}
                 </span>
@@ -256,12 +246,12 @@ export default function Sidebar() {
                           <div className="relative mt-1.5 shrink-0">
                             <div
                               className="w-1.5 h-1.5 rounded-full"
-                              style={{ background: alert.severity === "danger" ? "#DC2626" : "#F59E0B" }}
+                              style={{ background: alert.severity === "danger" ? "#EF4444" : "#F59E0B" }}
                             />
                             {isUnread && (
                               <div
                                 className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
-                                style={{ background: "#3B90FF" }}
+                                style={{ background: "#4B8BF5" }}
                               />
                             )}
                           </div>
@@ -283,7 +273,7 @@ export default function Sidebar() {
                     href="/dashboard"
                     onClick={() => { setNotifOpen(false); setMobileOpen(false); }}
                     className="text-[11px] font-semibold hover:text-white transition-colors flex items-center gap-1"
-                    style={{ color: "#3B90FF" }}
+                    style={{ color: "#4B8BF5" }}
                   >
                     View all on dashboard <ExternalLink size={10} />
                   </Link>
@@ -306,20 +296,19 @@ export default function Sidebar() {
                   key={item.label}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-blue/15 text-white"
-                      : "text-white/40 hover:text-white/70 hover:bg-white/5"
+                      ? "text-white"
+                      : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
                   }`}
+                  style={isActive ? {
+                    background: "rgba(255,255,255,0.08)",
+                    borderLeft: `3px solid ${item.accent}`,
+                    paddingLeft: 9,
+                  } : undefined}
                 >
                   <item.icon size={16} strokeWidth={isActive ? 2 : 1.5} />
                   {item.label}
-                  {item.accent && (
-                    <div
-                      className="w-1.5 h-1.5 rounded-full ml-auto"
-                      style={{ backgroundColor: item.accent }}
-                    />
-                  )}
                 </Link>
               );
             })}
@@ -337,11 +326,16 @@ export default function Sidebar() {
                     key={item.label}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors ${
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-blue/15 text-white"
-                        : "text-white/40 hover:text-white/70 hover:bg-white/5"
+                        ? "text-white"
+                        : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
                     }`}
+                    style={isActive ? {
+                      background: "rgba(255,255,255,0.08)",
+                      borderLeft: "3px solid #1C54F2",
+                      paddingLeft: 9,
+                    } : undefined}
                   >
                     <item.icon size={16} strokeWidth={isActive ? 2 : 1.5} />
                     {item.label}
@@ -352,11 +346,16 @@ export default function Sidebar() {
                 <Link
                   href="/admin"
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     pathname === "/admin"
-                      ? "bg-blue/15 text-white"
-                      : "text-white/40 hover:text-white/70 hover:bg-white/5"
+                      ? "text-white"
+                      : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
                   }`}
+                  style={pathname === "/admin" ? {
+                    background: "rgba(255,255,255,0.08)",
+                    borderLeft: "3px solid #1C54F2",
+                    paddingLeft: 9,
+                  } : undefined}
                 >
                   <Shield size={16} strokeWidth={pathname === "/admin" ? 2 : 1.5} />
                   Stryde Super User
@@ -380,6 +379,20 @@ export default function Sidebar() {
               </kbd>
             </button>
           </div>
+
+          {/* Dark mode toggle */}
+          <div className="mt-2 px-3">
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] text-white/25 hover:text-white/40 hover:bg-white/5 transition-colors"
+            >
+              {theme === "dark" ? <Sun size={12} /> : <Moon size={12} />}
+              <span className="flex-1 text-left">{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+              <kbd className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/8 border border-white/10">
+                {"\u2318"}D
+              </kbd>
+            </button>
+          </div>
         </nav>
 
         {/* Bottom — profile menu */}
@@ -392,10 +405,10 @@ export default function Sidebar() {
               {clinicInitials}
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <p className="text-[12px] font-medium text-white/70 truncate">{clinicName}</p>
+              <p className="text-[13px] font-semibold text-white truncate">{clinicName}</p>
               <div className="flex items-center gap-1.5">
                 <div className={`w-1.5 h-1.5 rounded-full ${statusColorClass.split(" ")[0]}`} />
-                <span className={`text-[10px] font-semibold ${statusColorClass.split(" ")[1]}`}>
+                <span className="text-[10px] font-medium text-white/35">
                   {statusLabel}
                 </span>
               </div>

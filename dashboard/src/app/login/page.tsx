@@ -5,23 +5,14 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { AlertCircle, Loader2, ArrowRight, Check } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { StrydeOSLogo } from "@/components/MonolithLogo";
 
 const LAST_EMAIL_KEY = "strydeos_last_email";
 
 function LoginHeader({ onTryDemo }: { onTryDemo: () => void }) {
   return (
     <header className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 z-10 bg-cloud-dancer">
-      <div className="flex items-center gap-3">
-        <div className="h-9 w-9 rounded-[10px] flex items-center justify-center bg-navy">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M3 13L8 3l5 10" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M5.5 9h5" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-          </svg>
-        </div>
-        <span className="text-[18px] font-bold tracking-tight text-navy">
-          Stryde<span className="text-blue">OS</span>
-        </span>
-      </div>
+      <StrydeOSLogo size={34} fontSize={17} theme="light" gap={10} />
       <button
         type="button"
         onClick={onTryDemo}

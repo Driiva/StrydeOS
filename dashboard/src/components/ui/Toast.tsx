@@ -90,7 +90,7 @@ function ToastItem({ t, onDismiss }: { t: Toast; onDismiss: (id: string) => void
   const progressColor =
     t.variant === "success" ? "#059669"
     : t.variant === "warn" ? "#D97706"
-    : t.variant === "error" ? "#DC2626"
+    : t.variant === "error" ? "#EF4444"
     : "#2563EB";
 
   return (

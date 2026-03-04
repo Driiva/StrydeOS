@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
                   You've been invited to join your clinic on StrydeOS — the clinical 
                   operating system built for high-performance physiotherapy practices.
                 </p>
-                <a href="${link}" style="display: inline-block; background: #1A5CDB; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                <a href="${link}" style="display: inline-block; background: #1C54F2; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
                   Set your password &amp; sign in
                 </a>
                 <p style="color: #9CA3AF; font-size: 12px; margin-top: 24px;">

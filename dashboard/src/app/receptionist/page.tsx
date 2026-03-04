@@ -107,7 +107,7 @@ export default function ReceptionistPage() {
   if (!isConnected) {
     return (
       <div className="space-y-6 animate-fade-in">
-        <PageHeader title="Ava" subtitle="AI call handling, booking stats, and call intelligence" />
+        <PageHeader title="Ava" subtitle="AI call handling, booking stats, and call intelligence" accentColor="#1C54F2" />
         <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-8 text-center">
           <div className="w-16 h-16 rounded-2xl bg-blue/10 flex items-center justify-center mx-auto mb-5">
             <Phone size={28} className="text-blue" />
@@ -131,7 +131,7 @@ export default function ReceptionistPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <PageHeader title="Ava" subtitle="AI call handling — today&apos;s calls, booking outcomes, and 7-day volume" />
+      <PageHeader title="Ava" subtitle="AI call handling — today&apos;s calls, booking outcomes, and 7-day volume" accentColor="#1C54F2" />
       <DemoBanner />
 
       {/* View toggle */}
@@ -178,13 +178,13 @@ export default function ReceptionistPage() {
             <p className="text-xs text-muted mb-4">Calls handled by Ava this week</p>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={CALL_VOLUME_DATA} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
-                <CartesianGrid strokeDasharray="4 4" stroke="#DDD9D3" vertical={false} />
-                <XAxis dataKey="day" tick={{ fontSize: 12, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#DDD9D3" }} />
+                <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
+                <XAxis dataKey="day" tick={{ fontSize: 12, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E2DFDA" }} />
                 <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={false} width={30} />
                 <Tooltip content={<ChartTooltip />} />
                 <Bar dataKey="calls" name="Calls" radius={[6, 6, 0, 0]}>
                   {CALL_VOLUME_DATA.map((d) => (
-                    <Cell key={d.day} fill={d.calls > 15 ? "#1A5CDB" : d.calls > 5 ? "#0891B2" : "#DDD9D3"} />
+                    <Cell key={d.day} fill={d.calls > 15 ? "#1C54F2" : d.calls > 5 ? "#0891B2" : "#E2DFDA"} />
                   ))}
                 </Bar>
               </BarChart>
