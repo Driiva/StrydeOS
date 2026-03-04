@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, Outfit } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { AuthProvider } from "@/hooks/useAuth";
 import AppShell from "@/components/AppShell";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -25,6 +26,25 @@ export const metadata: Metadata = {
   },
   description:
     "The operational interface for StrydeOS — the clinical performance platform for private physiotherapy practices.",
+  icons: {
+    icon: [
+      { url: '/icon', type: 'image/png', sizes: '32x32' },
+    ],
+    apple: [
+      { url: '/apple-icon', type: 'image/png', sizes: '180x180' },
+    ],
+  },
+  openGraph: {
+    title: "StrydeOS — Clinical Performance Dashboard",
+    description: "The operational interface for StrydeOS — the clinical performance platform for private physiotherapy practices.",
+    siteName: "StrydeOS",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "StrydeOS — Clinical Performance Dashboard",
+    description: "The operational interface for StrydeOS — the clinical performance platform for private physiotherapy practices.",
+  },
 };
 
 export default function RootLayout({
@@ -40,6 +60,7 @@ export default function RootLayout({
             <AppShell>{children}</AppShell>
           </ToastProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
