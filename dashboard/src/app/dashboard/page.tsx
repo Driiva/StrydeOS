@@ -10,7 +10,10 @@ import { AlertBanner } from "@/components/ui/AlertFlag";
 import CliniciansTable from "@/components/ui/CliniciansTable";
 import DemoBanner from "@/components/ui/DemoBanner";
 import { SkeletonCard } from "@/components/ui/EmptyState";
+import DailySnapshot from "@/components/ui/DailySnapshot";
+import InsightNudge from "@/components/ui/InsightNudge";
 import { useWeeklyStats } from "@/hooks/useWeeklyStats";
+import { usePatients } from "@/hooks/usePatients";
 import { useClinicians } from "@/hooks/useClinicians";
 import { useClinicianSummaryStats } from "@/hooks/useClinicianSummaryStats";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,6 +37,11 @@ function computeTrend(current: number, previous: number | undefined): TrendDirec
   if (current > previous) return "up";
   if (current < previous) return "down";
   return "flat";
+}
+
+function computeTrendPercent(current: number, previous: number | undefined): number | undefined {
+  if (previous === undefined || previous === 0) return undefined;
+  return ((current - previous) / previous) * 100;
 }
 
 const SESSION_GREETED_KEY = "strydeos_greeted";
@@ -78,16 +86,21 @@ function getGreeting(firstName: string): { greeting: string; subtext: string } {
   return { greeting, subtext };
 }
 
-function formatSyncTime(dateStr: string | undefined): string | null {
+function formatSyncTime(dateStr: string | undefined): { label: string; staleness: "fresh" | "stale" | "very-stale" } | null {
   if (!dateStr) return null;
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return null;
   const mins = Math.round((Date.now() - d.getTime()) / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.round(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const hours = mins / 60;
+
+  let label: string;
+  if (mins < 1) label = "just now";
+  else if (mins < 60) label = `${mins}m ago`;
+  else if (hours < 24) label = `${Math.round(hours)}h ago`;
+  else label = d.toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+
+  const staleness = hours < 24 ? "fresh" : hours < 72 ? "stale" : "very-stale";
+  return { label, staleness };
 }
 
 export default function DashboardPage() {
@@ -101,6 +114,7 @@ export default function DashboardPage() {
   const { stats, loading, usedDemo } = useWeeklyStats(effectiveClinician);
   const { clinicians } = useClinicians();
   const { rows: clinicianRows, usedDemo: summaryUsedDemo } = useClinicianSummaryStats();
+  const { patients } = usePatients();
   const { startLoading, stopLoading } = useProgress();
   const router = useRouter();
   const firstName = user?.firstName || "";
@@ -113,7 +127,7 @@ export default function DashboardPage() {
     }
   }, [loading, startLoading, stopLoading]);
 
-  const lastSyncLabel = formatSyncTime(user?.clinicProfile?.pmsLastSyncAt ?? undefined);
+  const lastSync = formatSyncTime(user?.clinicProfile?.pmsLastSyncAt ?? undefined);
 
   const weekIndex = useMemo(() => {
     const max = stats.length - 1;
@@ -144,14 +158,40 @@ export default function DashboardPage() {
             </h1>
             <p className="text-sm text-muted mt-0.5">{subtext}</p>
           </div>
-          {lastSyncLabel && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cloud-light border border-border text-[11px] text-muted shrink-0 mt-2">
-              <RefreshCw size={10} className={loading ? "animate-spin" : ""} />
-              Synced {lastSyncLabel}
-            </div>
-          )}
+          <div className="flex items-center gap-2 shrink-0 mt-2 flex-wrap justify-end">
+            {isCurrentWeek && !loading && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cloud-light border border-border text-[11px] font-semibold shrink-0"
+                style={{ color: "#059669" }}>
+                <span className="pulse-live" style={{ color: "#059669" }}>●</span>
+                Live
+              </div>
+            )}
+            {lastSync && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cloud-light border border-border text-[11px] text-muted shrink-0">
+                <span
+                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                  style={{
+                    background:
+                      lastSync.staleness === "fresh"     ? "#059669" :
+                      lastSync.staleness === "stale"     ? "#F59E0B" :
+                      "#EF4444",
+                  }}
+                />
+                <RefreshCw size={10} className={loading ? "animate-spin" : ""} />
+                Synced {lastSync.label}
+              </div>
+            )}
+          </div>
         </div>
+        {isCurrentWeek && !loading && (
+          <DailySnapshot stats={latest} patients={patients} />
+        )}
       </div>
+
+      {/* Rule-based insight nudge — current week only */}
+      {isCurrentWeek && !loading && (
+        <InsightNudge stats={latest} previousStats={previous} />
+      )}
 
       {/* Demo data banner */}
       {(user?.uid === "demo" || usedDemo) && <DemoBanner />}
@@ -244,12 +284,15 @@ export default function DashboardPage() {
               target={latest.followUpTarget}
               benchmark="Top performer: 3.8"
               trend={computeTrend(latest.followUpRate, previous?.followUpRate)}
+              trendPercent={computeTrendPercent(latest.followUpRate, previous?.followUpRate)}
               status={getFollowUpStatus(latest.followUpRate, latest.followUpTarget)}
               insight={getFollowUpInsight(
                 latest.followUpRate,
                 latest.followUpTarget,
                 previous?.followUpRate
               )}
+              sparklineData={trendWindow.map((s) => s.followUpRate)}
+              action={{ label: "View rebooking opportunities", href: "/continuity" }}
             />
             <StatCard
               label="Physitrack Rate"
@@ -257,12 +300,15 @@ export default function DashboardPage() {
               target={latest.physitrackTarget}
               benchmark="Target: 95%"
               trend={computeTrend(latest.physitrackRate, previous?.physitrackRate)}
+              trendPercent={computeTrendPercent(latest.physitrackRate, previous?.physitrackRate)}
               status={getPhysitrackStatus(latest.physitrackRate)}
               insight={
                 (latest.hepComplianceRate ?? latest.physitrackRate) >= 0.95
                   ? "All patients have active HEP programmes"
                   : "Some patients missing Physitrack assignment"
               }
+              sparklineData={trendWindow.map((s) => s.physitrackRate)}
+              action={{ label: "See non-compliant patients", href: "/continuity" }}
             />
           </>
         ) : null}
@@ -284,18 +330,23 @@ export default function DashboardPage() {
               value={latest.appointmentsTotal}
               unit="total this week"
               trend={computeTrend(latest.appointmentsTotal, previous?.appointmentsTotal)}
+              trendPercent={computeTrendPercent(latest.appointmentsTotal, previous?.appointmentsTotal)}
               status="neutral"
+              sparklineData={trendWindow.map((s) => s.appointmentsTotal)}
             />
             <StatCard
               label="Utilisation Rate"
               value={formatPercent(latest.utilisationRate)}
               trend={computeTrend(latest.utilisationRate, previous?.utilisationRate)}
+              trendPercent={computeTrendPercent(latest.utilisationRate, previous?.utilisationRate)}
               status={getGenericStatus(latest.utilisationRate, 0.85)}
               insight={
                 latest.utilisationRate >= 0.9
                   ? "Running near capacity"
                   : "Room to add more bookings"
               }
+              sparklineData={trendWindow.map((s) => s.utilisationRate)}
+              action={{ label: "View schedule gaps", href: "/clinicians" }}
             />
             <StatCard
               label="DNA Rate"
@@ -304,18 +355,23 @@ export default function DashboardPage() {
                 -(latest.dnaRate),
                 previous ? -(previous.dnaRate) : undefined
               )}
+              trendPercent={computeTrendPercent(latest.dnaRate, previous?.dnaRate)}
               status={getDnaStatus(latest.dnaRate)}
               insight={
                 latest.dnaRate <= 0.05
                   ? "Low no-show rate — excellent"
                   : "No-shows above target — review SMS reminders"
               }
+              sparklineData={trendWindow.map((s) => s.dnaRate)}
+              action={{ label: "Review missed appointments", href: "/continuity" }}
             />
             <StatCard
               label="Course Completion"
               value={formatPercent(latest.courseCompletionRate)}
               trend={computeTrend(latest.courseCompletionRate, previous?.courseCompletionRate)}
+              trendPercent={computeTrendPercent(latest.courseCompletionRate, previous?.courseCompletionRate)}
               status={getGenericStatus(latest.courseCompletionRate, 0.80)}
+              sparklineData={trendWindow.map((s) => s.courseCompletionRate)}
             />
             <StatCard
               label="Revenue per Session"
@@ -325,7 +381,10 @@ export default function DashboardPage() {
                 latest.revenuePerSessionPence,
                 previous?.revenuePerSessionPence
               )}
+              trendPercent={computeTrendPercent(latest.revenuePerSessionPence, previous?.revenuePerSessionPence)}
               status="neutral"
+              sparklineData={trendWindow.map((s) => s.revenuePerSessionPence)}
+              action={{ label: "See revenue breakdown", href: "/intelligence" }}
             />
           </>
         ) : null}

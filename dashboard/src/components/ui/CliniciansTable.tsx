@@ -63,7 +63,7 @@ function RagBadge({ value, status }: { value: string; status: MetricStatus }) {
   const style = RAG_BADGE[status];
   return (
     <span
-      className="inline-flex px-2 py-0.5 rounded-md text-xs font-semibold"
+      className="inline-flex px-2 py-0.5 rounded-md text-xs font-semibold tabular-nums"
       style={{ backgroundColor: style.bg, color: style.text }}
     >
       {value}
@@ -194,7 +194,7 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
     <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead>
+          <thead className="sticky top-0 z-10 bg-white">
             <tr className="border-b border-border">
               {columns.map(({ key, label }) => (
                 <th
@@ -269,10 +269,10 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
                   <td className="px-5 py-2">
                     <RagBadge value={formatPercent(row.stats.dnaRate)} status={dnaStatus} />
                   </td>
-                  <td className="px-5 py-2 text-sm font-semibold text-navy">
+                  <td className="px-5 py-2 text-sm font-semibold text-navy tabular-nums">
                     {row.stats.appointmentsTotal}
                   </td>
-                  <td className="px-5 py-2 text-sm font-semibold text-navy">
+                  <td className="px-5 py-2 text-sm font-semibold text-navy tabular-nums">
                     {formatRevenue(revenuePence)}
                   </td>
                   <td className="px-5 py-2 text-center">

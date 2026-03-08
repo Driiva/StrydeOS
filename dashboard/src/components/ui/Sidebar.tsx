@@ -27,6 +27,7 @@ import { LogoNav } from "@/components/MonolithLogo";
 import { useTheme } from "@/components/ThemeProvider";
 import { getDemoLatestWeekStats } from "@/hooks/useDemoData";
 import { useWeeklyStats } from "@/hooks/useWeeklyStats";
+import { usePatients } from "@/hooks/usePatients";
 import { computeAlerts, getInitials } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import type { AlertFlagProps } from "@/types";
@@ -95,6 +96,11 @@ function useAlerts() {
   return { allAlerts, unreadCount, readHashes, markAllRead, rows };
 }
 
+function usePulseBadge(): number {
+  const { churnRisk } = usePatients();
+  return churnRisk.length;
+}
+
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -106,6 +112,7 @@ export default function Sidebar() {
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const { allAlerts, unreadCount, readHashes, markAllRead } = useAlerts();
+  const pulseBadge = usePulseBadge();
 
   const clinicName = user?.clinicProfile?.name ?? "My Clinic";
   const clinicStatus = user?.clinicProfile?.status ?? "live";
@@ -291,12 +298,13 @@ export default function Sidebar() {
           <div className="space-y-0.5">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href || (item.href === "/dashboard" && pathname === "/");
+              const badge = item.href === "/continuity" && pulseBadge > 0 ? pulseBadge : 0;
               return (
                 <Link
                   key={item.label}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     isActive
                       ? "text-white"
                       : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
@@ -308,7 +316,15 @@ export default function Sidebar() {
                   } : undefined}
                 >
                   <item.icon size={16} strokeWidth={isActive ? 2 : 1.5} />
-                  {item.label}
+                  <span className="flex-1">{item.label}</span>
+                  {badge > 0 && (
+                    <span
+                      className="min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                      style={{ background: item.accent }}
+                    >
+                      {badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

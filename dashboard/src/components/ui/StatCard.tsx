@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import type { StatCardProps } from "@/types";
 import { ChevronUp, ChevronDown, Minus, AlertTriangle } from "lucide-react";
 
@@ -12,7 +13,7 @@ const STATUS_COLORS: Record<string, { dot: string; glow: string }> = {
 };
 
 const TREND_COLORS: Record<string, string> = {
-  up: "#059669",
+  up:   "#059669",
   down: "#EF4444",
   warn: "#F59E0B",
   flat: "#6B7280",
@@ -58,6 +59,48 @@ function useCountUp(rawTarget: string | number, duration = 800): string {
   return display;
 }
 
+function Sparkline({ data, status }: { data: number[]; status: string }) {
+  if (data.length < 2) return null;
+
+  const lineColor =
+    status === "ok"      ? "#059669" :
+    status === "danger"  ? "#EF4444" :
+    status === "warn"    ? "#F59E0B" :
+    "#6B7280";
+
+  const W = 48;
+  const H = 20;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+
+  const points = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * W;
+    const y = H - ((v - min) / range) * H;
+    return `${x},${y}`;
+  });
+
+  return (
+    <svg
+      width={W}
+      height={H}
+      viewBox={`0 0 ${W} ${H}`}
+      className="shrink-0"
+      aria-hidden="true"
+    >
+      <polyline
+        points={points.join(" ")}
+        fill="none"
+        stroke={lineColor}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity="0.7"
+      />
+    </svg>
+  );
+}
+
 export default function StatCard({
   label,
   value,
@@ -65,10 +108,13 @@ export default function StatCard({
   target,
   benchmark,
   trend,
+  trendPercent,
   status,
   insight,
   onClick,
   progress,
+  action,
+  sparklineData,
 }: StatCardProps) {
   const dotStyle = STATUS_COLORS[status] ?? STATUS_COLORS.neutral;
   const animatedValue = useCountUp(value);
@@ -90,7 +136,7 @@ export default function StatCard({
   return (
     <div
       onClick={onClick}
-      className={`relative rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] overflow-hidden transition-all duration-200 ${
+      className={`relative rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] overflow-hidden transition-all duration-200 flex flex-col ${
         onClick ? "cursor-pointer hover:shadow-[var(--shadow-elevated)] hover:-translate-y-0.5" : ""
       }`}
     >
@@ -103,27 +149,43 @@ export default function StatCard({
         }}
       />
 
-      <div className="p-6">
+      <div className="p-6 flex-1">
         <div className="flex items-start justify-between mb-3">
           <span className="text-[10px] font-semibold text-muted uppercase tracking-[0.12em]">
             {label}
           </span>
           {benchmark && (
-            <span className="text-[10px] font-semibold text-muted bg-cloud-dark/60 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-semibold text-muted bg-cloud-dark/60 px-2 py-0.5 rounded-full mr-4">
               {benchmark}
             </span>
           )}
         </div>
 
-        <div className="flex items-baseline gap-2 mb-1">
-          <span className="font-display text-5xl text-navy leading-none">
-            {animatedValue}
-          </span>
-          {unit && (
-            <span className="text-xs text-muted font-medium">{unit}</span>
-          )}
-          {trend && (
-            <TrendIcon size={16} color={trendColor} strokeWidth={2.5} />
+        <div className="flex items-end justify-between mb-1">
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-5xl text-navy leading-none tabular-nums">
+              {animatedValue}
+            </span>
+            {unit && (
+              <span className="text-xs text-muted font-medium">{unit}</span>
+            )}
+            {trend && (
+              <span className="flex items-center gap-0.5">
+                <TrendIcon size={14} color={trendColor} strokeWidth={2.5} />
+                {trendPercent !== undefined && (
+                  <span
+                    className="text-[10px] font-semibold tabular-nums"
+                    style={{ color: trendColor }}
+                  >
+                    {trendPercent > 0 ? "+" : ""}{trendPercent.toFixed(0)}%
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
+
+          {sparklineData && sparklineData.length >= 2 && (
+            <Sparkline data={sparklineData} status={status} />
           )}
         </div>
 
@@ -139,6 +201,30 @@ export default function StatCard({
           </p>
         )}
       </div>
+
+      {/* Action link — bottom of card */}
+      {action && (
+        <div className="px-6 pb-4">
+          {action.href ? (
+            <Link
+              href={action.href}
+              onClick={(e) => e.stopPropagation()}
+              className="text-[11px] font-semibold transition-colors hover:underline"
+              style={{ color: "#1C54F2" }}
+            >
+              {action.label} →
+            </Link>
+          ) : (
+            <button
+              onClick={(e) => { e.stopPropagation(); action.onClick?.(); }}
+              className="text-[11px] font-semibold transition-colors hover:underline"
+              style={{ color: "#1C54F2" }}
+            >
+              {action.label} →
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Progress bar — bottom */}
       {progress !== undefined && (
