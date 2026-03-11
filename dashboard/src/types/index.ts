@@ -41,6 +41,23 @@ export interface FeatureFlags {
   receptionist: boolean;
 }
 
+export type StripeSubscriptionStatus =
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "trialing"
+  | "incomplete"
+  | "incomplete_expired"
+  | "unpaid"
+  | "paused";
+
+export interface BillingState {
+  stripeCustomerId: string | null;
+  subscriptionId: string | null;
+  subscriptionStatus: StripeSubscriptionStatus | null;
+  currentPeriodEnd: string | null;
+}
+
 export interface ClinicTargets {
   followUpRate: number;
   physitrackRate: number;
@@ -77,6 +94,8 @@ export interface ClinicProfile {
   targets: ClinicTargets;
   brandConfig: BrandConfig;
   onboarding: OnboardingState;
+  billing?: BillingState;
+  trialStartedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -150,6 +169,7 @@ export interface Appointment {
   isInitialAssessment: boolean;
   hepAssigned: boolean;
   hepProgramId?: string;
+  conditionTag?: string; // populated by PMS sync (e.g. "Low Back Pain")
   revenueAmountPence: number;
   followUpBooked: boolean;
   source: AppointmentSource;

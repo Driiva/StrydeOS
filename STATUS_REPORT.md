@@ -28,7 +28,7 @@
 | Andrew Henry | andrew@spiresphysiotherapy.com | Clinician | ✅ Ready | 1l4T3OGNlZamr1QqQo3drGedk452 |
 | Max Hubbard | max@spiresphysiotherapy.com | Clinician | ✅ Ready | h30U3eog0zfMbjls2o6IkxFCV632 |
 
-**Password:** `SpiresWH!` (all users)
+Use credentials from your secure store (passwords must not be committed to the repo).
 
 ---
 
@@ -123,8 +123,7 @@ From original plan (strydeos_audit_and_live_clinic_53172c0d.plan.md):
    - 12 patients seeded
 
 3. ⏳ **Manual verification needed**
-   - Log in as Jamal: jamal@spiresphysiotherapy.com / SpiresWH!
-   - Log in as Joe: joe@spiresphysiotherapy.com / SpiresWH!
+   - Log in as owner and admin to verify access
    - Confirm Dashboard shows Spires, real metrics, no demo banner
 
 4. ✅ **Optional: Seed patients** (completed)
@@ -194,9 +193,8 @@ From original plan (strydeos_audit_and_live_clinic_53172c0d.plan.md):
 
 1. ✅ `DEPLOYMENT_COMPLETE.md` — Full deployment guide (6,960 bytes)
 2. ✅ `IMPLEMENTATION_SUMMARY.md` — Implementation details (9,222 bytes)
-3. ✅ `LOGIN_CREDENTIALS.md` — Quick reference card (1,383 bytes)
-4. ✅ `QUICK_START.md` — Getting started guide (1,642 bytes)
-5. ✅ `STATUS_REPORT.md` — This file
+3. ✅ `QUICK_START.md` — Getting started guide (1,642 bytes)
+4. ✅ `STATUS_REPORT.md` — This file
 
 ---
 

@@ -76,9 +76,9 @@ export interface ReviewVelocity {
 
 export function getDemoRevenueByClinician(): RevenueByClinician[] {
   return [
-    { clinicianId: "c-jamal", clinicianName: "Jamal", totalRevenuePence: 1620000, sessionsDelivered: 21, revenuePerSessionPence: 7720, insurancePct: 0.14 },
-    { clinicianId: "c-andrew", clinicianName: "Andrew", totalRevenuePence: 2040000, sessionsDelivered: 24, revenuePerSessionPence: 8500, insurancePct: 0.25 },
-    { clinicianId: "c-max", clinicianName: "Max", totalRevenuePence: 1794000, sessionsDelivered: 23, revenuePerSessionPence: 7800, insurancePct: 0.30 },
+    { clinicianId: "c-james", clinicianName: "James", totalRevenuePence: 1620000, sessionsDelivered: 21, revenuePerSessionPence: 7720, insurancePct: 0.14 },
+    { clinicianId: "c-alex", clinicianName: "Alex", totalRevenuePence: 2040000, sessionsDelivered: 24, revenuePerSessionPence: 8500, insurancePct: 0.25 },
+    { clinicianId: "c-sam", clinicianName: "Sam", totalRevenuePence: 1794000, sessionsDelivered: 23, revenuePerSessionPence: 7800, insurancePct: 0.30 },
   ];
 }
 
@@ -206,8 +206,8 @@ export interface ClinicianKpiRow {
 export function getDemoClinicianKpis(): ClinicianKpiRow[] {
   return [
     {
-      clinicianId: "c-andrew",
-      clinicianName: "Andrew",
+      clinicianId: "c-alex",
+      clinicianName: "Alex",
       rebookRate: 0.79,
       utilisationRate: 0.88,
       dnaRate: 0.04,
@@ -232,8 +232,8 @@ export function getDemoClinicianKpis(): ClinicianKpiRow[] {
       },
     },
     {
-      clinicianId: "c-max",
-      clinicianName: "Max",
+      clinicianId: "c-sam",
+      clinicianName: "Sam",
       rebookRate: 0.72,
       utilisationRate: 0.84,
       dnaRate: 0.07,
@@ -255,8 +255,8 @@ export function getDemoClinicianKpis(): ClinicianKpiRow[] {
       },
     },
     {
-      clinicianId: "c-jamal",
-      clinicianName: "Jamal",
+      clinicianId: "c-james",
+      clinicianName: "James",
       rebookRate: 0.83,
       utilisationRate: 0.76,
       dnaRate: 0.03,

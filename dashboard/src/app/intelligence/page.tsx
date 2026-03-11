@@ -17,21 +17,14 @@ import {
 import PageHeader from "@/components/ui/PageHeader";
 import StatCard from "@/components/ui/StatCard";
 import DemoBanner from "@/components/ui/DemoBanner";
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { useClinicians } from "@/hooks/useClinicians";
 import { useWeeklyStats } from "@/hooks/useWeeklyStats";
-import {
-  getDemoRevenueByClinician,
-  getDemoRevenueByCondition,
-  getDemoDnaByDay,
-  getDemoDnaBySlot,
-  getDemoReferralSources,
-  getDemoOutcomeTrends,
-  getDemoNps,
-  getDemoReviewVelocity,
-  getDemoClinicianKpis,
-  getDemoBenchmarks,
-} from "@/hooks/useDemoIntelligence";
+import { useIntelligenceData } from "@/hooks/useIntelligenceData";
+import { usePatients } from "@/hooks/usePatients";
+import { recordOutcomeScores } from "@/lib/queries";
+import type { OutcomeMeasureType, Patient } from "@/types";
 import { formatPence, formatPercent, formatWeekDate } from "@/lib/utils";
 import {
   PoundSterling,
@@ -92,15 +85,54 @@ const OUTCOME_MEASURES = [
   { key: "ndi", label: "NDI — Cervical Spine", description: "0 = no disability, 50 = complete disability", min: 0, max: 50, lowerIsBetter: true },
 ] as const;
 
-function OutcomeScoreEntry() {
+function OutcomeScoreEntry({
+  patients,
+  clinicId,
+  currentUserId,
+}: {
+  patients: Patient[];
+  clinicId: string | null;
+  currentUserId: string;
+}) {
   const [scores, setScores] = useState<Record<string, string>>({});
+  const [selectedPatientId, setSelectedPatientId] = useState("");
+  const [sessionDate, setSessionDate] = useState(new Date().toISOString().split("T")[0]);
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const activePatientId = selectedPatientId || patients[0]?.id || "";
+  const selectedPatient = patients.find((p) => p.id === activePatientId);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
-    setScores({});
+    if (!clinicId || !activePatientId) return;
+
+    const entries = Object.entries(scores)
+      .filter(([, v]) => v !== "")
+      .map(([measureType, value]) => ({
+        patientId: activePatientId,
+        clinicianId: selectedPatient?.clinicianId ?? "",
+        measureType: measureType as OutcomeMeasureType,
+        score: parseFloat(value),
+        recordedAt: new Date(`${sessionDate}T12:00:00`).toISOString(),
+        recordedBy: currentUserId,
+      }));
+
+    if (entries.length === 0) return;
+
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await recordOutcomeScores(clinicId, entries);
+      setSubmitted(true);
+      setScores({});
+      setTimeout(() => setSubmitted(false), 3000);
+    } catch {
+      setSaveError("Failed to save scores. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -119,18 +151,23 @@ function OutcomeScoreEntry() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">Patient</label>
-              <select className="w-full px-3 py-2.5 rounded-lg border border-border bg-cloud-light text-sm text-navy focus:outline-none focus:ring-2 focus:ring-blue/30">
-                <option>Sarah Mitchell</option>
-                <option>Tom Edwards</option>
-                <option>Amy Richardson</option>
-                <option>David Chen</option>
+              <select
+                value={activePatientId}
+                onChange={(e) => setSelectedPatientId(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-cloud-light text-sm text-navy focus:outline-none focus:ring-2 focus:ring-blue/30"
+              >
+                {patients.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+                {patients.length === 0 && <option value="">No patients loaded</option>}
               </select>
             </div>
             <div>
               <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">Session date</label>
               <input
                 type="date"
-                defaultValue={new Date().toISOString().split("T")[0]}
+                value={sessionDate}
+                onChange={(e) => setSessionDate(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg border border-border bg-cloud-light text-sm text-navy focus:outline-none focus:ring-2 focus:ring-blue/30"
               />
             </div>
@@ -169,15 +206,19 @@ function OutcomeScoreEntry() {
             ))}
           </div>
 
+          {saveError && (
+            <p className="text-xs text-danger font-medium">{saveError}</p>
+          )}
+
           <div className="flex items-center justify-between pt-1">
             <p className="text-[11px] text-muted">Leave blank for any measures not used this session</p>
             <button
               type="submit"
-              disabled={Object.keys(scores).length === 0}
+              disabled={Object.keys(scores).filter((k) => scores[k] !== "").length === 0 || saving}
               className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: "#1C54F2" }}
             >
-              Save Scores
+              {saving ? "Saving…" : "Save Scores"}
             </button>
           </div>
         </form>
@@ -227,19 +268,25 @@ export default function IntelligencePage() {
   const [selectedClinician, setSelectedClinician] = useState("all");
   const [expandedClinician, setExpandedClinician] = useState<string | null>(null);
   const { clinicians } = useClinicians();
-  const { stats, usedDemo } = useWeeklyStats(selectedClinician);
+  const { stats, usedDemo: weeklyUsedDemo, error: weeklyError } = useWeeklyStats(selectedClinician);
   const latest = stats.length > 0 ? stats[stats.length - 1] : null;
+  const { patients } = usePatients();
 
-  const revByClinician = getDemoRevenueByClinician();
-  const revByCondition = getDemoRevenueByCondition();
-  const dnaByDay = getDemoDnaByDay();
-  const dnaBySlot = getDemoDnaBySlot();
-  const referrals = getDemoReferralSources();
-  const outcomeTrends = getDemoOutcomeTrends();
-  const nps = getDemoNps();
-  const reviews = getDemoReviewVelocity();
-  const clinicianKpis = getDemoClinicianKpis();
-  const benchmarks = getDemoBenchmarks();
+  const {
+    revByClinician,
+    revByCondition,
+    dnaByDay,
+    dnaBySlot,
+    referrals,
+    outcomeTrends,
+    nps,
+    reviewVelocity: reviews,
+    clinicianKpis,
+    benchmarks,
+    loading: intelligenceLoading,
+    usedDemo,
+    error: intelligenceError,
+  } = useIntelligenceData(selectedClinician);
 
   const totalRevenue = revByClinician.reduce((s, r) => s + r.totalRevenuePence, 0);
   const totalSessions = revByClinician.reduce((s, r) => s + r.sessionsDelivered, 0);
@@ -262,7 +309,13 @@ export default function IntelligencePage() {
         accentColor="#8B5CF6"
       />
 
-      {(user?.uid === "demo" || usedDemo) && <DemoBanner />}
+      {(intelligenceError || weeklyError) && (
+        <ErrorBanner
+          message={intelligenceError ?? weeklyError ?? "Failed to load data."}
+          onRetry={() => window.location.reload()}
+        />
+      )}
+      {(user?.uid === "demo" || usedDemo || weeklyUsedDemo) && <DemoBanner />}
 
       {/* Summary stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
@@ -527,31 +580,38 @@ export default function IntelligencePage() {
             <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
               <h3 className="font-display text-lg text-navy mb-1">Revenue by Condition</h3>
               <p className="text-xs text-muted mb-4">Which conditions drive the most revenue across the practice</p>
-              <div className="space-y-3">
-                {revByCondition.map((c, i) => {
-                  const maxRev = revByCondition[0].totalRevenuePence;
-                  const pct = (c.totalRevenuePence / maxRev) * 100;
-                  return (
-                    <div key={c.condition}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-navy">{c.condition}</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-muted">{c.sessions} sessions</span>
-                          <span className="text-sm font-bold text-navy">
-                            {formatPence(c.totalRevenuePence)}
-                          </span>
+              {revByCondition.length === 0 ? (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-cloud-light border border-border text-sm text-muted">
+                  <Activity size={16} className="shrink-0 text-purple-400" />
+                  <span>Condition data will populate once appointment types are mapped from your PMS sync.</span>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {revByCondition.map((c, i) => {
+                    const maxRev = revByCondition[0].totalRevenuePence;
+                    const pct = (c.totalRevenuePence / maxRev) * 100;
+                    return (
+                      <div key={c.condition}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-navy">{c.condition}</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-muted">{c.sessions} sessions</span>
+                            <span className="text-sm font-bold text-navy">
+                              {formatPence(c.totalRevenuePence)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="h-2 bg-cloud-dark rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{ width: `${pct}%`, background: BAR_COLORS[i % BAR_COLORS.length] }}
+                          />
                         </div>
                       </div>
-                      <div className="h-2 bg-cloud-dark rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-700"
-                          style={{ width: `${pct}%`, background: BAR_COLORS[i % BAR_COLORS.length] }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -777,7 +837,11 @@ export default function IntelligencePage() {
             </div>
 
             {/* Score entry component */}
-            <OutcomeScoreEntry />
+            <OutcomeScoreEntry
+              patients={patients}
+              clinicId={user?.clinicId ?? null}
+              currentUserId={user?.uid ?? ""}
+            />
 
             {/* Outcome measure trends */}
             <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">

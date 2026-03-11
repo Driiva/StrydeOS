@@ -5,6 +5,7 @@ import {
   where,
   onSnapshot,
   limit,
+  addDoc,
   type Unsubscribe,
   type QueryConstraint,
 } from "firebase/firestore";
@@ -256,6 +257,52 @@ export function subscribeReviews(
       callback(data);
     },
     onError
+  );
+}
+
+// ─── Outcome Scores — All (subcollection, clinic-wide) ───────────────────────
+
+export function subscribeOutcomeScoresAll(
+  clinicId: string | null,
+  callback: (data: OutcomeScore[]) => void,
+  onError: (err: Error) => void
+): Unsubscribe {
+  if (!db || !clinicId) {
+    callback([]);
+    return noopUnsubscribe();
+  }
+
+  const q = query(
+    clinicCollection(clinicId, "outcome_scores"),
+    orderBy("recordedAt", "asc"),
+    limit(500)
+  );
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<OutcomeScore, "id">),
+      }));
+      callback(data);
+    },
+    onError
+  );
+}
+
+// ─── Record Outcome Scores (write) ───────────────────────────────────────────
+
+export async function recordOutcomeScores(
+  clinicId: string,
+  entries: Omit<OutcomeScore, "id">[]
+): Promise<void> {
+  if (!db) throw new Error("Firestore not initialised");
+  const col = clinicCollection(clinicId, "outcome_scores");
+  await Promise.all(
+    entries.map((entry) =>
+      addDoc(col, { ...entry, recordedAt: entry.recordedAt || new Date().toISOString() })
+    )
   );
 }
 

@@ -11,6 +11,7 @@ import CommandPalette from "@/components/CommandPalette";
 import TopProgressBar, { ProgressProvider } from "@/components/TopProgressBar";
 import StagingBanner from "@/components/StagingBanner";
 import SplashScreen from "@/components/SplashScreen";
+import TrialBanner from "@/components/TrialBanner";
 
 const CHROMELESS_PATHS = ["/login"];
 const IS_STAGING = process.env.NEXT_PUBLIC_APP_ENV === "staging";
@@ -33,6 +34,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <TopProgressBar />
             <main className="lg:pl-60 min-h-screen">
               <div className={`mx-auto max-w-[1200px] px-6 py-8 lg:pt-8 ${IS_STAGING ? "pt-24" : "pt-16"}`}>
+                <TrialBanner />
                 <PageTransition>{children}</PageTransition>
               </div>
             </main>

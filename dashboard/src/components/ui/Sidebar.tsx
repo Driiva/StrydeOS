@@ -22,6 +22,8 @@ import {
   Command,
   Moon,
   Sun,
+  Lock,
+  CreditCard,
 } from "lucide-react";
 import { LogoNav } from "@/components/MonolithLogo";
 import { useTheme } from "@/components/ThemeProvider";
@@ -30,18 +32,29 @@ import { useClinicianSummaryStats } from "@/hooks/useClinicianSummaryStats";
 import { usePatients } from "@/hooks/usePatients";
 import { computeAlerts, getInitials } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import type { AlertFlagProps } from "@/types";
+import type { ModuleKey } from "@/lib/billing";
 
-const NAV_ITEMS = [
-  { label: "Dashboard", icon: LayoutGrid, href: "/dashboard", accent: "#1C54F2" },
-  { label: "Clinicians", icon: Users, href: "/clinicians", accent: "#1C54F2" },
-  { label: "Pulse", icon: RefreshCw, href: "/continuity", accent: "#0891B2" },
-  { label: "Ava", icon: Phone, href: "/receptionist", accent: "#1C54F2" },
-  { label: "Intelligence", icon: BarChart3, href: "/intelligence", accent: "#8B5CF6" },
+type NavItem = {
+  label: string;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  href: string;
+  accent: string;
+  moduleKey: ModuleKey | null;
+};
+
+const NAV_ITEMS: NavItem[] = [
+  { label: "Dashboard", icon: LayoutGrid, href: "/dashboard", accent: "#1C54F2", moduleKey: null },
+  { label: "Clinicians", icon: Users, href: "/clinicians", accent: "#1C54F2", moduleKey: null },
+  { label: "Pulse", icon: RefreshCw, href: "/continuity", accent: "#0891B2", moduleKey: "pulse" },
+  { label: "Ava", icon: Phone, href: "/receptionist", accent: "#1C54F2", moduleKey: "ava" },
+  { label: "Intelligence", icon: BarChart3, href: "/intelligence", accent: "#8B5CF6", moduleKey: "intelligence" },
 ];
 
 const SYSTEM_ITEMS = [
   { label: "Settings", icon: Settings, href: "/settings" },
+  { label: "Billing", icon: CreditCard, href: "/billing" },
 ];
 
 const READ_ALERTS_KEY = "strydeos_read_alerts";
@@ -108,6 +121,7 @@ export default function Sidebar() {
   const router = useRouter();
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { hasModule } = useEntitlements();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -301,32 +315,41 @@ export default function Sidebar() {
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href || (item.href === "/dashboard" && pathname === "/");
               const badge = item.href === "/continuity" && pulseBadge > 0 ? pulseBadge : 0;
+              // null moduleKey = always accessible (Dashboard, Clinicians)
+              const isLocked = item.moduleKey !== null && !hasModule(item.moduleKey);
+              const href = isLocked ? "/billing" : item.href;
+
               return (
                 <Link
                   key={item.label}
-                  href={item.href}
+                  href={href}
                   onClick={() => setMobileOpen(false)}
                   className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? "text-white"
-                      : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
+                    isLocked
+                      ? "text-white/25 hover:text-white/40 hover:bg-white/[0.03]"
+                      : isActive
+                        ? "text-white"
+                        : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
                   }`}
-                  style={isActive ? {
+                  style={!isLocked && isActive ? {
                     background: "rgba(255,255,255,0.08)",
                     borderLeft: `3px solid ${item.accent}`,
                     paddingLeft: 9,
                   } : undefined}
+                  title={isLocked ? `${item.label} — not included in your plan` : undefined}
                 >
                   <item.icon size={16} strokeWidth={isActive ? 2 : 1.5} />
                   <span className="flex-1">{item.label}</span>
-                  {badge > 0 && (
+                  {isLocked ? (
+                    <Lock size={11} className="text-white/20" />
+                  ) : badge > 0 ? (
                     <span
                       className="min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
                       style={{ background: item.accent }}
                     >
                       {badge}
                     </span>
-                  )}
+                  ) : null}
                 </Link>
               );
             })}

@@ -21,11 +21,12 @@ import type { VoiceInteractionOutcome, VoiceInteractionUrgency } from "@/lib/fir
 import { VOICE_INTERACTIONS_COLLECTION } from "@/lib/firebase/voiceInteractions";
 import { FieldValue } from "firebase-admin/firestore";
 
-// TODO: set RETELL_CLINIC_ID in .env.local / Vercel / Railway to your Firestore clinic doc ID
-// For Spires this is the clinicId in Firestore (e.g. "spires")
-const CLINIC_ID = process.env.RETELL_CLINIC_ID ?? process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "spires";
-// TODO: set RETELL_SKIP_SIG_VERIFY=true in dev to bypass signature check
-const SKIP_SIG_VERIFY = process.env.RETELL_SKIP_SIG_VERIFY === "true";
+// RETELL_CLINIC_ID must be set explicitly — no fallback to prevent silent wrong-clinic writes
+const CLINIC_ID = process.env.RETELL_CLINIC_ID;
+// RETELL_SKIP_SIG_VERIFY is dev-only — blocked in production regardless of env var
+const SKIP_SIG_VERIFY =
+  process.env.NODE_ENV !== "production" &&
+  process.env.RETELL_SKIP_SIG_VERIFY === "true";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
@@ -48,8 +49,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Allow clinicId to be passed via agent metadata for multi-tenant use
-    const clinicId =
-      (call.metadata?.clinicId as string | undefined) ?? CLINIC_ID;
+    const clinicId = (call.metadata?.clinicId as string | undefined) ?? CLINIC_ID;
+    if (!clinicId) {
+      return NextResponse.json(
+        { error: "RETELL_CLINIC_ID is not configured — set it in Vercel env vars" },
+        { status: 500 }
+      );
+    }
 
     const db = getAdminDb();
     const docRef = db

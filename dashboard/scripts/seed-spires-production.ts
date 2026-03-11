@@ -34,41 +34,20 @@ interface UserSeed {
   password?: string;
 }
 
-const DEFAULT_PASSWORD = "SpiresWH!";
+// Set SEED_DEFAULT_PASSWORD in .env.local (never commit real passwords).
+function getDefaultPassword(): string {
+  const p = process.env.SEED_DEFAULT_PASSWORD;
+  if (!p || p.trim() === "") {
+    throw new Error("SEED_DEFAULT_PASSWORD must be set in .env.local (or environment) before running the seed script. Do not commit passwords.");
+  }
+  return p;
+}
 
 const USERS: UserSeed[] = [
-  {
-    email: "jamal@spiresphysiotherapy.com",
-    firstName: "Jamal",
-    lastName: "",
-    role: "owner",
-    clinicianId: "c-jamal",
-    password: DEFAULT_PASSWORD,
-  },
-  {
-    email: "andrew@spiresphysiotherapy.com",
-    firstName: "Andrew",
-    lastName: "Henry",
-    role: "clinician",
-    clinicianId: "c-andrew",
-    password: DEFAULT_PASSWORD,
-  },
-  {
-    email: "max@spiresphysiotherapy.com",
-    firstName: "Max",
-    lastName: "Hubbard",
-    role: "clinician",
-    clinicianId: "c-max",
-    password: DEFAULT_PASSWORD,
-  },
-  {
-    email: "joe@spiresphysiotherapy.com",
-    firstName: "Joe",
-    lastName: "Korge",
-    role: "admin",
-    clinicianId: "c-joe",
-    password: DEFAULT_PASSWORD,
-  },
+  { email: "jamal@spiresphysiotherapy.com", firstName: "Jamal", lastName: "", role: "owner", clinicianId: "c-jamal" },
+  { email: "andrew@spiresphysiotherapy.com", firstName: "Andrew", lastName: "Henry", role: "clinician", clinicianId: "c-andrew" },
+  { email: "max@spiresphysiotherapy.com", firstName: "Max", lastName: "Hubbard", role: "clinician", clinicianId: "c-max" },
+  { email: "joe@spiresphysiotherapy.com", firstName: "Joe", lastName: "Korge", role: "admin", clinicianId: "c-joe" },
 ];
 
 // ─── Clinician definitions ──────────────────────────────────────────────────
@@ -367,7 +346,7 @@ async function main() {
   for (const u of USERS) {
     let uid: string;
 
-    const password = u.password ?? DEFAULT_PASSWORD;
+    const password = u.password ?? getDefaultPassword();
 
     try {
       const existing = await auth.getUserByEmail(u.email);

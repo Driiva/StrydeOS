@@ -23,17 +23,10 @@ Codebase: `/dashboard/` — Next.js 15.1 / React 19 / Firebase 12.9 / Tailwind 4
 
 ### 🔴 CRITICAL
 
-#### C-SEC-1: Plain-text production passwords committed to git
-**File:** `LOGIN_CREDENTIALS.md` (root)
-**Severity:** Critical | **Fix estimate:** 1 hour
+#### C-SEC-1: Plain-text production passwords (resolved)
+**Severity:** Critical | **Status:** File removed from repo
 
-The file contains the production URL, real email addresses, and the shared password (`SpiresWH!`) for all four Spires users — committed to the repository and therefore persisted in git history. Anyone with repo access can authenticate to production immediately.
-
-**Immediate actions:**
-1. Rotate all four accounts' passwords in Firebase Auth right now.
-2. `git rm LOGIN_CREDENTIALS.md && git commit` — this removes it from HEAD but it remains in history.
-3. If repo has ever been non-private or has been cloned widely: consider `git filter-repo --path LOGIN_CREDENTIALS.md --invert-paths` to purge from history and force-push.
-4. Never store credentials in the repo again. Use a password manager or Bitwarden shared vault.
+Production credentials must not be stored in the repo. Rotate any affected account passwords in Firebase Auth if they were ever committed. Use a password manager or shared vault for credentials.
 
 ---
 
@@ -485,10 +478,9 @@ Vercel handles dependency installation separately, so this is fine as-is. But th
 | # | Action | File | Time |
 |---|---|---|---|
 | 1 | **Rotate all 4 production passwords** | Firebase Auth console | 15 min |
-| 2 | **Delete `LOGIN_CREDENTIALS.md` and purge from git history** | Root | 30 min |
-| 3 | **Fix Firestore rule** to block role/clinicId self-modification | `firestore.rules` | 30 min |
-| 4 | **Fix n8n callback** to reject when secret is unset | `api/n8n/callback/route.ts` | 15 min |
-| 5 | **Remove invite-link `console.log`** | `api/clinic/resend-invite/route.ts:65` | 5 min |
+| 2 | **Fix Firestore rule** to block role/clinicId self-modification | `firestore.rules` | 30 min |
+| 3 | **Fix n8n callback** to reject when secret is unset | `api/n8n/callback/route.ts` | 15 min |
+| 4 | **Remove invite-link `console.log`** | `api/clinic/resend-invite/route.ts:65` | 5 min |
 
 ### This sprint (< 1 week)
 

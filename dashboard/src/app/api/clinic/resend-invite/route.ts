@@ -60,10 +60,6 @@ export async function POST(req: NextRequest) {
       url: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.strydeos.com"}/login`,
     });
 
-    // In production: send via Resend/email provider
-    // For now: log the link and return it so it can be displayed or copied
-    console.log(`[resend-invite] Invite link for ${email}: ${link}`);
-
     // If RESEND_API_KEY is configured, send the email
     const resendKey = process.env.RESEND_API_KEY;
     if (resendKey) {

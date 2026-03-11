@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   doc,
-  setDoc,
   updateDoc,
   collection,
   addDoc,
@@ -33,7 +32,7 @@ import {
   Circle,
   ArrowRight,
   AlertTriangle,
-  Shield,
+
   Sparkles,
   RefreshCw,
   XCircle,
@@ -127,7 +126,7 @@ export default function SettingsPage() {
   const { user, firebaseUser, refreshClinicProfile } = useAuth();
   const { clinicians } = useClinicians();
   const { toast } = useToast();
-  const [promoting, setPromoting] = useState(false);
+
   const router = useRouter();
 
   // Password change state
@@ -136,27 +135,7 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
 
-  async function handleMakeSuperAdmin() {
-    if (!user?.uid || !db) return;
-    setPromoting(true);
-    try {
-      await setDoc(
-        doc(db, "users", user.uid),
-        { clinicId: "clinic-spires", role: "superadmin" },
-        { merge: true }
-      );
-      await refreshClinicProfile();
-      toast("You're now Stryde Super User. Redirecting…", "success");
-      router.replace("/admin");
-    } catch (err) {
-      console.error(err);
-      toast("Failed. Deploy Firestore rules first (see below).", "error");
-    } finally {
-      setPromoting(false);
-    }
-  }
-
-  const cp = user?.clinicProfile ?? null;
+const cp = user?.clinicProfile ?? null;
 
   const [clinicName, setClinicName] = useState("");
   const [timezone, setTimezone] = useState("Europe/London");
@@ -636,24 +615,6 @@ export default function SettingsPage() {
         </p>
         {/* Retrigger tour */}
         <RetriggerTourButton />
-
-        {user?.role !== "superadmin" && (
-          <>
-            <button
-              type="button"
-              onClick={handleMakeSuperAdmin}
-              disabled={promoting}
-              className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: "#1C54F2" }}
-            >
-              {promoting ? <Loader2 size={16} className="animate-spin" /> : <Shield size={16} />}
-              {promoting ? "Updating…" : "Make me Stryde Super User"}
-            </button>
-            <p className="text-[11px] text-muted mt-2">
-              Writes your user doc in Firestore and sends you to /admin. If it fails, deploy the updated Firestore rules (see firestore.rules in the repo) in Firebase Console → Firestore → Rules.
-            </p>
-          </>
-        )}
       </div>
 
       {/* Change Password */}

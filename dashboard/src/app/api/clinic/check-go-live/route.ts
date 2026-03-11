@@ -85,8 +85,6 @@ export async function POST(req: NextRequest) {
       updatedAt: new Date().toISOString(),
     });
 
-    console.log(`[check-go-live] Clinic ${clinicId} promoted to live.`);
-
     return NextResponse.json({ promoted: true });
   } catch (err) {
     console.error("[check-go-live] Error:", err);

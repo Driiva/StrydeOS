@@ -56,7 +56,7 @@ The script:
 - Seeds clinicians and **metrics_weekly** (9 weeks)
 - Seeds **patients** so the Patients page and Pulse board show Spires data instead of demo
 
-Default password for all seeded users: **`SpiresWH!`** (see script to change).
+Set **`SEED_DEFAULT_PASSWORD`** in your environment (or in the script) for seeded users. Do not commit passwords to the repo.
 
 ---
 
@@ -64,7 +64,7 @@ Default password for all seeded users: **`SpiresWH!`** (see script to change).
 
 - **Jamal:** `jamal@spiresphysiotherapy.com`  
 - **Joe:** `joe@spiresphysiotherapy.com`  
-- Password: `SpiresWH!` (unless you changed it in the seed script)
+- Password: use the value from `SEED_DEFAULT_PASSWORD` (or your secure store)
 
 You should see:
 

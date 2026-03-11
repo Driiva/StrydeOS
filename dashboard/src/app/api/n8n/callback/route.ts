@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       request.headers.get("x-webhook-secret") ??
       request.headers.get("authorization")?.replace("Bearer ", "");
 
-    if (N8N_SECRET && secret !== N8N_SECRET) {
+    if (!N8N_SECRET || secret !== N8N_SECRET) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

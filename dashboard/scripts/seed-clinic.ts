@@ -92,6 +92,7 @@ async function main() {
       status: "onboarding",
       pmsType: null,
       featureFlags: { intelligence: true, continuity: true, receptionist: false },
+      trialStartedAt: now,
       targets: {
         followUpRate: 2.9,
         physitrackRate: 95,

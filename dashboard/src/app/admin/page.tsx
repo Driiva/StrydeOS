@@ -41,6 +41,7 @@ const DEMO_CLINICS: ClinicProfile[] = [
     status: "live",
     pmsType: "writeupp",
     pmsLastSyncAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    trialStartedAt: null,
     featureFlags: { intelligence: true, continuity: true, receptionist: false },
     targets: { followUpRate: 2.9, physitrackRate: 95, utilisationRate: 85, dnaRate: 5, courseCompletionTarget: 80 },
     brandConfig: {},
@@ -56,6 +57,7 @@ const DEMO_CLINICS: ClinicProfile[] = [
     status: "onboarding",
     pmsType: "cliniko",
     pmsLastSyncAt: null,
+    trialStartedAt: "2026-02-15T00:00:00Z",
     featureFlags: { intelligence: true, continuity: true, receptionist: false },
     targets: { followUpRate: 2.5, physitrackRate: 90, utilisationRate: 80, dnaRate: 5, courseCompletionTarget: 80 },
     brandConfig: {},
@@ -71,6 +73,7 @@ const DEMO_CLINICS: ClinicProfile[] = [
     status: "live",
     pmsType: "writeupp",
     pmsLastSyncAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
+    trialStartedAt: null,
     featureFlags: { intelligence: true, continuity: true, receptionist: false },
     targets: { followUpRate: 3.0, physitrackRate: 92, utilisationRate: 80, dnaRate: 5, courseCompletionTarget: 80 },
     brandConfig: {},
@@ -86,6 +89,7 @@ const DEMO_CLINICS: ClinicProfile[] = [
     status: "paused",
     pmsType: null,
     pmsLastSyncAt: null,
+    trialStartedAt: null,
     featureFlags: { intelligence: true, continuity: true, receptionist: false },
     targets: { followUpRate: 2.8, physitrackRate: 90, utilisationRate: 85, dnaRate: 5, courseCompletionTarget: 80 },
     brandConfig: {},
@@ -306,8 +310,7 @@ export default function AdminPage() {
                     <td className="px-4 py-4">
                       <button
                         onClick={() => {
-                          // In production, this would impersonate the clinic
-                          console.log(`[SuperAdmin] View as ${clinic.name}`);
+                          // TODO: implement clinic impersonation (superadmin only)
                         }}
                         className="flex items-center gap-1 text-[11px] font-semibold text-blue hover:text-blue-bright transition-colors"
                       >

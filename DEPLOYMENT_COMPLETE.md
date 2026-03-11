@@ -42,12 +42,12 @@
 
 All users can now log in at **https://www.strydeos.com/login**
 
-| Name | Email | Password | Role | Clinician ID |
-|------|-------|----------|------|--------------|
-| **Jamal** | jamal@spiresphysiotherapy.com | `SpiresWH!` | Owner | c-jamal |
-| **Joe Korge** | joe@spiresphysiotherapy.com | `SpiresWH!` | Admin | c-joe |
-| **Andrew Henry** | andrew@spiresphysiotherapy.com | `SpiresWH!` | Clinician | c-andrew |
-| **Max Hubbard** | max@spiresphysiotherapy.com | `SpiresWH!` | Clinician | c-max |
+| Name | Email | Role | Clinician ID |
+|------|-------|------|--------------|
+| **Jamal** | jamal@spiresphysiotherapy.com | Owner | c-jamal |
+| **Joe Korge** | joe@spiresphysiotherapy.com | Admin | c-joe |
+| **Andrew Henry** | andrew@spiresphysiotherapy.com | Clinician | c-andrew |
+| **Max Hubbard** | max@spiresphysiotherapy.com | Clinician | c-max |
 
 **All accounts are set to first-login status** to trigger the onboarding tour.
 
@@ -136,7 +136,7 @@ npm run fix:joe
 - [x] Production site is accessible at https://www.strydeos.com
 - [x] Firebase environment variables are set in Vercel
 - [x] Firestore has clinic-spires with 4 users, 4 clinicians, 45 metrics_weekly docs, 12 patients
-- [x] All 4 users can log in with password `SpiresWH!`
+- [x] All 4 users can log in with seeded credentials
 - [ ] **Manual test needed:** Log in as Jamal and verify Dashboard shows Spires, real metrics, no demo banner
 - [ ] **Manual test needed:** Log in as Joe and verify same experience
 - [ ] **Optional:** Connect WriteUpp and run pipeline once

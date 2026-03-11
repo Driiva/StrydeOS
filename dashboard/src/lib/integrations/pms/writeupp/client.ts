@@ -71,7 +71,6 @@ export async function testWriteUppConnection(config: WriteUppConfig): Promise<{ 
   for (const probe of probes) {
     try {
       await writeUppFetch<unknown>({ ...config, baseUrl: probe.base }, probe.path);
-      console.log(`[WriteUpp] Connection verified via ${probe.base}${probe.path}`);
       return { ok: true, resolvedBase: probe.base };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);

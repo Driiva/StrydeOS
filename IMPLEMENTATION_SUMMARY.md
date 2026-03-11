@@ -55,7 +55,7 @@ All users created and ready to log in:
 | Max Hubbard | max@spiresphysiotherapy.com | h30U3eog0zfMbjls2o6IkxFCV632 | New, ready |
 | Joe Korge | joe@spiresphysiotherapy.com | C2PRmCmzSERcdeiziYrTnsHl0zt2 | Reset, ready |
 
-**Password for all:** `SpiresWH!`
+Use credentials from your secure store. Do not commit passwords.
 
 ---
 
@@ -143,7 +143,6 @@ When Jamal or Joe log in, they will see:
 ## 📁 Files Created
 
 - ✅ `/Users/joa/Desktop/StrydeOS/DEPLOYMENT_COMPLETE.md` — Full deployment guide
-- ✅ `/Users/joa/Desktop/StrydeOS/LOGIN_CREDENTIALS.md` — Quick reference card
 - ✅ `/Users/joa/Desktop/StrydeOS/IMPLEMENTATION_SUMMARY.md` — This file
 
 ---
@@ -162,15 +161,11 @@ When Jamal or Joe log in, they will see:
 - [x] 12 patient documents exist
 
 ### Manual Tests Required
-- [ ] **Test 1:** Log in as Jamal at https://www.strydeos.com/login
-  - Email: jamal@spiresphysiotherapy.com
-  - Password: SpiresWH!
+- [ ] **Test 1:** Log in as owner at https://www.strydeos.com/login
   - Expected: Dashboard shows Spires, real metrics, no demo banner
 
-- [ ] **Test 2:** Log in as Joe at https://www.strydeos.com/login
-  - Email: joe@spiresphysiotherapy.com
-  - Password: SpiresWH!
-  - Expected: Same experience as Jamal (admin role)
+- [ ] **Test 2:** Log in as admin at https://www.strydeos.com/login
+  - Expected: Same experience as owner (admin role)
 
 - [ ] **Test 3:** Navigate to Clinicians page
   - Expected: See all 4 clinicians with real metrics
@@ -192,7 +187,6 @@ When Jamal or Joe log in, they will see:
    - Confirm no demo banners appear
 
 2. **Change Passwords** (for security)
-   - All accounts currently use `SpiresWH!`
    - Each user should change password after first login
 
 ### Near-Term Enhancements (from roadmap v0.4-v0.7)
@@ -241,7 +235,7 @@ From the original plan (strydeos_audit_and_live_clinic_53172c0d.plan.md):
 
 - ✅ Deployment: https://www.strydeos.com is live and ready
 - ✅ Data: 4 users, 4 clinicians, 45 metrics docs, 12 patients seeded
-- ✅ Auth: All users can log in with `SpiresWH!`
+- ✅ Auth: All users can log in with seeded credentials
 - ✅ Experience: Dashboard, Clinicians, Patients, Pulse show real data
 - ✅ Infrastructure: Cron configured for daily pipeline sync
 - ⏳ **Next:** Manual login test to verify everything works as expected

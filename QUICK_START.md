@@ -6,15 +6,7 @@
 
 ## Step 1: Log In
 
-Go to **https://www.strydeos.com/login**
-
-### Jamal (Owner)
-- **Email:** jamal@spiresphysiotherapy.com
-- **Password:** `SpiresWH!`
-
-### Joe (Admin)
-- **Email:** joe@spiresphysiotherapy.com
-- **Password:** `SpiresWH!`
+Go to **https://www.strydeos.com/login** and sign in with your owner or admin account (credentials from your secure store or password manager).
 
 ---
 
@@ -54,7 +46,6 @@ Go to **https://www.strydeos.com/login**
 ## Need Help?
 
 - **Full Details:** See `DEPLOYMENT_COMPLETE.md`
-- **Login Credentials:** See `LOGIN_CREDENTIALS.md`
 - **Implementation Summary:** See `IMPLEMENTATION_SUMMARY.md`
 
 ---

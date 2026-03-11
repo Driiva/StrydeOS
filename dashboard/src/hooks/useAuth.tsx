@@ -16,7 +16,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { getFirebaseAuth, db, isFirebaseConfigured } from "@/lib/firebase";
-import type { AuthUser, ClinicProfile, UserRole, UserStatus, FeatureFlags } from "@/types";
+import type { AuthUser, ClinicProfile, UserRole, UserStatus, FeatureFlags, BillingState } from "@/types";
 
 const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   intelligence: true,
@@ -55,6 +55,7 @@ const DEMO_USER: AuthUser = {
       cliniciansConfirmed: false,
       targetsSet: false,
     },
+    trialStartedAt: "2099-01-01T00:00:00.000Z",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -87,36 +88,13 @@ export function useAuth() {
 }
 
 async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
-  if (!db) {
-    return {
-      uid: fbUser.uid,
-      email: fbUser.email ?? "",
-      clinicId: "",
-      role: "owner",
-      firstName: "",
-      lastName: "",
-      firstLogin: true,
-      tourCompleted: false,
-      status: "registered",
-      clinicProfile: null,
-    };
-  }
+  // No Firestore — cannot verify role. Treat as unauthenticated.
+  if (!db) return null;
+
   try {
     const userDoc = await getDoc(doc(db, "users", fbUser.uid));
-    if (!userDoc.exists()) {
-      return {
-        uid: fbUser.uid,
-        email: fbUser.email ?? "",
-        clinicId: "",
-        role: "owner",
-        firstName: "",
-        lastName: "",
-        firstLogin: true,
-        tourCompleted: false,
-        status: "registered",
-        clinicProfile: null,
-      };
-    }
+    // No profile doc — incomplete onboarding or deleted. Do not grant any role.
+    if (!userDoc.exists()) return null;
 
     const userData = userDoc.data() as {
       clinicId: string;
@@ -136,6 +114,16 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
       );
       if (clinicDoc.exists()) {
         const raw = clinicDoc.data();
+        const billingRaw = raw.billing;
+        const billing: BillingState | undefined = billingRaw
+          ? {
+              stripeCustomerId: billingRaw.stripeCustomerId ?? null,
+              subscriptionId: billingRaw.subscriptionId ?? null,
+              subscriptionStatus: billingRaw.subscriptionStatus ?? null,
+              currentPeriodEnd: billingRaw.currentPeriodEnd ?? null,
+            }
+          : undefined;
+
         clinicProfile = {
           id: clinicDoc.id,
           name: raw.name ?? "",
@@ -161,6 +149,8 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
             cliniciansConfirmed: raw.onboarding?.cliniciansConfirmed ?? false,
             targetsSet: raw.onboarding?.targetsSet ?? false,
           },
+          billing,
+          trialStartedAt: raw.trialStartedAt ?? null,
           createdAt: raw.createdAt ?? "",
           updatedAt: raw.updatedAt ?? "",
         };
@@ -172,7 +162,7 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
       email: fbUser.email ?? "",
       clinicId: userData.clinicId,
       clinicianId: userData.clinicianId,
-      role: userData.role ?? "owner",
+      role: userData.role ?? "clinician",
       firstName: userData.firstName ?? "",
       lastName: userData.lastName ?? "",
       firstLogin: userData.firstLogin ?? true,
@@ -181,18 +171,8 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
       clinicProfile,
     };
   } catch {
-    return {
-      uid: fbUser.uid,
-      email: fbUser.email ?? "",
-      clinicId: "",
-      role: "owner",
-      firstName: "",
-      lastName: "",
-      firstLogin: true,
-      tourCompleted: false,
-      status: "registered",
-      clinicProfile: null,
-    };
+    // Firestore read failed — do not grant any role.
+    return null;
   }
 }
 
@@ -243,6 +223,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (snap) => {
         if (snap.exists()) {
           const raw = snap.data();
+          const billingRaw = raw.billing;
+          const billing: BillingState | undefined = billingRaw
+            ? {
+                stripeCustomerId: billingRaw.stripeCustomerId ?? null,
+                subscriptionId: billingRaw.subscriptionId ?? null,
+                subscriptionStatus: billingRaw.subscriptionStatus ?? null,
+                currentPeriodEnd: billingRaw.currentPeriodEnd ?? null,
+              }
+            : undefined;
+
           const profile: ClinicProfile = {
             id: snap.id,
             name: raw.name ?? "",
@@ -268,6 +258,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               cliniciansConfirmed: raw.onboarding?.cliniciansConfirmed ?? false,
               targetsSet: raw.onboarding?.targetsSet ?? false,
             },
+            billing,
+            trialStartedAt: raw.trialStartedAt ?? null,
             createdAt: raw.createdAt ?? "",
             updatedAt: raw.updatedAt ?? "",
           };

@@ -26,11 +26,15 @@ service cloud.firestore {
     }
 
     // ─── Users (flat, for auth lookup) ─────────────────────────────────
-    // Users can write their own doc (e.g. one-click "Make me Super Admin" in Settings).
+    // Users may update non-sensitive fields on their own doc only.
+    // role / clinicId / clinicianId / status must be set server-side via Admin SDK.
     match /users/{uid} {
       allow read: if isAuthenticated() && (request.auth.uid == uid || isSuperAdmin());
-      allow create, update: if isAuthenticated() && request.auth.uid == uid;
-      allow delete: if false;
+      allow update: if isAuthenticated()
+        && request.auth.uid == uid
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['role', 'clinicId', 'clinicianId', 'status']);
+      allow create, delete: if false;
     }
 
     // ─── Clinics ───────────────────────────────────────────────────────
