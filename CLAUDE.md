@@ -147,16 +147,15 @@ StrydeOS is built and validated at Spires first.
 
 ## KPI Metrics — Confirmed from Spires
 
-These eight metrics are validated from live Spires data. They are the canonical set for the dashboard.
+These seven metrics are validated from live Spires data. They are the canonical set for the dashboard.
 
 1. **Follow-up rate** — follow-ups booked ÷ initial assessments (weekly + rolling 90-day window)
 2. **HEP compliance** — patients given a programme ÷ patients seen
 3. **Programme assignment rate** — initial programme assigned at first contact
-4. **Course completion rate** — patients completing full prescribed course
-5. **Utilisation** — booked slots ÷ available slots
-6. **DNA rate** — did-not-attend ÷ total booked
-7. **Revenue per session** — total revenue ÷ sessions delivered
-8. **NPS** — net promoter score (treated as EBITDA lever, not vanity)
+4. **Utilisation** — booked slots ÷ available slots
+5. **DNA rate** — did-not-attend ÷ total booked
+6. **Revenue per session** — total revenue ÷ sessions delivered
+7. **NPS** — net promoter score (treated as EBITDA lever, not vanity)
 
 **Metric rule:** Every metric must connect to outcomes or revenue. No vanity stats.
 

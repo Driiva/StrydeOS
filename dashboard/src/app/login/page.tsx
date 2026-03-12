@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { sendPasswordResetEmail } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { useAuth } from "@/hooks/useAuth";
 import { getFirebaseAuth } from "@/lib/firebase";
-import { AlertCircle, Loader2, ArrowRight, Check } from "lucide-react";
+import { AlertCircle, Loader2, ArrowRight, Check, Building2 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { StrydeOSLogo } from "@/components/MonolithLogo";
+import { trackCTAClick } from "@/lib/funnel-events";
 
 const LAST_EMAIL_KEY = "strydeos_last_email";
+
+type AuthMode = "signin" | "signup";
 
 function LoginHeader({ onTryDemo }: { onTryDemo: () => void }) {
   return (
@@ -33,8 +36,11 @@ function LoginPageInner() {
   const { user, loading: authLoading, signIn, enterDemoMode, isFirebaseConfigured } = useAuth();
   const shouldReduce = useReducedMotion();
 
+  const initialMode: AuthMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [clinicName, setClinicName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -65,7 +71,61 @@ function LoginPageInner() {
     }
   }, [authLoading, user, router, searchParams]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  function switchMode(newMode: AuthMode) {
+    setMode(newMode);
+    setError(null);
+    setResetSent(false);
+    setResetError(null);
+  }
+
+  async function handleSignup(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    trackCTAClick("Create account", "login_page");
+
+    try {
+      const res = await fetch("/api/clinic/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clinicName: clinicName.trim(),
+          email: email.trim(),
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Something went wrong. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+
+      const auth = getFirebaseAuth();
+      if (!auth) {
+        setError("Firebase is not configured.");
+        setSubmitting(false);
+        return;
+      }
+
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      try {
+        localStorage.setItem(LAST_EMAIL_KEY, email.trim());
+      } catch {
+        // localStorage unavailable
+      }
+      setSuccess(true);
+      setTimeout(() => router.push("/onboarding"), 800);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
+      setSubmitting(false);
+    }
+  }
+
+  async function handleSignin(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
@@ -184,7 +244,7 @@ function LoginPageInner() {
     ? { initial: { opacity: 0 }, animate: { opacity: 1 } }
     : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
 
-  const isReturning = rememberedEmail !== null;
+  const isReturning = rememberedEmail !== null && mode === "signin";
 
   return (
     <AnimatePresence mode="wait">
@@ -198,114 +258,265 @@ function LoginPageInner() {
           <LoginHeader onTryDemo={enterDemoMode} />
           <div className="flex-1 flex items-center justify-center pt-4">
             <div className="w-full max-w-[400px]">
-              {/* Card */}
               <motion.div
                 className="rounded-2xl p-8 bg-white border border-border shadow-[var(--shadow-elevated)]"
                 {...fadeUp}
                 transition={{ duration: 0.4, delay: stagger * 1, ease: [0.2, 0.8, 0.2, 1] }}
               >
-                <div className="text-center mb-8">
-                  <h1 className="font-display text-[24px] text-navy leading-tight">
-                    {isReturning ? "Welcome back" : "Sign in"}
-                  </h1>
-                  <p className="text-sm text-muted mt-1.5">
-                    {isReturning
-                      ? `Signing in as ${rememberedEmail}`
-                      : "Sign in to your clinic dashboard"}
-                  </p>
+                {/* Mode toggle */}
+                <div className="flex rounded-xl bg-cloud-light p-1 mb-8">
+                  <button
+                    type="button"
+                    onClick={() => switchMode("signin")}
+                    className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+                      mode === "signin"
+                        ? "bg-white text-navy shadow-sm"
+                        : "text-muted hover:text-navy"
+                    }`}
+                  >
+                    Sign in
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => switchMode("signup")}
+                    className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+                      mode === "signup"
+                        ? "bg-white text-navy shadow-sm"
+                        : "text-muted hover:text-navy"
+                    }`}
+                  >
+                    Create account
+                  </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-muted uppercase tracking-widest mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => { setEmail(e.target.value); setResetError(null); setResetSent(false); }}
-                      required
-                      autoFocus={!isReturning}
-                      autoComplete="email"
-                      placeholder="you@clinic.com"
-                      className="w-full px-4 py-3 rounded-xl text-sm text-navy placeholder-muted border border-border bg-cloud-light focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition-all"
-                    />
-                  </div>
+                <AnimatePresence mode="wait">
+                  {mode === "signin" ? (
+                    <motion.div
+                      key="signin-form"
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -8 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <div className="text-center mb-6">
+                        <h1 className="font-display text-[24px] text-navy leading-tight">
+                          {isReturning ? "Welcome back" : "Sign in"}
+                        </h1>
+                        <p className="text-sm text-muted mt-1.5">
+                          {isReturning
+                            ? `Signing in as ${rememberedEmail}`
+                            : "Sign in to your clinic dashboard"}
+                        </p>
+                      </div>
 
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-[11px] font-semibold text-muted uppercase tracking-widest">
-                        Password
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleForgotPassword}
-                        disabled={resetLoading}
-                        className="text-[11px] font-semibold text-blue hover:underline disabled:opacity-50"
-                      >
-                        {resetLoading ? "Sending…" : "Forgot password?"}
-                      </button>
-                    </div>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => { setPassword(e.target.value); setResetError(null); setResetSent(false); }}
-                      required
-                      autoFocus={isReturning}
-                      autoComplete="current-password"
-                      placeholder="Enter your password"
-                      className="w-full px-4 py-3 rounded-xl text-sm text-navy placeholder-muted border border-border bg-cloud-light focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition-all"
-                    />
-                  </div>
-
-                  {resetSent && (
-                    <div className="p-3.5 rounded-xl bg-success/10 border border-success/20 text-[13px] text-success">
-                      Check your email for a link to reset your password.
-                    </div>
-                  )}
-                  {resetError && (
-                    <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-danger/10 border border-danger/20">
-                      <AlertCircle size={14} className="text-danger mt-0.5 shrink-0" />
-                      <p className="text-[13px] text-danger">{resetError}</p>
-                    </div>
-                  )}
-
-                  <AnimatePresence>
-                    {error && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-danger/10 border border-danger/20">
-                          <AlertCircle size={14} className="text-danger mt-0.5 shrink-0" />
-                          <p className="text-[13px] text-danger">{error}</p>
+                      <form onSubmit={handleSignin} className="space-y-5">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-muted uppercase tracking-widest mb-2">
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => { setEmail(e.target.value); setResetError(null); setResetSent(false); }}
+                            required
+                            autoFocus={!isReturning}
+                            autoComplete="email"
+                            placeholder="you@clinic.com"
+                            className="w-full px-4 py-3 rounded-xl text-sm text-navy placeholder-muted border border-border bg-cloud-light focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition-all"
+                          />
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
 
-                  <motion.button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-blue transition-colors duration-200 hover:opacity-90 disabled:opacity-50"
-                    whileTap={shouldReduce ? {} : { scale: 0.97 }}
-                  >
-                    {submitting ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <>
-                        Sign in
-                        <ArrowRight size={14} />
-                      </>
-                    )}
-                  </motion.button>
-                </form>
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="block text-[11px] font-semibold text-muted uppercase tracking-widest">
+                              Password
+                            </label>
+                            <button
+                              type="button"
+                              onClick={handleForgotPassword}
+                              disabled={resetLoading}
+                              className="text-[11px] font-semibold text-blue hover:underline disabled:opacity-50"
+                            >
+                              {resetLoading ? "Sending…" : "Forgot password?"}
+                            </button>
+                          </div>
+                          <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => { setPassword(e.target.value); setResetError(null); setResetSent(false); }}
+                            required
+                            autoFocus={isReturning}
+                            autoComplete="current-password"
+                            placeholder="Enter your password"
+                            className="w-full px-4 py-3 rounded-xl text-sm text-navy placeholder-muted border border-border bg-cloud-light focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition-all"
+                          />
+                        </div>
+
+                        {resetSent && (
+                          <div className="p-3.5 rounded-xl bg-success/10 border border-success/20 text-[13px] text-success">
+                            Check your email for a link to reset your password.
+                          </div>
+                        )}
+                        {resetError && (
+                          <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-danger/10 border border-danger/20">
+                            <AlertCircle size={14} className="text-danger mt-0.5 shrink-0" />
+                            <p className="text-[13px] text-danger">{resetError}</p>
+                          </div>
+                        )}
+
+                        <AnimatePresence>
+                          {error && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-danger/10 border border-danger/20">
+                                <AlertCircle size={14} className="text-danger mt-0.5 shrink-0" />
+                                <p className="text-[13px] text-danger">{error}</p>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        <motion.button
+                          type="submit"
+                          disabled={submitting}
+                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-blue transition-colors duration-200 hover:opacity-90 disabled:opacity-50"
+                          whileTap={shouldReduce ? {} : { scale: 0.97 }}
+                        >
+                          {submitting ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <>
+                              Sign in
+                              <ArrowRight size={14} />
+                            </>
+                          )}
+                        </motion.button>
+                      </form>
+
+                      <p className="text-center text-[12px] text-muted mt-5">
+                        Don&apos;t have an account?{" "}
+                        <button type="button" onClick={() => switchMode("signup")} className="text-blue font-semibold hover:underline">
+                          Start your free trial
+                        </button>
+                      </p>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="signup-form"
+                      initial={{ opacity: 0, x: 8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 8 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <div className="text-center mb-6">
+                        <h1 className="font-display text-[24px] text-navy leading-tight">
+                          Start your free trial
+                        </h1>
+                        <p className="text-sm text-muted mt-1.5">
+                          14 days free — no credit card required
+                        </p>
+                      </div>
+
+                      <form onSubmit={handleSignup} className="space-y-5">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-muted uppercase tracking-widest mb-2">
+                            Clinic name
+                          </label>
+                          <div className="relative">
+                            <Building2 size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                            <input
+                              type="text"
+                              value={clinicName}
+                              onChange={(e) => setClinicName(e.target.value)}
+                              required
+                              autoFocus
+                              placeholder="Spires Physiotherapy"
+                              className="w-full pl-10 pr-4 py-3 rounded-xl text-sm text-navy placeholder-muted border border-border bg-cloud-light focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition-all"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-muted uppercase tracking-widest mb-2">
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            autoComplete="email"
+                            placeholder="you@clinic.com"
+                            className="w-full px-4 py-3 rounded-xl text-sm text-navy placeholder-muted border border-border bg-cloud-light focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-muted uppercase tracking-widest mb-2">
+                            Password
+                          </label>
+                          <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            minLength={8}
+                            autoComplete="new-password"
+                            placeholder="Minimum 8 characters"
+                            className="w-full px-4 py-3 rounded-xl text-sm text-navy placeholder-muted border border-border bg-cloud-light focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition-all"
+                          />
+                        </div>
+
+                        <AnimatePresence>
+                          {error && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-danger/10 border border-danger/20">
+                                <AlertCircle size={14} className="text-danger mt-0.5 shrink-0" />
+                                <p className="text-[13px] text-danger">{error}</p>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        <motion.button
+                          type="submit"
+                          disabled={submitting || !clinicName.trim() || !email.trim() || password.length < 8}
+                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-blue transition-colors duration-200 hover:opacity-90 disabled:opacity-50"
+                          whileTap={shouldReduce ? {} : { scale: 0.97 }}
+                        >
+                          {submitting ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <>
+                              Create account
+                              <ArrowRight size={14} />
+                            </>
+                          )}
+                        </motion.button>
+                      </form>
+
+                      <p className="text-center text-[12px] text-muted mt-5">
+                        Already have an account?{" "}
+                        <button type="button" onClick={() => switchMode("signin")} className="text-blue font-semibold hover:underline">
+                          Sign in
+                        </button>
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
 
-              {/* Footer */}
               <motion.p
                 className="text-center text-[11px] text-muted mt-6"
                 {...fadeUp}
@@ -333,7 +544,9 @@ function LoginPageInner() {
             <div className="w-12 h-12 rounded-full flex items-center justify-center bg-success">
               <Check size={22} className="text-white" strokeWidth={3} />
             </div>
-            <p className="text-sm font-medium text-muted">Signing you in...</p>
+            <p className="text-sm font-medium text-muted">
+              {mode === "signup" ? "Account created — setting up your clinic..." : "Signing you in..."}
+            </p>
           </motion.div>
         </motion.div>
       )}

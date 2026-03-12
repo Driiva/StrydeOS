@@ -101,7 +101,7 @@ function aggregateWeek(
   );
   const revenuePerSessionPence = total > 0 ? Math.round(revenueTotal / total) : 0;
 
-  // Course completion: patients who reached sessionCount >= courseLength / total patients
+  // HEP compliance: patients given a programme / total patients seen
   const relevantPatients = patients.filter((p) =>
     clinicianId === "all" ? true : p.clinicianId === clinicianId
   );

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CheckCircle2,
@@ -13,7 +14,12 @@ import {
   Zap,
   ChevronRight,
   Check,
+  Loader2,
+  HelpCircle,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { db } from "@/lib/firebase";
+import type { OnboardingStage, PmsProvider } from "@/types";
 
 type StepId = "pms" | "ava" | "pulse" | "golive";
 
@@ -57,9 +63,9 @@ const STEPS: WizardStep[] = [
 ];
 
 const PMS_OPTIONS = [
-  { id: "writeupp", label: "WriteUpp", description: "Most popular in UK private physio — 50,000+ clinicians", badge: "Recommended" },
-  { id: "cliniko", label: "Cliniko", description: "Global PMS with strong UK adoption via CSP partnership", badge: null },
-  { id: "tm3", label: "TM3 (Blue Zinc)", description: "Dominant in MSK and insurance-funded UK clinics", badge: "Coming soon", disabled: true },
+  { id: "writeupp" as PmsProvider, label: "WriteUpp", description: "Most popular in UK private physio — 50,000+ clinicians", badge: "Recommended" as string | null, disabled: false },
+  { id: "cliniko" as PmsProvider, label: "Cliniko", description: "Global PMS with strong UK adoption via CSP partnership", badge: null, disabled: false },
+  { id: "tm3" as PmsProvider, label: "TM3 (Blue Zinc)", description: "Dominant in MSK and insurance-funded UK clinics", badge: "Coming soon" as string | null, disabled: true },
 ];
 
 const PULSE_SEQUENCES = [
@@ -71,28 +77,107 @@ const PULSE_SEQUENCES = [
   { id: "pre_auth_collection", label: "Insurance pre-auth", description: "Email reminder to obtain pre-authorisation before first session", defaultOn: true },
 ];
 
+const STEP_TO_STAGE: Record<StepId, OnboardingStage> = {
+  pms: "integration_self_serve",
+  ava: "onboarding_started",
+  pulse: "onboarding_started",
+  golive: "activation_complete",
+};
+
 export default function OnboardingPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
-  const [selectedPms, setSelectedPms] = useState<string | null>(null);
+  const [selectedPms, setSelectedPms] = useState<PmsProvider | null>(null);
   const [pmsApiKey, setPmsApiKey] = useState("");
   const [clinicPhone, setClinicPhone] = useState("");
   const [enabledSequences, setEnabledSequences] = useState<Set<string>>(
     new Set(PULSE_SEQUENCES.filter((s) => s.defaultOn).map((s) => s.id))
   );
+  const [saving, setSaving] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
-  const step = STEPS[currentStep];
-  const isLast = currentStep === STEPS.length - 1;
-  const canProceed = currentStep === 0
-    ? (selectedPms !== null && (selectedPms === "tm3" || pmsApiKey.length > 0))
-    : currentStep === 1
-    ? clinicPhone.length >= 10
-    : true;
+  const clinicId = user?.clinicId;
 
-  function handleNext() {
+  const hydrateFromFirestore = useCallback(async () => {
+    if (!db || !clinicId) { setHydrated(true); return; }
+    try {
+      const clinicDoc = await getDoc(doc(db, "clinics", clinicId));
+      if (!clinicDoc.exists()) { setHydrated(true); return; }
+      const data = clinicDoc.data();
+
+      if (data.pmsType) setSelectedPms(data.pmsType as PmsProvider);
+      if (data.onboarding?.pmsConnected) setCompletedSteps((p) => new Set([...p, 0]));
+      if (data.onboarding?.cliniciansConfirmed) setCompletedSteps((p) => new Set([...p, 1]));
+      if (data.onboarding?.targetsSet) setCompletedSteps((p) => new Set([...p, 2]));
+
+      const v2 = data.onboardingV2;
+      if (v2?.stage) {
+        const stageOrder: OnboardingStage[] = [
+          "signup_complete", "onboarding_started", "integration_self_serve",
+          "integration_blocked", "fallback_live", "api_connected",
+          "first_value_reached", "activation_complete",
+        ];
+        const idx = stageOrder.indexOf(v2.stage);
+        if (idx >= 3) setCurrentStep(Math.min(3, Math.floor(idx / 2)));
+      }
+    } catch {
+      // Continue with defaults
+    }
+    setHydrated(true);
+  }, [clinicId]);
+
+  useEffect(() => {
+    hydrateFromFirestore();
+  }, [hydrateFromFirestore]);
+
+  async function persistStep(stepIdx: number) {
+    if (!db || !clinicId) return;
+    setSaving(true);
+    try {
+      const clinicRef = doc(db, "clinics", clinicId);
+      const now = new Date().toISOString();
+      const stepId = STEPS[stepIdx].id;
+
+      const updates: Record<string, unknown> = {
+        updatedAt: now,
+        "onboardingV2.stage": STEP_TO_STAGE[stepId],
+        "onboardingV2.lastEventAt": now,
+      };
+
+      if (stepId === "pms" && selectedPms) {
+        updates.pmsType = selectedPms;
+        updates["onboarding.pmsConnected"] = true;
+      }
+      if (stepId === "ava") {
+        updates["onboarding.cliniciansConfirmed"] = true;
+      }
+      if (stepId === "pulse") {
+        updates["onboarding.targetsSet"] = true;
+        updates.enabledSequences = Array.from(enabledSequences);
+      }
+      if (stepId === "golive") {
+        updates["onboardingV2.activationAt"] = now;
+      }
+
+      await updateDoc(clinicRef, updates);
+    } catch {
+      // Non-blocking — user can still proceed
+    }
+    setSaving(false);
+  }
+
+  async function handleNext() {
     setCompletedSteps((prev) => new Set([...prev, currentStep]));
-    if (isLast) {
+    await persistStep(currentStep);
+
+    if (currentStep === STEPS.length - 1) {
+      try {
+        await fetch("/api/clinic/check-go-live", { method: "POST" });
+      } catch {
+        // Non-blocking
+      }
       router.push("/dashboard");
     } else {
       setCurrentStep((s) => s + 1);
@@ -110,6 +195,25 @@ export default function OnboardingPage() {
       else next.add(id);
       return next;
     });
+  }
+
+  const step = STEPS[currentStep];
+  const isLast = currentStep === STEPS.length - 1;
+  const canProceed = currentStep === 0
+    ? (selectedPms !== null && (selectedPms === "tm3" || pmsApiKey.length > 0))
+    : currentStep === 1
+    ? clinicPhone.length >= 10
+    : true;
+
+  if (!hydrated) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "linear-gradient(135deg, #0B2545 0%, #132D5E 60%, #1C54F2 100%)" }}
+      >
+        <Loader2 size={24} className="animate-spin text-white/60" />
+      </div>
+    );
   }
 
   return (
@@ -164,7 +268,6 @@ export default function OnboardingPage() {
               <p
                 key={s.id}
                 className={`text-[10px] font-medium transition-colors ${currentStep === i ? "text-white" : "text-white/30"}`}
-                style={{ width: i < STEPS.length - 1 ? "auto" : "auto" }}
               >
                 {s.title}
               </p>
@@ -265,6 +368,26 @@ export default function OnboardingPage() {
                         <p className="text-[11px] text-muted mt-1.5">
                           Found in your {PMS_OPTIONS.find((p) => p.id === selectedPms)?.label} account under Settings → Integrations → API.
                         </p>
+
+                        <div className="mt-3 flex items-start gap-2 p-3 rounded-lg bg-cloud-light border border-border">
+                          <HelpCircle size={14} className="text-muted mt-0.5 shrink-0" />
+                          <div className="text-[11px] text-muted space-y-1">
+                            <p>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedPms(selectedPms);
+                                  setPmsApiKey("");
+                                  handleNext();
+                                }}
+                                className="text-blue font-semibold hover:underline"
+                              >
+                                Don&apos;t have your API key yet? Skip for now →
+                              </button>
+                            </p>
+                            <p>You can connect your PMS later from Settings, or start with a CSV upload instead.</p>
+                          </div>
+                        </div>
                       </motion.div>
                     )}
                   </>
@@ -456,11 +579,13 @@ export default function OnboardingPage() {
 
                   <button
                     onClick={handleNext}
-                    disabled={!canProceed && currentStep < 2}
+                    disabled={saving || (!canProceed && currentStep < 2)}
                     className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{ background: step.color }}
                   >
-                    {isLast ? (
+                    {saving ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : isLast ? (
                       <>
                         <Zap size={14} />
                         Launch StrydeOS

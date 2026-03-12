@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import StatCard from "@/components/ui/StatCard";
@@ -150,21 +150,33 @@ export default function DashboardPage() {
 
   const trendWindow = stats.slice(Math.max(0, weekIndex - 5), weekIndex + 1);
 
+  const { scrollY } = useScroll();
+  const headerFontSize = useTransform(scrollY, [0, 80], [32, 18]);
+  const subtextOpacity = useTransform(scrollY, [0, 60], [1, 0]);
+  const chevronOpacity = useTransform(scrollY, [0, 40], [1, 0]);
+
   return (
     <div className="space-y-6">
       {/* Welcome greeting + sync indicator */}
-      <motion.div className="mb-2" {...staggerItem(0)}>
+      <motion.div
+        className="sticky top-0 z-10 mb-2 -mx-6 px-6 py-2 bg-cloud-dancer/90 dark:bg-navy/90 backdrop-blur-sm"
+        style={{ paddingTop: 8 }}
+        {...staggerItem(0)}
+      >
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="font-display text-[32px] text-navy leading-tight relative">
+            <motion.h1
+              className="font-display text-navy leading-tight relative"
+              style={{ fontSize: headerFontSize }}
+            >
               <span className="relative z-10">{greeting}.</span>
-              <span className="chevron-trail" aria-hidden="true">
+              <motion.span className="chevron-trail" aria-hidden="true" style={{ opacity: chevronOpacity }}>
                 <span className="chevron-glyph" style={{ animationDelay: "0s" }}>&rsaquo;</span>
                 <span className="chevron-glyph" style={{ animationDelay: "0.4s" }}>&rsaquo;</span>
                 <span className="chevron-glyph" style={{ animationDelay: "0.8s" }}>&rsaquo;</span>
-              </span>
-            </h1>
-            <p className="text-sm text-muted mt-0.5">{subtext}</p>
+              </motion.span>
+            </motion.h1>
+            <motion.p className="text-sm text-muted mt-0.5" style={{ opacity: subtextOpacity }}>{subtext}</motion.p>
           </div>
           <div className="flex items-center gap-2 shrink-0 mt-2 flex-wrap justify-end">
             {isCurrentWeek && !loading && (
@@ -376,7 +388,7 @@ export default function DashboardPage() {
               action={{ label: "Review missed appointments", href: "/continuity" }}
             />
             <StatCard
-              label="Course Completion"
+              label="HEP Compliance"
               value={formatPercent(latest.courseCompletionRate)}
               trend={computeTrend(latest.courseCompletionRate, previous?.courseCompletionRate)}
               trendPercent={computeTrendPercent(latest.courseCompletionRate, previous?.courseCompletionRate)}

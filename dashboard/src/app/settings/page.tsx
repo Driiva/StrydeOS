@@ -17,6 +17,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import { getInitials } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import Tooltip from "@/components/ui/Tooltip";
 import { normalizeApiError } from "@/lib/api-errors";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -234,6 +235,9 @@ const cp = user?.clinicProfile ?? null;
   const [syncResult, setSyncResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [csvUploading, setCsvUploading] = useState(false);
   const [csvResult, setCsvResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [pmsTestFailed, setPmsTestFailed] = useState(false);
+  const [requestingAssist, setRequestingAssist] = useState(false);
+  const [assistRequested, setAssistRequested] = useState(false);
 
   // Column mapping state (Phase 2)
   const [mappingHeaders, setMappingHeaders] = useState<string[] | null>(null);
@@ -328,6 +332,7 @@ const cp = user?.clinicProfile ?? null;
       return;
     }
     setPmsTesting(true);
+    setPmsTestFailed(false);
     try {
       const token = await firebaseUser.getIdToken();
       const base = typeof window !== "undefined" ? window.location.origin : "";
@@ -339,6 +344,7 @@ const cp = user?.clinicProfile ?? null;
       const testData = await testRes.json().catch(() => ({}));
       if (!testRes.ok || !testData.ok) {
         toast(normalizeApiError(testRes.status, testData.error, "Connection failed. Check your API key."), "error");
+        setPmsTestFailed(true);
         setPmsTesting(false);
         return;
       }
@@ -384,6 +390,33 @@ const cp = user?.clinicProfile ?? null;
       toast("PMS disconnected", "success");
     } catch {
       toast("Failed to disconnect", "error");
+    }
+  }
+
+  async function handleRequestAssistedSetup() {
+    if (!clinicId || !db || !user) return;
+    setRequestingAssist(true);
+    try {
+      await addDoc(collection(db, "clinics", clinicId, "integration_requests"), {
+        provider: pmsProvider || "unknown",
+        ownerEmail: user.email,
+        clinicName: cp?.name ?? "",
+        requestedAt: new Date().toISOString(),
+        status: "pending",
+      });
+      await updateDoc(doc(db, "clinics", clinicId), {
+        "onboardingV2.stage": "integration_blocked",
+        "onboardingV2.path": "assisted",
+        "onboardingV2.blockers": ["missing_api_credentials"],
+        "onboardingV2.lastEventAt": new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      setAssistRequested(true);
+      toast("Setup assistance requested — we'll be in touch within 1 business day", "success");
+    } catch {
+      toast("Failed to submit request. Please try again.", "error");
+    } finally {
+      setRequestingAssist(false);
     }
   }
 
@@ -463,6 +496,11 @@ const cp = user?.clinicProfile ?? null;
       toast(data.message ?? "Import complete", "success");
       await refreshClinicProfile();
       loadImportHistory();
+
+      if (!pmsConnected) {
+        toast("You're live on CSV data — connect your PMS in Settings when you're ready", "info");
+        setPmsConnected(true);
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Import failed";
       setCsvResult({ ok: false, msg });
@@ -1117,15 +1155,16 @@ const cp = user?.clinicProfile ?? null;
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                <Tooltip content="Pull latest data from your PMS now">
                 <button
                   onClick={() => handleRunSync(false)}
                   disabled={syncRunning}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-blue border border-blue/20 hover:bg-blue/5 transition-colors disabled:opacity-50"
-                  title="Pull latest data from your PMS now"
                 >
                   <RefreshCw size={12} className={syncRunning ? "animate-spin" : ""} />
                   {syncRunning ? "Syncing…" : "Sync now"}
                 </button>
+                </Tooltip>
                 <button
                   onClick={handleDisconnectPms}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-danger border border-danger/20 hover:bg-danger/5 transition-colors"
@@ -1213,6 +1252,51 @@ const cp = user?.clinicProfile ?? null;
                   )}
                   {pmsTesting ? "Testing..." : "Test Connection"}
                 </button>
+
+                {/* Integration blocked fallback */}
+                {pmsTestFailed && (
+                  <div className="mt-4 p-4 rounded-xl border border-warn/20 bg-warn/5 space-y-3 animate-fade-in">
+                    <p className="text-sm font-medium text-navy">Having trouble connecting?</p>
+                    <div className="space-y-2">
+                      <a
+                        href={pmsProvider === "writeupp" ? "https://support.writeupp.com/en/articles/api" : pmsProvider === "cliniko" ? "https://developer.cliniko.com/" : "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-[12px] text-blue font-semibold hover:underline"
+                      >
+                        <ArrowRight size={12} />
+                        Where to find your {PMS_PROVIDERS.find((p) => p.id === pmsProvider)?.label} API key
+                      </a>
+
+                      {assistRequested ? (
+                        <div className="flex items-center gap-2 text-[12px] text-success font-medium">
+                          <CheckCircle2 size={13} />
+                          Request submitted — we&apos;ll be in touch within 1 business day
+                        </div>
+                      ) : (
+                        <button
+                          onClick={handleRequestAssistedSetup}
+                          disabled={requestingAssist}
+                          className="flex items-center gap-2 text-[12px] text-blue font-semibold hover:underline disabled:opacity-50"
+                        >
+                          {requestingAssist ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
+                          Request assisted setup
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          const csvSection = document.getElementById("csv-import-section");
+                          if (csvSection) csvSection.scrollIntoView({ behavior: "smooth" });
+                        }}
+                        className="flex items-center gap-2 text-[12px] text-blue font-semibold hover:underline"
+                      >
+                        <ArrowRight size={12} />
+                        Skip for now and use CSV instead
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1232,7 +1316,7 @@ const cp = user?.clinicProfile ?? null;
       </div>
 
       {/* CSV Import — WriteUpp / any PMS */}
-      <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
+      <div id="csv-import-section" className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
         <div className="flex items-start justify-between mb-1">
           <h3 className="font-display text-lg text-navy">Import from CSV</h3>
           <div className="flex items-center gap-2">

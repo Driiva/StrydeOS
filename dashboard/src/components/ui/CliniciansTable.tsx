@@ -21,7 +21,7 @@ type SortKey = "name" | "followUp" | "completion" | "utilisation" | "dna" | "ses
 
 const COLUMN_TOOLTIPS: Record<string, string> = {
   followUp: "Mean FU sessions per IA. UK MSK benchmark: 2.9\u20133.2. Below 2.0 signals patient drop-off risk.",
-  completion: "% of patients completing full prescribed course. <75% may indicate early self-discharge. UK private MSK benchmark: 70\u201380%.",
+  completion: "% of patients given a home exercise programme vs patients seen. UK private MSK benchmark: 70\u201385%.",
   utilisation: "% of booked slots attended. Target >85%. Below 75% suggests scheduling inefficiency.",
   dna: "Did Not Attend %. <6% excellent, >10% requires intervention.",
   sessions: "Total billable appointments this clinician delivered in the week.",
@@ -183,7 +183,7 @@ export default function CliniciansTable({ rows, onRowClick }: CliniciansTablePro
   const columns: { key: SortKey; label: string }[] = [
     { key: "name", label: "Clinician" },
     { key: "followUp", label: "Follow-up Rate" },
-    { key: "completion", label: "Course Completion" },
+    { key: "completion", label: "HEP Compliance" },
     { key: "utilisation", label: "Utilisation" },
     { key: "dna", label: "DNA Rate" },
     { key: "sessions", label: "Sessions" },

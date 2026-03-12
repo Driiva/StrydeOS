@@ -64,7 +64,7 @@ export const BENCHMARKS: Record<string, MetricBenchmark> = {
     clinicalSignificance:
       "Patients without HEP have 40–60% worse functional outcomes at 3 months (CSP evidence base). Non-provision breaches clinical governance expectations for private MSK practice and is inconsistent with NICE CG177 first-line exercise recommendations.",
     financialSignificance:
-      "Better HEP compliance correlates with faster recovery, higher patient satisfaction (more referrals), and lower DNA rates. Indirect revenue uplift through improved course completion and reduced churn risk.",
+      "Better HEP compliance correlates with faster recovery, higher patient satisfaction (more referrals), and lower DNA rates. Indirect revenue uplift through improved retention and reduced churn risk.",
     sources: ["NICE CG177", "HCPC Standard 13", "CSP Quality Assurance Framework"],
   },
 
@@ -90,22 +90,22 @@ export const BENCHMARKS: Record<string, MetricBenchmark> = {
 
   courseCompletion: {
     key: "courseCompletion",
-    label: "Course Completion",
+    label: "HEP Compliance",
     definition:
-      "Percentage of patients who attend all sessions in their recommended treatment course, from initial assessment through to planned discharge. A 'course' is the clinician's recommended number of sessions at IA (typically 4–8 for MSK). A patient 'completes' when they reach that number OR are clinically discharged early with documented rationale.",
+      "Percentage of patients who are assigned a home exercise programme (HEP) relative to patients seen. Measures whether clinicians are consistently prescribing structured self-management via platforms like Physitrack.",
     ownerExplainer:
-      "How many patients actually finish what they started. If a clinician recommends 6 sessions and the patient only comes for 3, that's incomplete. It matters because incomplete treatment = incomplete recovery = the patient may blame your clinic when they're not better, even though they didn't follow through.",
-    ukBenchmarkRange: "60–80% typical in private MSK; >80% excellent (MACP governance framework)",
+      "Are your clinicians giving patients something to do between sessions? If a patient leaves without a programme, they're relying entirely on in-clinic time — which slows recovery and weakens rebooking rationale. HEP compliance tells you who's prescribing and who isn't.",
+    ukBenchmarkRange: "70–85% typical in private MSK using Physitrack; >85% excellent",
     thresholds: {
       green: "≥ 80%",
       amber: "65–79%",
       red: "< 65%",
     },
     clinicalSignificance:
-      "Low completion correlates with higher recurrence rates, worse long-term outcomes, and potential clinical governance flags. HCPC Standard 8 (communicate effectively) includes duty to explain treatment rationale to support patient adherence.",
+      "Patients with structured HEPs show faster functional recovery and higher satisfaction scores. HCPC Standard 8 (communicate effectively) supports duty to provide clear self-management guidance.",
     financialSignificance:
-      "At 6-session avg course @ £75/session: 80% completion = £360 avg revenue/patient; 65% = £292.50. Gap = £67.50/patient. Across 8 new patients/week/clinician, that's £540/week or £28,080/year per clinician.",
-    sources: ["MACP Clinical Governance Framework", "HCPC Standard 8"],
+      "Clinicians with high HEP compliance see stronger follow-up rates — patients who engage with programmes between sessions are more likely to rebook. Directly correlated with revenue per clinician.",
+    sources: ["CSP Quality Standards", "HCPC Standard 8"],
   },
 
   dnaRate: {

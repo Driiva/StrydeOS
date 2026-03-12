@@ -243,8 +243,8 @@ const Nav = () => {
             >{label}</a>
           ))}
         </div>
-        <a href="#early-access" className="btn-primary" style={{ padding: "10px 22px", fontSize: 14 }}>
-          Get Early Access
+        <a href="/login?mode=signup" className="btn-primary" style={{ padding: "10px 22px", fontSize: 14 }}>
+          Start free trial
         </a>
       </div>
     </nav>
@@ -304,15 +304,15 @@ const Hero = () => {
             <h1 className="serif" style={{ fontSize: 60, lineHeight: 1.0, color: C.navy, marginBottom: 28, fontWeight: 400, letterSpacing: "-0.01em" }}>
               for <span style={{ fontStyle: "italic", color: C.blue }}>private practice.</span>
             </h1>
-            <p style={{ fontSize: 18, lineHeight: 1.7, color: C.muted, marginBottom: 20, maxWidth: 500 }}>
-              The operational layer private clinics are missing. Fewer gaps in the diary. More patients completing their course of treatment. Clinical performance that shows up in your revenue.
+            <p style={{ fontSize: 18, lineHeight: 1.7, color: C.muted, marginBottom: 20, maxWidth: 520 }}>
+              Your practice has software. It does not have a system. Your PMS handles bookings, your exercise platform delivers HEPs, your payment processor takes the money, but none of them tell you why follow-up rate is dropping or where unrecovered cancellations are quietly draining revenue.
             </p>
-            <p style={{ fontSize: 15, lineHeight: 1.7, color: C.muted, marginBottom: 40, maxWidth: 480, fontStyle: "italic", borderLeft: `3px solid ${C.blue}40`, paddingLeft: 16 }}>
-              StrydeOS is what well-run private clinics have built for themselves — packaged for everyone else.
+            <p style={{ fontSize: 15, lineHeight: 1.7, color: C.muted, marginBottom: 40, maxWidth: 520, fontStyle: "italic", borderLeft: `3px solid ${C.blue}40`, paddingLeft: 16 }}>
+              StrydeOS connects the clinical data you are already generating to the commercial outcomes you are currently guessing at.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 52 }}>
-              <a href="#early-access" className="btn-primary">
-                Get Early Access
+              <a href="/login?mode=signup" className="btn-primary">
+                Start free trial
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </a>
               <a href="#products" className="btn-outline">See how it works</a>
@@ -347,8 +347,8 @@ const Hero = () => {
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 18 }}>
                   {[
-                    { name: "Receptionist", status: "Active", calls: "12 today", color: C.blue },
-                    { name: "Continuity", status: "Active", calls: "8 follow-ups", color: C.teal },
+                    { name: "Ava", status: "Active", calls: "12 today", color: C.blue },
+                    { name: "Pulse", status: "Active", calls: "8 follow-ups", color: C.teal },
                     { name: "Intelligence", status: "Active", calls: "91% util.", color: "#8B5CF6" },
                   ].map(({ name, status, calls, color }) => (
                     <div key={name} style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: "12px 14px", border: `1px solid ${color}30` }}>
@@ -364,7 +364,7 @@ const Hero = () => {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
                   {[
                     { label: "Follow-up Rate", value: "78%", bar: 78, status: "warn" },
-                    { label: "Course Completion", value: "84%", bar: 84, status: "ok" },
+                    { label: "HEP Compliance", value: "84%", bar: 84, status: "ok" },
                     { label: "Utilisation", value: "91%", bar: 91, status: "ok" },
                     { label: "No-show Rate", value: "4.2%", bar: 42, status: "ok" },
                   ].map(({ label, value, bar, status }) => (
@@ -427,7 +427,7 @@ const Hero = () => {
           <RadialGlow color={C.blue} size={400} opacity={0.12} style={{ top: -100, right: -50 }} />
           <div style={{ position: "relative", zIndex: 2, maxWidth: 760, margin: "0 auto", textAlign: "center" }}>
             <p className="serif" style={{ fontSize: 20, color: "rgba(255,255,255,0.85)", lineHeight: 1.6, fontStyle: "italic" }}>
-              "Most private practices are a few operational changes away from running significantly better. The gap isn't clinical ability — it's visibility. When clinicians can see how they're performing, and patients stay engaged through treatment, the revenue follows."
+              "The median rebooking rate across UK private MSK clinics is 80%."
             </p>
             <div style={{ marginTop: 20, display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap" }}>
               {[
@@ -458,7 +458,7 @@ const HolisticSection = () => (
             Every gap closed.
           </h2>
           <p style={{ fontSize: 16, lineHeight: 1.8, color: C.muted, marginBottom: 20 }}>
-            The clinics running at consistent capacity aren't doing anything clinically exceptional. They answer every call. They follow up after every session. They know, week by week, where performance is strong and where it's slipping.
+            HEP compliance. Programme assignment rate. Revenue per clinician. Follow-up rates against rebooking patterns. These are the numbers that run a private practice, and most owners only get them through spreadsheets if they get them at all.
           </p>
           <p style={{ fontSize: 16, lineHeight: 1.8, color: C.muted, marginBottom: 32 }}>
             That visibility is what turns good clinical outcomes into sustainable revenue. StrydeOS makes it possible without adding headcount.
@@ -469,8 +469,8 @@ const HolisticSection = () => (
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {[
-            { name: "StrydeOS Receptionist", desc: "No missed calls. Every patient that reaches you, booked.", icon: "📞", color: C.blue, n: "01" },
-            { name: "StrydeOS Continuity", desc: "Patients who complete treatment. Fewer drop-offs, more referrals.", icon: "📈", color: C.teal, n: "02" },
+            { name: "StrydeOS Ava", desc: "No missed calls. Every patient that reaches you, booked.", icon: "📞", color: C.blue, n: "01" },
+            { name: "StrydeOS Pulse", desc: "Patients who complete treatment. Fewer drop-offs, more referrals.", icon: "📈", color: C.teal, n: "02" },
             { name: "StrydeOS Intelligence", desc: "Clinician-level KPIs that connect performance to revenue.", icon: "📊", color: "#8B5CF6", n: "03" },
           ].map(({ name, desc, icon, color, n }) => (
             <div key={name} className="card-hover" style={{
@@ -564,8 +564,8 @@ const Integrations = () => (
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: C.blue, marginBottom: 14 }}>StrydeOS — sits above your stack</div>
             <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
               {[
-                { name: "Receptionist", icon: "📞", color: C.blue, desc: "Answers calls — books into your PMS" },
-                { name: "Continuity", icon: "📈", color: C.teal, desc: "Reads appointment data — triggers follow-up" },
+                { name: "Ava", icon: "📞", color: C.blue, desc: "Answers calls — books into your PMS" },
+                { name: "Pulse", icon: "📈", color: C.teal, desc: "Reads appointment data — triggers follow-up" },
                 { name: "Intelligence", icon: "📊", color: "#8B5CF6", desc: "Pulls KPI data — builds live dashboard" },
               ].map(({ name, icon, color, desc }) => (
                 <div key={name} style={{
@@ -609,20 +609,20 @@ const Products = () => {
 
   const products = [
     {
-      id: "receptionist", label: "Receptionist", icon: "📞", color: C.blue,
-      eyebrow: "StrydeOS Receptionist",
+      id: "receptionist", label: "Ava", icon: "📞", color: C.blue,
+      eyebrow: "StrydeOS Ava",
       headline: "Never miss a patient again.",
-      body: "Every unanswered call is a patient who books somewhere else. Every cancellation that doesn't get followed up is revenue that disappears quietly.\n\nStrydeOS Receptionist handles inbound calls, books appointments, recovers cancellations and chases no-shows — automatically, around the clock.",
+      body: "Every missed call is a new patient lost to the next clinic on Google. Every cancellation that is not recovered becomes avoidable leakage.\n\nStrydeOS Ava handles inbound calls, books into your diary, recovers cancellations before the slot goes empty, and triages new enquiries automatically.",
       proof: "Clinics using it have stopped paying £400–800/month to call-handling services. They've also stopped losing patients at the first point of contact.",
       tagline: "Your front desk. Without the overhead.",
-      cta: "Start with Receptionist",
+      cta: "Start with Ava",
       bullets: ["Inbound calls handled 24/7", "Books directly into your calendar", "Cancellation recovery & no-show chasing", "SMS confirmations sent automatically", "Emergency routing to on-call clinician"],
       visual: (
         <div style={{ background: C.navy, borderRadius: 18, overflow: "hidden" }}>
           <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: "50%", background: `${C.blue}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🤖</div>
             <div>
-              <div style={{ color: "white", fontWeight: 600, fontSize: 13 }}>StrydeOS Receptionist</div>
+              <div style={{ color: "white", fontWeight: 600, fontSize: 13 }}>StrydeOS Ava</div>
               <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10 }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#34D399" }} />
                 <span style={{ color: "#34D399" }}>Live · Spires MSK</span>
@@ -653,13 +653,13 @@ const Products = () => {
       ),
     },
     {
-      id: "continuity", label: "Continuity", icon: "📈", color: C.teal,
-      eyebrow: "StrydeOS Continuity",
+      id: "continuity", label: "Pulse", icon: "📈", color: C.teal,
+      eyebrow: "StrydeOS Pulse",
       headline: "Keep patients in care, longer.",
-      body: "The drop-off between session two and session three is where most clinics leak the most revenue. Patients disengage — not because the treatment isn't working, but because nobody stayed in touch.\n\nStrydeOS Continuity automates every touchpoint between sessions.",
+      body: "The drop-off between session two and session three is where most clinics leak the most revenue. Patients disengage — not because the treatment isn't working, but because nobody stayed in touch.\n\nStrydeOS Pulse automates every touchpoint between sessions.",
       proof: "The clinics getting this right aren't doing it by hand. They've systematised it — and it shows in their completion rates and referral volume.",
       tagline: "Better outcomes. Fewer drop-offs. More referrals.",
-      cta: "Start with Continuity",
+      cta: "Start with Pulse",
       bullets: ["Automated post-session reminders", "Rebooking prompts at the right moment", "Post-discharge check-ins", "Outcome tracking per patient", "Referral prompts when patients are engaged"],
       visual: (
         <div style={{ background: C.navy, borderRadius: 18, padding: 20 }}>
@@ -696,7 +696,7 @@ const Products = () => {
       id: "intelligence", label: "Intelligence", icon: "📊", color: "#8B5CF6",
       eyebrow: "StrydeOS Intelligence",
       headline: "Know how your clinic actually performs.",
-      body: "Revenue tells you something went right or wrong. It doesn't tell you why, or where, or who.\n\nStrydeOS Intelligence gives you the metrics that actually matter — follow-up rates, patient retention, programme completion, clinician performance by outcome.",
+      body: "Revenue tells you what happened, not why. StrydeOS Intelligence surfaces the drivers behind it in real time.\n\nTrack HEP compliance, programme assignment rate, revenue per clinician, follow-up rates, and utilisation against rebooking patterns — automatically and per clinician.",
       proof: "Not to manage people. To understand where your clinic is thriving and where it isn't. The best-run clinics already know these numbers.",
       tagline: "Real-time. Actionable. Built for practice owners, not analysts.",
       cta: "Start with Intelligence",
@@ -796,8 +796,8 @@ const Products = () => {
                 </div>
               ))}
             </div>
-            <a href="#early-access" className="btn-primary" style={{ background: p.color }}>
-              {p.cta} →
+            <a href="/login?mode=signup" className="btn-primary" style={{ background: p.color }}>
+              Start free trial →
             </a>
           </div>
           <div>{p.visual}</div>
@@ -831,7 +831,7 @@ const Results = () => (
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 48 }}>
         {[
           { stat: "67%→4%", label: "Missed call rate", note: "Solo MSK practice, 6 months post-launch" },
-          { stat: "84%", label: "Course completion rate", note: "vs 61% industry average" },
+          { stat: "84%", label: "HEP compliance rate", note: "vs 61% industry average" },
           { stat: "£800/mo", label: "Saved on call-handling", note: "vs Moneypenny & live agent costs" },
           { stat: "< 3 months", label: "Typical payback period", note: "Conservative estimate, all tiers" },
         ].map(({ stat, label, note }) => (
@@ -852,7 +852,7 @@ const Results = () => (
         display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center",
       }}>
         <div>
-          <div style={{ fontSize: 11, color: C.blueGlow, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Case Study — Spires MSK, London</div>
+          <div style={{ fontSize: 11, color: C.blueGlow, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Case Study — Spires MSK / Andrew, Clinical Director</div>
           <h3 className="serif" style={{ fontSize: 28, color: "white", fontWeight: 400, lineHeight: 1.2, marginBottom: 20 }}>
             Full clinical visibility in{" "}
             <span style={{ fontStyle: "italic", color: C.blueGlow }}>one week.</span>
@@ -860,7 +860,7 @@ const Results = () => (
           <blockquote style={{ borderLeft: `3px solid ${C.blue}`, paddingLeft: 18, color: "rgba(255,255,255,0.6)", fontStyle: "italic", fontSize: 15, lineHeight: 1.65 }}>
             "I finally have a single view across all my clinicians. The follow-up flag alone has changed how I run my Monday morning meetings."
             <div style={{ fontStyle: "normal", marginTop: 10, fontSize: 12, color: "rgba(255,255,255,0.3)", fontWeight: 500 }}>
-              — Andrew, Clinical Director, Spires MSK Physiotherapy
+              — Andrew, Clinical Director
             </div>
           </blockquote>
         </div>
@@ -953,8 +953,8 @@ const ROICalc = () => {
                     Most practices recover their StrydeOS cost within 90 days
                   </div>
                 </div>
-                <a href="#early-access" className="btn-primary" style={{ width: "100%", justifyContent: "center", borderRadius: 14 }}>
-                  Book a free audit →
+                <a href="/login?mode=signup" className="btn-primary" style={{ width: "100%", justifyContent: "center", borderRadius: 14 }}>
+                  Start free trial →
                 </a>
               </div>
             </div>
@@ -972,8 +972,8 @@ const Pricing = () => {
 
   const tiers = [
     { id: "solo",   label: "Solo",   sub: "1 clinician" },
-    { id: "studio", label: "Studio", sub: "2–4 clinicians" },
-    { id: "clinic", label: "Clinic", sub: "6+ clinicians" },
+    { id: "studio", label: "Studio", sub: "2-4 clinicians" },
+    { id: "clinic", label: "Clinic", sub: "5+ clinicians" },
   ];
 
   const products = [
@@ -984,7 +984,7 @@ const Pricing = () => {
       color: "#8B5CF6",
       icon: "📊",
       setup: 0,
-      prices: { solo: 149, studio: 249, clinic: 399 },
+      prices: { solo: 79, studio: 129, clinic: 199 },
       features: [
         "Per-clinician KPI dashboard (follow-up rate, HEP compliance, utilisation, DNA rate, revenue per session)",
         "Clinic-wide rollup view",
@@ -998,16 +998,16 @@ const Pricing = () => {
       highlight: false,
     },
     {
-      id: "perform",
-      name: "Perform",
+      id: "ava",
+      name: "Ava",
       tagline: "Stop losing patients at the door.",
       color: C.blue,
       icon: "📞",
-      setup: 500,
-      prices: { solo: 349, studio: 549, clinic: 849 },
+      setup: 250,
+      prices: { solo: 149, studio: 199, clinic: 299 },
       features: [
         "Everything in Intelligence",
-        "24/7 AI Voice Receptionist",
+        "24/7 Ava voice receptionist",
         "Live inbound call handling — books directly into your calendar",
         "Cancellation recovery and no-show chasing",
         "Emergency routing to on-call clinician",
@@ -1019,16 +1019,16 @@ const Pricing = () => {
       highlight: true,
     },
     {
-      id: "growth",
-      name: "Growth OS",
-      tagline: "Better outcomes. Fewer drop-offs.",
+      id: "pulse",
+      name: "Pulse",
+      tagline: "Keep patients in care, longer.",
       color: C.teal,
       icon: "📈",
-      setup: 750,
-      prices: { solo: 599, studio: 899, clinic: 1299 },
+      setup: 0,
+      prices: { solo: 99, studio: 149, clinic: 229 },
       features: [
-        "Everything in Perform",
-        "Patient Continuity flows",
+        "Everything in Ava",
+        "Patient Pulse flows",
         "Automated post-session follow-up sequences",
         "Dropout prevention triggers (gap detection, re-engagement messaging)",
         "Outcome tracking per patient",
@@ -1162,7 +1162,7 @@ const Pricing = () => {
                   ))}
                 </div>
 
-                <a href="#early-access" style={{
+                <a href="/login?mode=signup" style={{
                   display: "flex", alignItems: "center", justifyContent: "center",
                   width: "100%", padding: "13px 0", borderRadius: 14,
                   background: isHighlight ? C.blue : "transparent",
@@ -1171,7 +1171,7 @@ const Pricing = () => {
                   fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 600,
                   textDecoration: "none", cursor: "pointer", transition: "all 0.25s",
                 }}>
-                  {p.cta} →
+                  Start free trial →
                 </a>
               </div>
             );
@@ -1214,19 +1214,19 @@ const WhyUs = () => {
       n: "01",
       title: "Built from inside the clinic.",
       color: C.blue,
-      body: `Most software is built by people who've never worked a clinical day in their life. StrydeOS wasn't.\n\nWe know what a Monday morning handover looks like. We know the difference between a DNA and a late cancel. We know that "utilisation" means something very specific to a physio practice owner, and that Physitrack compliance isn't a vanity metric — it's a proxy for clinical outcomes.\n\nThat knowledge is baked into every feature. You won't spend three calls explaining your workflow to us. We already know it.`,
+      body: `Built inside a working practice, not a product lab.\n\nEvery KPI StrydeOS tracks exists because a practice owner needed to see it and could not. We know what Monday handover looks like, what a late cancel really costs, and which metrics actually change outcomes and revenue.\n\nThe practice that built StrydeOS has seen 125% revenue growth in three years. That is what happens when you stop managing tools and start operating a system.`,
     },
     {
       n: "02",
       title: "We don't hide behind the dashboard.",
       color: C.teal,
-      body: `You won't find us selling you a flashy interface full of metrics that don't move your business. Every number in StrydeOS Intelligence is there because it changes a decision — follow-up rate, course completion, DNA rate, revenue per session. Nothing else.\n\nIf a feature doesn't make your practice run better, we won't build it. If a metric doesn't help you act, it doesn't make the cut. We'd rather show you four numbers that matter than forty that don't.`,
+      body: `You won't find us selling you a flashy interface full of metrics that don't move your business. Every number in StrydeOS Intelligence is there because it changes a decision — follow-up rate, HEP compliance, DNA rate, revenue per session. Nothing else.\n\nIf a feature doesn't make your practice run better, we won't build it. If a metric doesn't help you act, it doesn't make the cut. We'd rather show you four numbers that matter than forty that don't.`,
     },
     {
       n: "03",
       title: "Patient outcomes are the only thing that actually counts.",
       color: "#8B5CF6",
-      body: `Every product we've built traces back to the same question: does this help patients complete their course of treatment?\n\nReceptionist answers the phone so the patient gets booked. Continuity sends the reminder so they come back. Intelligence flags the clinician whose follow-up rate is slipping — before it becomes a pattern. The patient never sees StrydeOS. But they feel it.\n\nWe're not a marketing tool. We're not a retention gimmick. We're infrastructure for better clinical outcomes.`,
+      body: `Every product we've built traces back to the same question: does this help patients complete their course of treatment?\n\nAva answers the phone so the patient gets booked. Pulse sends the reminder so they come back. Intelligence flags the clinician whose follow-up rate is slipping — before it becomes a pattern. The patient never sees StrydeOS. But they feel it.\n\nWe're not a marketing tool. We're not a retention gimmick. We're infrastructure for better clinical outcomes.`,
     },
     {
       n: "04",
@@ -1324,11 +1324,11 @@ const EarlyAccess = () => (
         No switching required. StrydeOS connects to Cliniko, WriteUpp, and most major PMS. Start with one product, add the rest when you're ready.
       </p>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-        <a href="https://calendly.com/hello-strydeos" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ fontSize: 16, padding: "16px 44px" }}>
-          Book your free audit →
+        <a href="/login?mode=signup" className="btn-primary" style={{ fontSize: 16, padding: "16px 44px" }}>
+          Start free trial →
         </a>
         <div style={{ display: "flex", gap: 24 }}>
-          <a href="#" className="btn-ghost" style={{ padding: "10px 20px", fontSize: 13 }}>Book a Demo</a>
+          <a href="https://calendly.com/hello-strydeos/30min" target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ padding: "10px 20px", fontSize: 13 }}>Book a Demo</a>
           <a href="#pricing" className="btn-ghost" style={{ padding: "10px 20px", fontSize: 13 }}>See Pricing</a>
         </div>
         <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, marginTop: 4 }}>
@@ -1559,7 +1559,7 @@ const SecurityPolicyPage = () => {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             {[
               { name: "Google Cloud (Firebase)", purpose: "Hosting, auth, database", region: "UK (eu-west2)" },
-              { name: "Retell AI", purpose: "Voice reception (Receptionist)", region: "EU/UK processing" },
+              { name: "Retell AI", purpose: "Voice reception (Ava)", region: "EU/UK processing" },
               { name: "ElevenLabs", purpose: "Voice synthesis", region: "EU processing" },
               { name: "PMS Providers", purpose: "WriteUpp, Cliniko API sync", region: "UK hosted" },
             ].map(({ name, purpose, region }) => (
@@ -1617,7 +1617,7 @@ const Footer = () => (
               { label: "Ava", href: "#products" },
               { label: "Pulse", href: "#products" },
               { label: "Intelligence", href: "#products" },
-              { label: "Growth OS", href: "#products" },
+              { label: "Pulse", href: "#products" },
             ]},
             { h: "Company", links: [
               { label: "About", href: "#" },

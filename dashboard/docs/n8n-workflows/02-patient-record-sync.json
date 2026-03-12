@@ -58,8 +58,8 @@
         "headerParameters": {
           "parameters": [
             {
-              "name": "x-webhook-secret",
-              "value": "={{ $env.N8N_COMMS_WEBHOOK_SECRET }}"
+              "name": "Authorization",
+              "value": "Bearer {{ $env.CRON_SECRET }}"
             }
           ]
         },
@@ -73,7 +73,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [900, 300],
-      "notes": "Posts to /api/pipeline/run on the StrydeOS app, which handles patient creation/update.\n\nRequired env vars:\n  APP_URL — your Vercel deployment URL (e.g. https://strydeos.vercel.app)\n  N8N_COMMS_WEBHOOK_SECRET — shared secret for authentication"
+      "notes": "Posts to /api/pipeline/run on the StrydeOS app, which handles patient creation/update.\n\nRequired env vars:\n  APP_URL — your Vercel deployment URL (e.g. https://strydeos.vercel.app)\n  CRON_SECRET — shared secret for Bearer auth (same as CRON_SECRET in Vercel env vars)"
     },
     {
       "parameters": {
@@ -103,6 +103,6 @@
   },
   "settings": { "executionOrder": "v1" },
   "meta": {
-    "description": "Creates or updates a patient record in Firestore when Ava books a new appointment.\n\nRequired env vars:\n  RETELL_CLINIC_ID         — Firestore clinic document ID\n  APP_URL                  — StrydeOS Vercel URL\n  N8N_COMMS_WEBHOOK_SECRET — shared auth secret\n\nOptional improvement: configure Retell agent with a custom data extraction schema\nso patient name, email, insurance info appear in call_analysis.custom_analysis_data."
+    "description": "Creates or updates a patient record in Firestore when Ava books a new appointment.\n\nRequired env vars:\n  RETELL_CLINIC_ID — Firestore clinic document ID\n  APP_URL          — StrydeOS Vercel URL\n  CRON_SECRET      — Bearer auth secret (matches Vercel CRON_SECRET env var)\n\nOptional improvement: configure Retell agent with a custom data extraction schema\nso patient name, email, insurance info appear in call_analysis.custom_analysis_data."
   }
 }

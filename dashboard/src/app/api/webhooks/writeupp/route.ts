@@ -38,14 +38,28 @@ export async function POST(request: NextRequest) {
     }
 
     const db = getAdminDb();
-
-    // Find the clinic by PMS config that matches this webhook source.
-    // For single-clinic setups, we scan all clinics with a WriteUpp config.
-    const clinicsSnap = await db.collection("clinics").get();
     const results = [];
 
-    for (const clinicDoc of clinicsSnap.docs) {
-      const clinicId = clinicDoc.id;
+    // Optimised clinic resolution: use clinicId from body/header if available,
+    // otherwise fall back to scanning WriteUpp-configured clinics.
+    const directClinicId =
+      (body.strydeos_clinic_id as string | undefined) ??
+      request.headers.get("x-strydeos-clinic-id");
+
+    let targetClinicIds: string[] = [];
+
+    if (directClinicId) {
+      targetClinicIds = [directClinicId];
+    } else {
+      // Filtered scan — only clinics with pmsType = "writeupp" to avoid full collection scan
+      const clinicsSnap = await db
+        .collection("clinics")
+        .where("pmsType", "==", "writeupp")
+        .get();
+      targetClinicIds = clinicsSnap.docs.map((d) => d.id);
+    }
+
+    for (const clinicId of targetClinicIds) {
       const configSnap = await db
         .collection("clinics")
         .doc(clinicId)

@@ -1,0 +1,134 @@
+{
+  "name": "06 · Pulse SMS Sequences (Rebooking, HEP, Review)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rebooking_prompt",
+        "options": { "rawBody": false },
+        "responseMode": "responseNode"
+      },
+      "id": "webhook-rebooking",
+      "name": "Rebooking webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 200],
+      "notes": "Triggered by StrydeOS trigger-sequences when a patient hasn't rebooked within 72h of last session."
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hep_reminder",
+        "options": { "rawBody": false },
+        "responseMode": "responseNode"
+      },
+      "id": "webhook-hep",
+      "name": "HEP reminder webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 400],
+      "notes": "Triggered by StrydeOS trigger-sequences when a patient has an upcoming session and hasn't completed their exercises."
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "review_prompt",
+        "options": { "rawBody": false },
+        "responseMode": "responseNode"
+      },
+      "id": "webhook-review",
+      "name": "Review prompt webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 600],
+      "notes": "Triggered by StrydeOS trigger-sequences after patient discharge — requests a Google review."
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\nconst type = data.sequenceType;\n\nconst messages = {\n  rebooking_prompt: `Hi ${data.patientFirstName ?? 'there'}, we noticed you haven't booked your next appointment at ${data.clinicName}. Staying on track with your sessions helps you recover faster. Book now: ${data.bookingUrl ?? data.clinicUrl ?? ''}`,\n  hep_reminder: `Hi ${data.patientFirstName ?? 'there'}, your next session at ${data.clinicName} is coming up. Have you been keeping up with your exercises? Completing them makes a real difference to your recovery.`,\n  review_prompt: `Hi ${data.patientFirstName ?? 'there'}, thank you for choosing ${data.clinicName}. We'd love to hear how your experience was. Leave a quick review: ${data.reviewUrl ?? data.googleReviewUrl ?? ''}`\n};\n\nreturn [{\n  ...data,\n  smsBody: messages[type] ?? `Hi, this is a reminder from ${data.clinicName}.`,\n  toNumber: data.patientPhone,\n}];"
+      },
+      "id": "build-sms",
+      "name": "Build SMS body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 400],
+      "notes": "Constructs the SMS message based on the sequence type. Personalised with patient first name and clinic name."
+    },
+    {
+      "parameters": {
+        "from": "={{ $env.TWILIO_PHONE_NUMBER }}",
+        "to": "={{ $json.toNumber }}",
+        "message": "={{ $json.smsBody }}"
+      },
+      "id": "send-sms",
+      "name": "Send SMS via Twilio",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [720, 400],
+      "credentials": {
+        "twilioApi": { "id": "twilio-credentials", "name": "Twilio" }
+      },
+      "notes": "Sends SMS via Twilio. Requires Twilio credentials configured in n8n.\n\nEnv vars:\n  TWILIO_PHONE_NUMBER — the from number (e.g. +447XXXXXXXXX)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APP_URL }}/api/n8n/callback",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-webhook-secret",
+              "value": "={{ $env.N8N_COMMS_WEBHOOK_SECRET }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"clinicId\": \"{{ $json.clinicId }}\",\n  \"patientId\": \"{{ $json.patientId }}\",\n  \"sequenceType\": \"{{ $json.sequenceType }}\",\n  \"channel\": \"sms\",\n  \"logId\": \"{{ $json.logId }}\",\n  \"executionId\": \"{{ $execution.id }}\",\n  \"outcome\": \"sent\"\n}",
+        "options": {}
+      },
+      "id": "callback",
+      "name": "Callback to StrydeOS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [940, 400],
+      "notes": "Reports send outcome back to StrydeOS comms_log via /api/n8n/callback."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"ok\": true}"
+      },
+      "id": "respond-ok",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1160, 400]
+    }
+  ],
+  "connections": {
+    "Rebooking webhook": {
+      "main": [[{ "node": "Build SMS body", "type": "main", "index": 0 }]]
+    },
+    "HEP reminder webhook": {
+      "main": [[{ "node": "Build SMS body", "type": "main", "index": 0 }]]
+    },
+    "Review prompt webhook": {
+      "main": [[{ "node": "Build SMS body", "type": "main", "index": 0 }]]
+    },
+    "Build SMS body": {
+      "main": [[{ "node": "Send SMS via Twilio", "type": "main", "index": 0 }]]
+    },
+    "Send SMS via Twilio": {
+      "main": [[{ "node": "Callback to StrydeOS", "type": "main", "index": 0 }]]
+    },
+    "Callback to StrydeOS": {
+      "main": [[{ "node": "Respond 200", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "description": "Handles all three core Pulse SMS sequences: rebooking_prompt, hep_reminder, review_prompt.\n\nTriggered by StrydeOS trigger-sequences.ts via POST to the corresponding webhook path.\nSends SMS via Twilio, then calls back to /api/n8n/callback with the outcome.\n\nRequired n8n env vars:\n  APP_URL                  — StrydeOS Vercel URL\n  N8N_COMMS_WEBHOOK_SECRET — shared auth secret for callback\n  TWILIO_PHONE_NUMBER      — Twilio from number\n\nRequired n8n credentials:\n  Twilio API credentials (Account SID + Auth Token)"
+  }
+}

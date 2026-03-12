@@ -40,6 +40,33 @@ function fuzzyMatch(query: string, text: string): boolean {
   return qi === q.length;
 }
 
+function highlightMatch(query: string, text: string): React.ReactNode {
+  if (!query.trim()) return text;
+  const q = query.toLowerCase();
+  const t = text.toLowerCase();
+  const idx = t.indexOf(q);
+  if (idx >= 0) {
+    return (
+      <>
+        {text.slice(0, idx)}
+        <span className="text-blue font-semibold">{text.slice(idx, idx + q.length)}</span>
+        {text.slice(idx + q.length)}
+      </>
+    );
+  }
+  const result: React.ReactNode[] = [];
+  let qi = 0;
+  for (let ti = 0; ti < text.length; ti++) {
+    if (qi < q.length && t[ti] === q[qi]) {
+      result.push(<span key={ti} className="text-blue font-semibold">{text[ti]}</span>);
+      qi++;
+    } else {
+      result.push(text[ti]);
+    }
+  }
+  return result;
+}
+
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -185,14 +212,14 @@ export default function CommandPalette() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             className="fixed inset-0 z-[70] flex items-start justify-center pt-[15vh] px-4"
-            style={{ background: "rgba(11, 37, 69, 0.5)", backdropFilter: "blur(4px)" }}
+            style={{ background: "rgba(11, 37, 69, 0.5)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
             onClick={close}
           >
             <motion.div
               initial={{ opacity: 0, y: -8, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -4, scale: 0.98 }}
-              transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-lg rounded-2xl overflow-hidden"
               style={{
@@ -247,9 +274,9 @@ export default function CommandPalette() {
                           >
                             <Icon size={15} className={isActive ? "text-blue" : "text-muted"} />
                             <div className="flex-1 min-w-0">
-                              <span className="text-sm font-medium">{item.label}</span>
+                              <span className="text-sm font-medium">{highlightMatch(query, item.label)}</span>
                               {item.sublabel && (
-                                <span className="text-[11px] text-muted ml-2">{item.sublabel}</span>
+                                <span className="text-[11px] text-muted ml-2">{highlightMatch(query, item.sublabel)}</span>
                               )}
                             </div>
                             {isActive && <ArrowRight size={12} className="text-blue shrink-0" />}

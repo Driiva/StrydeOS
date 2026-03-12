@@ -149,6 +149,7 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
             cliniciansConfirmed: raw.onboarding?.cliniciansConfirmed ?? false,
             targetsSet: raw.onboarding?.targetsSet ?? false,
           },
+          onboardingV2: raw.onboardingV2 ?? undefined,
           billing,
           trialStartedAt: raw.trialStartedAt ?? null,
           createdAt: raw.createdAt ?? "",

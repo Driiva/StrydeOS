@@ -313,6 +313,9 @@ export async function runCSVImport(
       pmsType: "csv_import",
       pmsLastSyncAt: now,
       "onboarding.pmsConnected": true,
+      "onboardingV2.stage": "fallback_live",
+      "onboardingV2.lastEventAt": now,
+      "onboardingV2.firstValueAt": now,
       updatedAt: now,
     },
     { merge: true }

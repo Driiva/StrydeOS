@@ -21,23 +21,21 @@ The product is transitioning from internal tool to sellable SaaS. This prompt ad
 Does the name live as a standalone brand (`Ava by StrydeOS`) or as a module name (`StrydeOS Ava`)? The former has more exit value; the latter keeps brand cohesion tighter during early sales.
 
 
-## Decision 2 — Continuity Rename (PS3 2006 Energy)
+## Decision 2 — Pulse Positioning (PS3 2006 Energy)
 
 ### The Problem
-"Continuity" describes the function but has no personality. You want the naming register of Sony's PS3-era product design — where the name itself carried swagger and implied something larger than the feature set.
+The module is now named **Pulse**, but positioning still needs the same register: confident, premium, and product-level (not feature-level). The naming voice should feel like Sony PS3-era product design — where the name itself implies momentum and system thinking.
 
 ### Constraints
 - Must imply persistence, flow, forward motion
 - Must sound like a product you'd demo with confidence, not a feature toggle
-- Should pair well with the receptionist name and "Intelligence"
+- Should pair cleanly with `Ava` and `Intelligence`
 
 
 | **Pulse** | Clinical, rhythmic, alive | Implies ongoing vital signs of patient engagement. "Pulse flagged a drop-off at session 3." Strong metaphor. |
 
 ### Recommendation
-**Pulse** or **Arc**. Pulse has the strongest clinical resonance — it's alive, it's monitoring, it's rhythmic. Arc is more elegant and maps perfectly to the patient journey metaphor. Both pair well: `Ava · Pulse · Intelligence` or `Ava · Arc · Intelligence`.
-
-If you want the PS3 swagger: **Pulse**. If you want the Apple Design Award energy: **Arc**.
+Lock module naming and external copy to: `Ava · Pulse · Intelligence`.
 
 
 ## Decision 3 — What's Missing on the Frontend
@@ -50,9 +48,9 @@ If you want the PS3 swagger: **Pulse**. If you want the Apple Design Award energ
 - No insurance flag indicator. When Ava detects an insurance patient, the UI should show a pre-auth workflow was triggered.
 - Missing: voicemail transcription view, after-hours summary digest preview.
 
-**Continuity (Pulse/Arc) — Frontend Gaps:**
+**Pulse — Frontend Gaps:**
 - The patient journey visual is good but static. Needs to feel dynamic — show a live patient moving through stages with real timing data.
-- No "patients at risk" panel. The biggest value of Continuity is flagging drop-off before it happens. That needs a dedicated UI element: amber/red patient cards with "last seen X days ago, no rebooking detected."
+- No "patients at risk" panel. The biggest value of Pulse is flagging drop-off before it happens. That needs a dedicated UI element: amber/red patient cards with "last seen X days ago, no rebooking detected."
 - No channel preview. Show what the SMS/email actually looks like. Practice managers want to see the message their patients receive.
 - Missing: discharge pathway view, referral prompt trigger logic.
 
@@ -185,7 +183,7 @@ Heidi is a data source StrydeOS interprets, not a competitor.
 **Data flow:**
 1. Heidi → structured session notes (treatment type, complexity markers, pain scores, discharge language, session count)
 2. StrydeOS Intelligence reads this data to correlate documentation patterns with business outcomes (does faster/more detailed documentation correlate with higher follow-up rates?)
-3. StrydeOS Continuity/Pulse/Arc becomes session-aware: if Heidi notes a high-pain session, the next follow-up touchpoint adjusts timing and tone. If discharge language appears, the system triggers post-discharge pathway instead of rebooking prompts.
+3. StrydeOS Pulse becomes session-aware: if Heidi notes a high-pain session, the next follow-up touchpoint adjusts timing and tone. If discharge language appears, the system triggers post-discharge pathway instead of rebooking prompts.
 
 **Frontend implication:** Heidi should appear in the "Works with your stack" integration diagram alongside Physitrack, WriteUpp, and Cliniko. It's not a module — it's a compatible data source.
 
@@ -204,7 +202,7 @@ This is the piece that turns StrydeOS from "business intelligence for physios" i
 ### What to Build
 - Patient-level outcome score tracking: NPRS (pain), PSFS (function), QuickDASH (upper limb), ODI (lumbar), NDI (cervical) — these are what UK private physios actually use daily, not research-standard tools like SF-36.
 - Practice-level aggregation: average outcome improvement per clinician, per condition, per time period.
-- Correlation layer: map outcome scores against follow-up rates, course completion, NPS, Google review likelihood. Surface the insight: "Patients who improve ≥3 points on NPRS are 2.4x more likely to leave a Google review."
+- Correlation layer: map outcome scores against follow-up rates, HEP compliance, NPS, Google review likelihood. Surface the insight: "Patients who improve ≥3 points on NPRS are 2.4x more likely to leave a Google review."
 
 ### Frontend Implication
 This becomes a fourth data dimension in Intelligence. Not a separate module — an enrichment of the existing KPI board. Clinician cards show clinical outcomes alongside operational metrics.
@@ -229,9 +227,9 @@ TM3 (Blue Zinc) dominates the legacy UK physiotherapy PMS market. Current integr
 | Priority | Action | Module | Effort |
 |----------|--------|--------|--------|
 | 1 | Receptionist name locked: Ava | Receptionist | Done |
-| 2 | Lock continuity name (Pulse/Arc) | Continuity | Decision |
+| 2 | Lock module naming to Ava/Pulse/Intelligence | Cross-cutting | Done |
 | 3 | Deploy Retell voice prompt (above) | Receptionist | 1–2 sessions |
-| 4 | Add "patients at risk" panel to frontend | Continuity | Frontend build |
+| 4 | Add "patients at risk" panel to frontend | Pulse | Frontend build |
 | 5 | Add sparkline trends + drill-down to Intelligence | Intelligence | Frontend build |
 | 6 | Add live call log / activity feed to Receptionist UI | Receptionist | Frontend build |
 | 7 | Scope structured outcome measures layer | Intelligence | Architecture |

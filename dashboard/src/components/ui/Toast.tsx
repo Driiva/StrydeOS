@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 type ToastVariant = "success" | "warn" | "error" | "info";
 
 const TOAST_DURATION = 4000;
+const MAX_VISIBLE = 3;
 
 interface Toast {
   id: string;
@@ -21,7 +22,42 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
-function ToastItem({ t, onDismiss }: { t: Toast; onDismiss: (id: string) => void }) {
+const variantStyles: Record<ToastVariant, { bg: string; border: string; text: string; progress: string }> = {
+  success: {
+    bg: "var(--color-success-bg, #ECFDF5)",
+    border: "var(--color-success-border, #A7F3D0)",
+    text: "var(--color-success-text, #065F46)",
+    progress: "var(--color-success, #059669)",
+  },
+  warn: {
+    bg: "var(--color-warn-bg, #FFFBEB)",
+    border: "var(--color-warn-border, #FDE68A)",
+    text: "var(--color-warn-text, #92400E)",
+    progress: "var(--color-warn, #D97706)",
+  },
+  error: {
+    bg: "var(--color-danger-bg, #FEF2F2)",
+    border: "var(--color-danger-border, #FECACA)",
+    text: "var(--color-danger-text, #991B1B)",
+    progress: "var(--color-danger, #EF4444)",
+  },
+  info: {
+    bg: "var(--color-info-bg, #EFF6FF)",
+    border: "var(--color-info-border, #BFDBFE)",
+    text: "var(--color-info-text, #1E40AF)",
+    progress: "var(--color-blue, #2563EB)",
+  },
+};
+
+function ToastItem({
+  t,
+  onDismiss,
+  stackIndex,
+}: {
+  t: Toast;
+  onDismiss: (id: string) => void;
+  stackIndex: number;
+}) {
   const progressRef = useRef<HTMLDivElement>(null);
   const startX = useRef(0);
   const currentX = useRef(0);
@@ -40,6 +76,7 @@ function ToastItem({ t, onDismiss }: { t: Toast; onDismiss: (id: string) => void
   }, []);
 
   function handlePointerDown(e: React.PointerEvent) {
+    if (stackIndex !== 0) return;
     startX.current = e.clientX;
     dragging.current = true;
     itemRef.current?.setPointerCapture(e.pointerId);
@@ -69,43 +106,31 @@ function ToastItem({ t, onDismiss }: { t: Toast; onDismiss: (id: string) => void
     }
   }
 
-  const bg =
-    t.variant === "success" ? "#ECFDF5"
-    : t.variant === "warn" ? "#FFFBEB"
-    : t.variant === "error" ? "#FEF2F2"
-    : "#EFF6FF";
-
-  const border =
-    t.variant === "success" ? "#A7F3D0"
-    : t.variant === "warn" ? "#FDE68A"
-    : t.variant === "error" ? "#FECACA"
-    : "#BFDBFE";
-
-  const color =
-    t.variant === "success" ? "#065F46"
-    : t.variant === "warn" ? "#92400E"
-    : t.variant === "error" ? "#991B1B"
-    : "#1E40AF";
-
-  const progressColor =
-    t.variant === "success" ? "#059669"
-    : t.variant === "warn" ? "#D97706"
-    : t.variant === "error" ? "#EF4444"
-    : "#2563EB";
+  const styles = variantStyles[t.variant];
 
   return (
     <motion.div
       layout
       initial={{ opacity: 0, x: 40, scale: 0.95 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
+      animate={{
+        opacity: stackIndex === 0 ? 1 : 1 - stackIndex * 0.15,
+        x: 0,
+        scale: 1 - stackIndex * 0.04,
+        y: stackIndex * -8,
+      }}
       exit={{ opacity: 0, x: 60, scale: 0.95 }}
       transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
       ref={itemRef}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      className="pointer-events-auto flex flex-col rounded-xl shadow-[var(--shadow-elevated)] min-w-[280px] max-w-sm overflow-hidden touch-pan-y select-none"
-      style={{ background: bg, border: `1px solid ${border}`, color }}
+      className="pointer-events-auto flex flex-col rounded-xl shadow-[var(--shadow-elevated)] min-w-[280px] max-w-sm overflow-hidden touch-pan-y select-none origin-bottom-right"
+      style={{
+        background: styles.bg,
+        border: `1px solid ${styles.border}`,
+        color: styles.text,
+        zIndex: MAX_VISIBLE - stackIndex,
+      }}
     >
       <div className="flex items-center gap-3 px-4 py-3 text-sm font-medium">
         {t.variant === "success" && <CheckCircle size={16} strokeWidth={2} />}
@@ -120,11 +145,11 @@ function ToastItem({ t, onDismiss }: { t: Toast; onDismiss: (id: string) => void
           <X size={14} />
         </button>
       </div>
-      <div className="h-[2px] w-full" style={{ background: `${progressColor}20` }}>
+      <div className="h-[2px] w-full" style={{ background: `${styles.progress}20` }}>
         <div
           ref={progressRef}
           className="h-full origin-left"
-          style={{ background: progressColor }}
+          style={{ background: styles.progress }}
         />
       </div>
     </motion.div>
@@ -146,15 +171,21 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const visible = toasts.slice(-MAX_VISIBLE).reverse();
+
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none">
-        <AnimatePresence mode="popLayout">
-          {toasts.map((t) => (
-            <ToastItem key={t.id} t={t} onDismiss={dismiss} />
-          ))}
-        </AnimatePresence>
+      <div className="fixed bottom-6 right-6 z-[100] pointer-events-none">
+        <div className="relative flex flex-col items-end">
+          <AnimatePresence mode="popLayout">
+            {visible.map((t, i) => (
+              <div key={t.id} className={i > 0 ? "absolute bottom-0 right-0" : ""}>
+                <ToastItem t={t} onDismiss={dismiss} stackIndex={i} />
+              </div>
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
     </ToastContext.Provider>
   );

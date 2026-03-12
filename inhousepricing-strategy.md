@@ -2,10 +2,10 @@
 
 ## The naming conflict
 
-You built three **products** (Ava, Pulse, Intelligence). But the pricing doc packages them into three **tiers** (Intelligence, Perform, Growth OS). These are two completely different mental models fighting each other.
+You built three **products** (`Ava`, `Pulse`, `Intelligence`). But an older pricing draft packaged them into three **tiers** (`Intelligence`, `Perform`, `Growth OS`). These are two completely different mental models fighting each other.
 
 - **With products**, a customer thinks: "I want the AI receptionist" → buys Ava. Clear. Simple.
-- **With tiers**, a customer thinks: "I want the AI receptionist" → has to buy "Perform" which also includes Intelligence whether they want it or not. And they can't get Pulse without buying "Growth OS" which includes everything.
+- **With tiers**, a customer thinks: "I want the AI receptionist" → has to buy the old "Perform" tier (which also included Intelligence whether they wanted it or not). And they couldn't get Pulse without the old "Growth OS" bundle.
 
 The tier model forces a linear journey: **Intelligence → Intelligence + Ava → Intelligence + Ava + Pulse**. But that's not how clinic owners think. Some want Ava first because they're haemorrhaging missed calls. Some want Intelligence first because they have no visibility. Some want Pulse first because patients are dropping off mid-course. Forcing a ladder means you're either blocking the sale or giving away stuff they didn't ask for.
 
@@ -24,8 +24,8 @@ The tier model forces a linear journey: **Intelligence → Intelligence + Ava �
 ## The FAQ nightmare on discovery calls
 
 - **"Can I just get the dashboard without the phone thing?"** — No, that's fine, that's Tier 1. But then...
-- **"Can I just get the phone thing without the dashboard?"** — Uh, no, Perform includes Intelligence. "But I already use Dataplayer / I don't care about dashboards." You've lost them.
-- **"I want the patient follow-up stuff but I don't need an AI receptionist."** — Sorry, Growth OS includes everything. "So I'm paying £599 for features I won't use?" Yes. Door closed.
+- **"Can I just get the phone thing without the dashboard?"** — Under the old tier model, no.
+- **"I want the patient follow-up stuff but I don't need an AI receptionist."** — Under the old tier model, no.
 - **"What's the difference between Intelligence the product and Intelligence the tier?"** — This one alone will murder your sales calls.
 
 ---

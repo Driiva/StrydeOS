@@ -475,7 +475,7 @@ export default function Sidebar() {
           {/* Dark mode toggle */}
           <div className="mt-2 px-3">
             <button
-              onClick={toggleTheme}
+              onClick={(e) => toggleTheme(e)}
               className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] text-white/25 hover:text-white/40 hover:bg-white/5 transition-colors"
             >
               {theme === "dark" ? <Sun size={12} /> : <Moon size={12} />}

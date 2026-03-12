@@ -40,13 +40,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result);
     }
 
-    // Run for all clinics
+    // Run for all clinics in parallel (avoids Vercel timeout at scale)
     const clinicsSnap = await db.collection("clinics").get();
-    const results = [];
-    for (const clinicDoc of clinicsSnap.docs) {
-      const result = await runPipeline(db, clinicDoc.id);
-      results.push(result);
-    }
+    const settled = await Promise.allSettled(
+      clinicsSnap.docs.map((clinicDoc) => runPipeline(db, clinicDoc.id))
+    );
+
+    const results = settled.map((s, i) =>
+      s.status === "fulfilled"
+        ? s.value
+        : { clinicId: clinicsSnap.docs[i].id, ok: false, error: s.reason?.message ?? "Pipeline failed" }
+    );
 
     return NextResponse.json({ results });
   } catch (e) {

@@ -78,6 +78,35 @@ export interface OnboardingState {
   targetsSet: boolean;
 }
 
+// ─── Onboarding V2 State Machine ─────────────────────────────────────────────
+
+export type OnboardingStage =
+  | "signup_complete"
+  | "onboarding_started"
+  | "integration_self_serve"
+  | "integration_blocked"
+  | "fallback_live"
+  | "api_connected"
+  | "first_value_reached"
+  | "activation_complete";
+
+export type OnboardingBlocker =
+  | "missing_api_credentials"
+  | "provider_not_supported"
+  | "auth_failure"
+  | "data_quality";
+
+export type OnboardingPath = "self_serve" | "assisted";
+
+export interface OnboardingV2 {
+  stage: OnboardingStage;
+  path: OnboardingPath;
+  blockers: OnboardingBlocker[];
+  firstValueAt: string | null;
+  activationAt: string | null;
+  lastEventAt: string;
+}
+
 export type PmsProvider = "writeupp" | "cliniko" | "tm3" | "jane" | "powerdiary" | "pabau" | "halaxy";
 export type ClinicStatus = "onboarding" | "live" | "paused" | "churned";
 
@@ -94,6 +123,7 @@ export interface ClinicProfile {
   targets: ClinicTargets;
   brandConfig: BrandConfig;
   onboarding: OnboardingState;
+  onboardingV2?: OnboardingV2;
   billing?: BillingState;
   trialStartedAt: string | null;
   createdAt: string;

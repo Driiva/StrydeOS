@@ -113,13 +113,16 @@ const globalStyles = `
   @media (max-width: 768px) {
     .hero-grid        { grid-template-columns: 1fr !important; }
     .product-grid     { grid-template-columns: 1fr !important; }
-    .pricing-grid     { grid-template-columns: 1fr !important; }
+    .pricing-grid     { grid-template-columns: 1fr 1fr !important; }
     .results-grid     { grid-template-columns: 1fr 1fr !important; }
     .holistic-grid    { grid-template-columns: 1fr !important; }
     .roi-grid         { grid-template-columns: 1fr !important; }
     .whyus-grid       { grid-template-columns: 1fr !important; }
     .footer-top       { flex-direction: column !important; gap: 32px !important; }
     .nav-links        { display: none !important; }
+  }
+  @media (max-width: 640px) {
+    .pricing-grid     { grid-template-columns: 1fr !important; }
   }
 `;
 
@@ -257,8 +260,8 @@ const Nav = ({ darkMode, setDarkMode }) => {
           >
             {darkMode ? "☀" : "☾"}
           </button>
-          <a href="#early-access" className="btn-primary" style={{ padding: "10px 22px", fontSize: 14 }}>
-            Get Early Access
+          <a href="/login?mode=signup" className="btn-primary" style={{ padding: "10px 22px", fontSize: 14 }}>
+            Start free trial
           </a>
         </div>
       </div>
@@ -330,16 +333,16 @@ const Hero = ({ darkMode }) => {
               for <span style={{ fontStyle: "italic", color: italic }}>private practice.</span>
             </h1>
 
-            <p style={{ fontSize: 18, lineHeight: 1.7, color: muted, marginBottom: 20, maxWidth: 500 }}>
-              Solo clinics and partnerships running at full capacity. Fewer gaps. More completed courses of treatment. No extra headcount.
+            <p style={{ fontSize: 18, lineHeight: 1.7, color: muted, marginBottom: 20, maxWidth: 540 }}>
+              Your practice has software. It does not have a system. Your PMS handles bookings, your exercise platform delivers HEPs, your payment processor takes the money, but none of them explain why follow-up rate is dropping or where cancellations are going unrecovered.
             </p>
-            <p style={{ fontSize: 15, lineHeight: 1.7, color: muted, marginBottom: 40, maxWidth: 480, fontStyle: "italic", borderLeft: `3px solid ${C.blue}40`, paddingLeft: 16 }}>
-              StrydeOS is how the best-run private clinics operate now.
+            <p style={{ fontSize: 15, lineHeight: 1.7, color: muted, marginBottom: 40, maxWidth: 520, fontStyle: "italic", borderLeft: `3px solid ${C.blue}40`, paddingLeft: 16 }}>
+              StrydeOS connects your clinical data to the commercial outcomes you are currently guessing at.
             </p>
 
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 52 }}>
-              <a href="#early-access" className="btn-primary">
-                Get Early Access
+              <a href="/login?mode=signup" className="btn-primary">
+                Start free trial
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </a>
               <a href="#products" className="btn-outline">See how it works</a>
@@ -402,7 +405,7 @@ const Hero = ({ darkMode }) => {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
                   {[
                     { label: "Follow-up Rate", value: "78%", bar: 78, status: "warn" },
-                    { label: "Course Completion", value: "84%", bar: 84, status: "ok" },
+                    { label: "HEP Compliance", value: "84%", bar: 84, status: "ok" },
                     { label: "Utilisation", value: "91%", bar: 91, status: "ok" },
                     { label: "No-show Rate", value: "4.2%", bar: 42, status: "ok" },
                   ].map(({ label, value, bar, status }) => (
@@ -472,7 +475,7 @@ const Hero = ({ darkMode }) => {
           <RadialGlow color={C.blue} size={400} opacity={0.12} style={{ top: -100, right: -50 }} />
           <div style={{ position: "relative", zIndex: 2, maxWidth: 760, margin: "0 auto", textAlign: "center" }}>
             <p className="serif" style={{ fontSize: 20, color: "rgba(255,255,255,0.85)", lineHeight: 1.6, fontStyle: "italic" }}>
-              "Most private practices are one or two steps away from running significantly better. The problem isn't clinical — it's operational. The right systems, put in the right places, change everything."
+              "The median rebooking rate across UK private MSK clinics is 80%."
             </p>
             <div style={{ marginTop: 20, display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap" }}>
               {[
@@ -510,7 +513,7 @@ const HolisticSection = ({ darkMode }) => {
             Every gap closed.
           </h2>
           <p style={{ fontSize: 16, lineHeight: 1.8, color: muted, marginBottom: 20 }}>
-            The clinics consistently running at capacity aren't doing anything extraordinary. They answer every call. They follow up after every session. They know their numbers.
+            HEP compliance. Programme assignment rate. Revenue per clinician. Follow-up rates against rebooking patterns. These are the metrics that drive a private practice, and most owners still pull them manually from spreadsheets.
           </p>
           <p style={{ fontSize: 16, lineHeight: 1.8, color: muted, marginBottom: 32 }}>
             They've just built the infrastructure to make it happen — without hiring more people to do it.
@@ -710,7 +713,7 @@ const Products = ({ darkMode }) => {
       color: C.blue,
       eyebrow: "StrydeOS Ava",
       headline: "Never miss a patient again.",
-      body: "Every unanswered call is a patient who books somewhere else. Every cancellation that doesn't get followed up is revenue that disappears quietly.\n\nStrydeOS Ava handles inbound calls, books appointments, recovers cancellations and chases no-shows — automatically, around the clock.",
+      body: "Every missed call is a new patient lost to the next clinic on Google. Every cancellation that is not recovered becomes avoidable leakage.\n\nStrydeOS Ava handles inbound calls, books into your diary, recovers cancellations before the slot goes empty, and triages new enquiries automatically.",
       proof: "Clinics using it have stopped paying £400–800/month to call-handling services. They've also stopped losing patients at the first point of contact.",
       tagline: "Your front desk. Without the overhead.",
       cta: "Start with Ava",
@@ -798,7 +801,7 @@ const Products = ({ darkMode }) => {
       color: "#8B5CF6",
       eyebrow: "StrydeOS Intelligence",
       headline: "Know how your clinic actually performs.",
-      body: "Revenue tells you something went right or wrong. It doesn't tell you why, or where, or who.\n\nStrydeOS Intelligence gives you the metrics that actually matter — follow-up rates, patient retention, programme completion, clinician performance by outcome.",
+      body: "Revenue tells you what happened, not why. StrydeOS Intelligence surfaces the drivers behind it in real time.\n\nTrack HEP compliance, programme assignment rate, revenue per clinician, follow-up rates, and utilisation against rebooking patterns — automatically and per clinician.",
       proof: "Not to manage people. To understand where your clinic is thriving and where it isn't. The best-run clinics already know these numbers.",
       tagline: "Real-time. Actionable. Built for practice owners, not analysts.",
       cta: "Start with Intelligence",
@@ -906,7 +909,7 @@ const Products = ({ darkMode }) => {
               ))}
             </div>
 
-            <a href="#early-access" className="btn-primary" style={{ background: p.color }}>
+            <a href="/login?mode=signup" className="btn-primary" style={{ background: p.color }}>
               {p.cta} →
             </a>
           </div>
@@ -937,16 +940,16 @@ const Results = () => (
           These aren't theoretical improvements.
         </h2>
         <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 16, marginTop: 14, fontStyle: "italic" }}>
-          Reduced no-shows. Higher course completion rates. Reception costs cut in half.
+          Reduced no-shows. Higher HEP compliance. Reception costs cut in half.
         </p>
       </div>
 
       <div className="results-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, marginBottom: 48 }}>
         {[
           { stat: "67%→4%", label: "Missed call rate", note: "Solo MSK practice" },
-          { stat: "84%", label: "Course completion rate", note: "vs 61% industry avg" },
+          { stat: "84%", label: "HEP compliance rate", note: "vs 61% industry avg" },
           { stat: "£800/mo", label: "Saved on call-handling", note: "vs Moneypenny/live agents" },
-          { stat: "18 days", label: "Average payback period", note: "Across all tiers" },
+          { stat: "90 days", label: "Most practices recover cost", note: "Within 90 days" },
         ].map(({ stat, label, note }) => (
           <div key={label} style={{
             background: "rgba(255,255,255,0.05)", borderRadius: 18, padding: "28px 24px",
@@ -1071,12 +1074,12 @@ const ROICalc = ({ darkMode }) => {
                   <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginBottom: 6 }}>Total annual revenue at risk</div>
                   <div className="serif" style={{ fontSize: 46, color: "white", lineHeight: 1 }}>£{total.toLocaleString()}</div>
                   <div style={{ marginTop: 10, color: "#34D399", fontSize: 12, fontWeight: 600 }}>
-                    StrydeOS Growth pays for itself in under 3 weeks
+                    Most practices recover their StrydeOS cost within 90 days
                   </div>
                 </div>
 
-                <a href="#early-access" className="btn-primary" style={{ width: "100%", justifyContent: "center", borderRadius: 14 }}>
-                  Book a free audit →
+                <a href="/login?mode=signup" className="btn-primary" style={{ width: "100%", justifyContent: "center", borderRadius: 14 }}>
+                  Start free trial →
                 </a>
               </div>
             </div>
@@ -1108,24 +1111,29 @@ const Pricing = ({ darkMode }) => {
         </p>
       </div>
 
-      <div className="pricing-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18, marginBottom: 32 }}>
+      <div className="pricing-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 18, marginBottom: 32 }}>
         {[
           {
-            name: "Ava", monthly: "£500/mo", setup: "from £1,500", highlight: false, color: C.blue,
+            name: "Intelligence", monthly: "£79", tiers: "Solo £79 · Studio £129 · Clinic £199", setup: null, highlight: false, color: "#8B5CF6",
+            tagline: "Know your numbers, finally",
+            features: ["Per-clinician KPI board", "90-day rolling trend charts", "Alert flags", "WriteUpp integration", "Weekly email digest"],
+          },
+          {
+            name: "Ava", monthly: "£149", tiers: "Solo £149 · Studio £199 · Clinic £299", setup: "£250 one-time", highlight: false, color: C.blue,
             tagline: "Stop losing patients at the door",
             features: ["24/7 inbound call handling", "Live calendar booking", "No-show recovery", "SMS confirmations", "Emergency routing"],
           },
           {
-            name: "Growth OS", monthly: "£1,200/mo", setup: "from £3,500", highlight: true, color: C.blue,
-            tagline: "The full front-of-house stack",
-            features: ["Ava (24/7)", "Pulse follow-up flows", "Intelligence dashboard", "Insurance pre-auth (Bupa/AXA/Vitality)", "Priority support"],
+            name: "Pulse", monthly: "£99", tiers: "Solo £99 · Studio £149 · Clinic £229", setup: null, highlight: false, color: C.teal,
+            tagline: "Keep patients in care, longer",
+            features: ["Automated post-session reminders", "Rebooking prompts", "Post-discharge check-ins", "Outcome tracking", "Referral prompts"],
           },
           {
-            name: "Intelligence", monthly: "£400/mo", setup: "from £1,000", highlight: false, color: "#8B5CF6",
-            tagline: "Know your numbers, finally",
-            features: ["Per-clinician KPI board", "90-day rolling trend charts", "Alert flags", "WriteUpp integration", "Weekly email digest"],
+            name: "Full Stack", monthly: "£279", tiers: "Solo £279 · Studio £399 · Clinic £599", setup: null, highlight: true, color: C.blue,
+            tagline: "All three products, one platform",
+            features: ["Ava (24/7)", "Pulse follow-up flows", "Intelligence dashboard", "Insurance pre-auth (Bupa/AXA/Vitality)", "Priority support"],
           },
-        ].map(({ name, monthly, setup, highlight, color, tagline, features }) => (
+        ].map(({ name, monthly, tiers, setup, highlight, color, tagline, features }) => (
           <div key={name} className="card-hover" style={{
             background: highlight ? C.navy : bgCard,
             borderRadius: 22, padding: 34,
@@ -1147,8 +1155,9 @@ const Pricing = ({ darkMode }) => {
             <div style={{ fontSize: 22, fontWeight: 700, color: highlight ? "white" : head, marginBottom: 4 }}>{name}</div>
             <div style={{ fontSize: 13, color: highlight ? "rgba(255,255,255,0.45)" : muted, marginBottom: 24 }}>{tagline}</div>
 
-            <div className="serif" style={{ fontSize: 34, color: highlight ? "white" : head, fontWeight: 400, marginBottom: 4 }}>{monthly}</div>
-            <div style={{ fontSize: 12, color: highlight ? "rgba(255,255,255,0.35)" : muted, marginBottom: 28 }}>Setup {setup}</div>
+            <div className="serif" style={{ fontSize: 34, color: highlight ? "white" : head, fontWeight: 400, marginBottom: 4 }}>From £{monthly.replace("£","")}/mo</div>
+            <div style={{ fontSize: 11, color: highlight ? "rgba(255,255,255,0.4)" : muted, marginBottom: 4 }}>{tiers}</div>
+            <div style={{ fontSize: 12, color: highlight ? "rgba(255,255,255,0.35)" : muted, marginBottom: 28 }}>{setup ? `Setup ${setup}` : "20% off when billed annually"}</div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 28 }}>
               {features.map(f => (
@@ -1162,16 +1171,16 @@ const Pricing = ({ darkMode }) => {
               ))}
             </div>
 
-            <a href="#early-access" className={highlight ? "btn-primary" : "btn-outline"}
+            <a href="/login?mode=signup" className={highlight ? "btn-primary" : "btn-outline"}
               style={{ width: "100%", justifyContent: "center", borderRadius: 14 }}>
-              Get Early Access
+              Start free trial
             </a>
           </div>
         ))}
       </div>
 
       <p style={{ textAlign: "center", fontSize: 13, color: muted, fontStyle: "italic" }}>
-        Currently in early access · No lock-in contracts · Onboarding & training included
+        Currently in early access · 20% off when billed annually · No lock-in contracts · Onboarding & training included
       </p>
     </div>
   </section>
@@ -1202,7 +1211,7 @@ That knowledge is baked into every feature. You won't spend three calls explaini
       n: "02",
       title: "We don't hide behind the dashboard.",
       color: C.teal,
-      body: `You won't find us selling you a flashy interface full of metrics that don't move your business. Every number in StrydeOS Intelligence is there because it changes a decision — follow-up rate, course completion, DNA rate, revenue per session. Nothing else.
+      body: `You won't find us selling you a flashy interface full of metrics that don't move your business. Every number in StrydeOS Intelligence is there because it changes a decision — follow-up rate, HEP compliance, DNA rate, revenue per session. Nothing else.
 
 If a feature doesn't make your practice run better, we won't build it. If a metric doesn't help you act, it doesn't make the cut. We'd rather show you four numbers that matter than forty that don't.`,
     },
@@ -1334,22 +1343,22 @@ const EarlyAccess = () => (
       </h2>
 
       <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 16, lineHeight: 1.7, marginBottom: 18 }}>
-        Book a free 15-minute Missed Call & Admin Audit. We'll use your public clinic data to estimate missed call volume, drop-off losses, and admin burden — based on your existing systems.
+        Book a free 20-minute Clinical Performance Audit. We'll use your public clinic data to estimate missed call volume, drop-off losses, and admin burden — based on your existing systems.
       </p>
       <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 14, lineHeight: 1.65, marginBottom: 40, fontStyle: "italic" }}>
         No switching required. StrydeOS connects to Cliniko, WriteUpp, and most major PMS out of the box. Pick the product that solves your biggest problem right now — and build from there.
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-        <a href="https://calendly.com" target="_blank" rel="noopener" className="btn-primary" style={{ fontSize: 16, padding: "16px 44px" }}>
-          Book your free audit →
+        <a href="/login?mode=signup" className="btn-primary" style={{ fontSize: 16, padding: "16px 44px" }}>
+          Start free trial →
         </a>
         <div style={{ display: "flex", gap: 24 }}>
-          <a href="#" className="btn-ghost" style={{ padding: "10px 20px", fontSize: 13 }}>Book a Demo</a>
+          <a href="https://calendly.com/hello-strydeos/30min" target="_blank" rel="noopener" className="btn-ghost" style={{ padding: "10px 20px", fontSize: 13 }}>Book a Demo</a>
           <a href="#pricing" className="btn-ghost" style={{ padding: "10px 20px", fontSize: 13 }}>See Pricing</a>
         </div>
         <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, marginTop: 4 }}>
-          15 minutes · No obligation · UK private practice · MSK · Allied health
+          20 minutes · No obligation · UK private practice · MSK · Allied health
         </div>
       </div>
 
@@ -1388,7 +1397,7 @@ const Footer = () => (
         </div>
         <div style={{ display: "flex", gap: 52 }}>
           {[
-            { h: "Products", links: ["Ava","Pulse","Intelligence","Growth OS"] },
+            { h: "Products", links: ["Ava","Pulse","Intelligence"] },
             { h: "Company", links: ["About","Case Studies","Pricing","Contact"] },
             { h: "Legal", links: ["Privacy","GDPR","Terms"] },
           ].map(({ h, links }) => (

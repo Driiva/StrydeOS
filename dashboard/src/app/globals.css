@@ -226,3 +226,20 @@ html.dark .skeleton-shimmer {
     animation: none;
   }
 }
+
+/* ─── Theme wipe transition ──────────────────────────────────────────────────── */
+@keyframes theme-wipe {
+  from { clip-path: circle(0px at var(--wipe-x) var(--wipe-y)); }
+  to   { clip-path: circle(200vmax at var(--wipe-x) var(--wipe-y)); }
+}
+
+.theme-wipe-overlay {
+  animation: theme-wipe 500ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-wipe-overlay {
+    animation: none;
+    clip-path: none;
+  }
+}

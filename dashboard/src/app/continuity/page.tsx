@@ -67,7 +67,7 @@ type View = "patients" | "sequences" | "log";
 
 export default function ContinuityPageWrapper() {
   return (
-    <Suspense fallback={<div className="animate-skeleton p-8 text-center text-muted">Loading...</div>}>
+    <Suspense fallback={<div className="p-8 flex items-center justify-center"><div className="h-6 w-32 skeleton-shimmer rounded-lg" /></div>}>
       <ContinuityPage />
     </Suspense>
   );
@@ -242,12 +242,29 @@ function ContinuityPage() {
 
           {loading ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="space-y-3">
-                  {[1, 2, 3].map((j) => (
-                    <div key={j} className="rounded-xl bg-white border border-border p-4 animate-skeleton">
-                      <div className="h-3 w-24 bg-cloud-dark rounded mb-3" />
-                      <div className="h-2 w-32 bg-cloud-dark rounded" />
+              {[1, 2, 3].map((col) => (
+                <div key={col} className="space-y-3">
+                  {[1, 2, 3].map((row) => (
+                    <div key={row} className="rounded-xl bg-white border border-border p-4 shadow-[var(--shadow-card)]">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-9 h-9 rounded-full skeleton-shimmer shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="h-3.5 w-28 skeleton-shimmer rounded-md mb-1.5" />
+                          <div className="h-2.5 w-20 skeleton-shimmer rounded-md" />
+                        </div>
+                        {row === 1 && <div className="h-5 w-24 skeleton-shimmer rounded-full shrink-0" />}
+                      </div>
+                      <div className="mb-3">
+                        <div className="flex justify-between mb-1">
+                          <div className="h-2.5 w-28 skeleton-shimmer rounded-md" />
+                          <div className="h-2.5 w-8 skeleton-shimmer rounded-md" />
+                        </div>
+                        <div className="h-1.5 w-full skeleton-shimmer rounded-full" />
+                      </div>
+                      <div className="flex justify-between">
+                        <div className="h-2.5 w-24 skeleton-shimmer rounded-md" />
+                        <div className="h-2.5 w-20 skeleton-shimmer rounded-md" />
+                      </div>
                     </div>
                   ))}
                 </div>

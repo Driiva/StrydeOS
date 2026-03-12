@@ -21,17 +21,20 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $env.APP_URL }}/api/pipeline/run?clinicId={{ $env.RETELL_CLINIC_ID }}&report=churn_risk",
+        "method": "POST",
+        "url": "={{ $env.APP_URL }}/api/pipeline/run",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
-              "name": "x-webhook-secret",
-              "value": "={{ $env.N8N_COMMS_WEBHOOK_SECRET }}"
+              "name": "Authorization",
+              "value": "Bearer {{ $env.CRON_SECRET }}"
             }
           ]
         },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={ \"clinicId\": \"{{ $env.RETELL_CLINIC_ID }}\", \"report\": \"churn_risk\" }",
         "options": {}
       },
       "id": "fetch-at-risk",
@@ -153,6 +156,6 @@
   },
   "settings": { "executionOrder": "v1" },
   "meta": {
-    "description": "Every 6 hours: identifies patients who haven't rebooked in >14 days and flags them as drop-off risk (Pulse module).\n\nAmber risk (14–28 days): triggers rebooking_prompt SMS sequence\nRed risk (>28 days): same + optional Slack alert to clinic owner\n\nRequired env vars:\n  APP_URL                  — StrydeOS Vercel URL\n  RETELL_CLINIC_ID         — Firestore clinic document ID\n  N8N_COMMS_WEBHOOK_SECRET — shared auth secret\n  SLACK_WEBHOOK_URL        — optional, for owner alerts"
+    "description": "Every 6 hours: identifies patients who haven't rebooked in >14 days and flags them as drop-off risk (Pulse module).\n\nAmber risk (14–28 days): triggers rebooking_prompt SMS sequence\nRed risk (>28 days): same + optional Slack alert to clinic owner\n\nRequired env vars:\n  APP_URL          — StrydeOS Vercel URL\n  RETELL_CLINIC_ID — Firestore clinic document ID\n  CRON_SECRET      — Bearer auth secret (matches Vercel CRON_SECRET env var)\n  SLACK_WEBHOOK_URL — optional, for owner alerts"
   }
 }

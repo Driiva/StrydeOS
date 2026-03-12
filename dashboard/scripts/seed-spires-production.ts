@@ -495,7 +495,7 @@ function computeMetrics(appointments: AppointmentDoc[]): MetricDoc[] {
       const hepRate = (HEP_ARCS[cid] || [])[hepIdx] ?? 0.7;
       const physitrackRate = Math.min(1, hepRate + 0.05);
 
-      // Course completion: simulate improvement over time
+      // HEP compliance: simulate improvement over time
       const baseCourseCompletion = cid === "c-joe" ? 1.0 : 0.65;
       const courseCompletionRate = Math.min(1, baseCourseCompletion + wi * 0.015);
 

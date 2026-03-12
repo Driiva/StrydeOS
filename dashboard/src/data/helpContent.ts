@@ -49,13 +49,13 @@ export const HELP_ENTRIES: HelpEntry[] = [
   {
     id: "course-completion-rate",
     category: "metrics",
-    question: "What is Course Completion Rate?",
+    question: "What is HEP Compliance?",
     answer:
-      "Course completion rate tracks how many patients finish the full treatment course a clinician prescribed — for example, 6 sessions of a recommended 8. Low completion often signals that patients are self-discharging, not because they've recovered, but because of cost, motivation, or poor expectation-setting at the start.",
-    formula: "Patients completing prescribed course ÷ Patients who started a prescribed course (expressed as %)",
+      "HEP compliance tracks how consistently clinicians assign home exercise programmes to patients who should receive one. A low rate means patients are leaving without structured self-management — which impacts recovery speed, rebooking patterns, and long-term outcomes.",
+    formula: "Patients given a HEP ÷ Patients seen (expressed as %)",
     clinicNote:
-      "Only applicable if your practice uses structured, prescribed treatment courses. Clinics that operate session-by-session without a defined course length won't have meaningful data here. If this metric shows 0% or is absent, it likely means course data isn't being captured in your PMS — not that completion is failing.",
-    tags: ["course", "completion", "discharge", "retention", "treatment"],
+      "Only meaningful if your practice actively uses HEP software like Physitrack. If programmes are routinely given verbally or on paper without software tracking, this metric will under-report.",
+    tags: ["hep", "compliance", "programme", "exercise", "physitrack"],
   },
   {
     id: "utilisation",
