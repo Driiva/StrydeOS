@@ -85,7 +85,7 @@ function ContinuityPage() {
   const clinicianMap = Object.fromEntries(clinicians.map((c) => [c.id, c]));
 
   const sequences = getDemoCommsSequences();
-  const { commsLog, commsStats } = useCommsLog();
+  const { commsLog, commsStats, isDemo: commsIsDemo } = useCommsLog();
   const allPatients = useDemoPatients();
   const patientMap = Object.fromEntries(allPatients.map((p) => [p.id, p]));
 
@@ -110,7 +110,7 @@ function ContinuityPage() {
         accentColor="#0891B2"
       />
 
-      <DemoBanner />
+      {commsIsDemo && <DemoBanner />}
 
       {/* Comms summary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -11,6 +11,7 @@ const PROTECTED_PREFIXES = [
   "/clinicians",
   "/patients",
   "/onboarding",
+  "/compliance",
 ];
 
 export function middleware(request: NextRequest) {

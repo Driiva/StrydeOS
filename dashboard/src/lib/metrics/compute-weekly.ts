@@ -146,7 +146,7 @@ function aggregateWeek(
     followUpTarget: targets.followUpRate,
     hepComplianceRate,
     physitrackRate,
-    physitrackTarget: targets.physitrackRate / 100,
+    physitrackTarget: targets.physitrackRate,
     utilisationRate: 0,
     dnaRate,
     courseCompletionRate,

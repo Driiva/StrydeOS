@@ -53,6 +53,7 @@ interface PmsProviderOption {
   id: PmsProvider;
   label: string;
   icon: string;
+  logo?: string;
   comingSoon: boolean;
   recentlyAdded?: boolean;
 }
@@ -99,39 +100,40 @@ interface OnboardingGuide {
 }
 
 const ONBOARDING_PMS_OPTIONS = [
-  { id: "writeupp", label: "WriteUpp", icon: "📋" },
-  { id: "cliniko", label: "Cliniko", icon: "🗂️" },
-  { id: "tm3", label: "TM3", icon: "⚕️" },
-  { id: "jane", label: "Jane App", icon: "🌿" },
-  { id: "powerdiary", label: "Zanda (Power Diary)", icon: "📓" },
-  { id: "halaxy", label: "Halaxy", icon: "💙" },
+  { id: "writeupp", label: "WriteUpp", icon: "📋", logo: "/integrations/writeupp.svg" },
+  { id: "cliniko", label: "Cliniko", icon: "🗂️", logo: "/integrations/cliniko.png" },
+  { id: "tm3", label: "TM3", icon: "⚕️", logo: "/integrations/tm3.svg" },
+  { id: "jane", label: "Jane App", icon: "🌿", logo: "/integrations/jane.png" },
+  { id: "powerdiary", label: "Zanda (Power Diary)", icon: "📓", logo: "/integrations/powerdiary.png" },
+  { id: "halaxy", label: "Halaxy", icon: "💙", logo: "/integrations/halaxy.svg" },
   { id: "other", label: "Other / Custom", icon: "📄" },
 ];
 
 const INGEST_EMAIL_DOMAIN = "ingest.strydeos.com";
 
 const PMS_PROVIDERS: PmsProviderOption[] = [
-  { id: "writeupp", label: "WriteUpp", icon: "📋", comingSoon: false },
-  { id: "cliniko", label: "Cliniko", icon: "🗂️", comingSoon: false },
-  { id: "tm3", label: "TM3", icon: "⚕️", comingSoon: true },
-  { id: "jane", label: "Jane App", icon: "🌿", comingSoon: true },
-  { id: "powerdiary", label: "Zanda (Power Diary)", icon: "📓", comingSoon: false, recentlyAdded: true },
-  { id: "pabau", label: "Pabau", icon: "🏥", comingSoon: true },
-  { id: "halaxy", label: "Halaxy", icon: "💙", comingSoon: false, recentlyAdded: true },
+  { id: "writeupp", label: "WriteUpp", icon: "📋", logo: "/integrations/writeupp.svg", comingSoon: false },
+  { id: "cliniko", label: "Cliniko", icon: "🗂️", logo: "/integrations/cliniko.png", comingSoon: false },
+  { id: "tm3", label: "TM3", icon: "⚕️", logo: "/integrations/tm3.svg", comingSoon: true },
+  { id: "jane", label: "Jane App", icon: "🌿", logo: "/integrations/jane.png", comingSoon: true },
+  { id: "powerdiary", label: "Zanda (Power Diary)", icon: "📓", logo: "/integrations/powerdiary.png", comingSoon: false, recentlyAdded: true },
+  { id: "pabau", label: "Pabau", icon: "🏥", logo: "/integrations/pabau.svg", comingSoon: true },
+  { id: "halaxy", label: "Halaxy", icon: "💙", logo: "/integrations/halaxy.svg", comingSoon: false, recentlyAdded: true },
 ];
 
 interface HepProviderOption {
   id: string;
   label: string;
   icon: string;
+  logo?: string;
   comingSoon: boolean;
   recentlyAdded?: boolean;
 }
 
 const HEP_PROVIDERS: HepProviderOption[] = [
-  { id: "physitrack", label: "Physitrack", icon: "🏃", comingSoon: false },
-  { id: "rehab_my_patient", label: "Rehab My Patient", icon: "💪", comingSoon: false, recentlyAdded: true },
-  { id: "wibbi", label: "Wibbi", icon: "🎯", comingSoon: false, recentlyAdded: true },
+  { id: "physitrack", label: "Physitrack", icon: "🏃", logo: "/integrations/physitrack.webp", comingSoon: false },
+  { id: "rehab_my_patient", label: "Rehab My Patient", icon: "💪", logo: "/integrations/rehab_my_patient.png", comingSoon: false, recentlyAdded: true },
+  { id: "wibbi", label: "Wibbi", icon: "🎯", logo: "/integrations/wibbi.svg", comingSoon: false, recentlyAdded: true },
 ];
 
 function RetriggerTourButton() {
@@ -1408,7 +1410,11 @@ const cp = user?.clinicProfile ?? null;
                     }`}
                     title={p.comingSoon ? "Coming soon — integration in development" : undefined}
                   >
-                    <span className="text-lg leading-none">{p.icon}</span>
+                    {p.logo ? (
+                      <img src={p.logo} alt={p.label} className="h-7 w-auto max-w-[68px] object-contain" />
+                    ) : (
+                      <span className="text-lg leading-none">{p.icon}</span>
+                    )}
                     <span className="text-[12px] font-semibold leading-tight text-center">{p.label}</span>
                     {pmsProvider === p.id && !p.comingSoon && (
                       <Check size={11} className="absolute top-1.5 right-1.5 text-blue" />
@@ -1574,7 +1580,11 @@ const cp = user?.clinicProfile ?? null;
                         wizardPms === p.id ? "border-blue bg-blue/10 text-blue" : "border-border hover:border-blue/30 text-navy"
                       }`}
                     >
-                      <span>{p.icon}</span>
+                      {p.logo ? (
+                        <img src={p.logo} alt="" className="h-5 w-auto max-w-[52px] object-contain shrink-0" />
+                      ) : (
+                        <span className="shrink-0">{p.icon}</span>
+                      )}
                       {p.label}
                     </button>
                   ))}
@@ -2000,7 +2010,11 @@ const cp = user?.clinicProfile ?? null;
                     }`}
                     title={p.comingSoon ? "Coming soon — integration in development" : undefined}
                   >
-                    <span className="text-lg leading-none">{p.icon}</span>
+                    {p.logo ? (
+                      <img src={p.logo} alt={p.label} className="h-7 w-auto max-w-[68px] object-contain" />
+                    ) : (
+                      <span className="text-lg leading-none">{p.icon}</span>
+                    )}
                     <span className="text-[12px] font-semibold leading-tight text-center">{p.label}</span>
                     {hepProvider === p.id && !p.comingSoon && (
                       <Check size={11} className="absolute top-1.5 right-1.5 text-teal" />
@@ -2072,8 +2086,8 @@ const cp = user?.clinicProfile ?? null;
           {/* Heidi */}
           <div className="rounded-xl border border-border p-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center shrink-0 text-lg">
-                🎙️
+              <div className="w-10 h-10 rounded-xl bg-white border border-border flex items-center justify-center shrink-0 p-1.5">
+                <img src="/integrations/heidi.svg" alt="Heidi" className="w-full h-full object-contain" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-0.5">
@@ -2096,8 +2110,8 @@ const cp = user?.clinicProfile ?? null;
           {/* TM3 — elevated from PMS list */}
           <div className="rounded-xl border border-warn/30 bg-warn/5 p-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-warn/10 flex items-center justify-center shrink-0 text-lg">
-                ⚕️
+              <div className="w-10 h-10 rounded-xl bg-white border border-warn/20 flex items-center justify-center shrink-0 p-1.5">
+                <img src="/integrations/tm3.svg" alt="TM3" className="w-full h-full object-contain" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-0.5">

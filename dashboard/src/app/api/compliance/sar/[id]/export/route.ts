@@ -1,12 +1,16 @@
 /**
  * POST /api/compliance/sar/[id]/export
  *
- * Exports all patient data for a Subject Access Request
+ * Exports all patient data for a Subject Access Request.
+ * Only valid for SAR requests of type "access".
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyApiRequest, requireRole, handleApiError } from "@/lib/auth-guard";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { writeAuditLog, extractIpFromRequest } from "@/lib/audit-log";
+
+const QUERY_LIMIT = 1000;
 
 export async function POST(
   request: NextRequest,
@@ -36,6 +40,14 @@ export async function POST(
     }
 
     const sarData = sarDoc.data();
+
+    if (sarData?.type !== "access") {
+      return NextResponse.json(
+        { error: `SAR type is "${sarData?.type}" — only access SARs can be exported` },
+        { status: 400 }
+      );
+    }
+
     const patientId = sarData?.patientId;
 
     if (!patientId) {
@@ -45,69 +57,80 @@ export async function POST(
       );
     }
 
+    const now = new Date().toISOString();
+    const clinicBase = db.collection("clinics").doc(clinicId);
+
     const exportData: Record<string, unknown> = {
-      exportedAt: new Date().toISOString(),
+      exportedAt: now,
       patientId,
       clinicId,
     };
 
-    const patientDoc = await db
-      .collection("clinics")
-      .doc(clinicId)
-      .collection("patients")
-      .doc(patientId)
-      .get();
+    const patientDoc = await clinicBase.collection("patients").doc(patientId).get();
 
     if (patientDoc.exists) {
       exportData.patient = patientDoc.data();
     }
 
-    const appointmentsSnap = await db
-      .collection("clinics")
-      .doc(clinicId)
-      .collection("appointments")
-      .where("patientId", "==", patientId)
-      .get();
+    const [appointmentsSnap, commsSnap, outcomesSnap] = await Promise.all([
+      clinicBase
+        .collection("appointments")
+        .where("patientId", "==", patientId)
+        .limit(QUERY_LIMIT)
+        .get(),
+      clinicBase
+        .collection("comms_log")
+        .where("patientId", "==", patientId)
+        .limit(QUERY_LIMIT)
+        .get(),
+      clinicBase
+        .collection("outcome_scores")
+        .where("patientId", "==", patientId)
+        .limit(QUERY_LIMIT)
+        .get(),
+    ]);
 
     exportData.appointments = appointmentsSnap.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
 
-    const commsSnap = await db
-      .collection("clinics")
-      .doc(clinicId)
-      .collection("comms_log")
-      .where("patientId", "==", patientId)
-      .get();
-
     exportData.comms_log = commsSnap.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-
-    const outcomesSnap = await db
-      .collection("clinics")
-      .doc(clinicId)
-      .collection("outcome_scores")
-      .where("patientId", "==", patientId)
-      .get();
 
     exportData.outcome_scores = outcomesSnap.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
 
-    await db
-      .collection("clinics")
-      .doc(clinicId)
+    await clinicBase
       .collection("sar_requests")
       .doc(sarId)
       .update({
         status: "completed",
-        completedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        completedAt: now,
+        updatedAt: now,
+        updatedBy: user.uid,
       });
+
+    await writeAuditLog(db, clinicId, {
+      userId: user.uid,
+      userEmail: user.email,
+      action: "read",
+      resource: "sar_export",
+      metadata: {
+        sarId,
+        patientId,
+        recordCounts: {
+          appointments: appointmentsSnap.size,
+          comms_log: commsSnap.size,
+          outcome_scores: outcomesSnap.size,
+        },
+      },
+      ip: extractIpFromRequest(request),
+    });
 
     return NextResponse.json({
       success: true,

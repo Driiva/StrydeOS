@@ -16,8 +16,12 @@ import { writeUppFetch } from "@/lib/integrations/pms/writeupp/client";
  */
 export async function POST(request: NextRequest) {
   try {
+    if (process.env.NODE_ENV === "production" && !process.env.ENABLE_DEBUG_ENDPOINTS) {
+      return NextResponse.json({ error: "Debug endpoints are disabled in production" }, { status: 404 });
+    }
+
     const user = await verifyApiRequest(request);
-    requireRole(user, ["owner", "admin", "superadmin"]);
+    requireRole(user, ["superadmin"]);
 
     const body = await request.json().catch(() => ({}));
     const clinicId = body.clinicId as string | undefined;

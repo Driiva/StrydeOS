@@ -95,7 +95,7 @@ No global design system or brand token changes; existing Navy/Blue/Teal/Purple a
 
 - [ ] **Env vars** — Ensure Vercel has `CRON_SECRET`, Firebase, Sentry, `CSV_INBOUND_SECRET`, etc. (see RUNBOOK.md).
 - [ ] **Stripe** — Billing/portal and webhooks configured; backup codes not in repo (e.g. `stripe_backup_code.txt` in `.gitignore`).
-- [ ] **Firebase** — Deploy rules after push: `cd dashboard && firebase deploy --only firestore:rules`.
+- [ ] **Firebase** — Deploy rules after push: `cd dashboard && firebase use --add` (or `--project <project-id>`), then `firebase deploy --only firestore:rules`. No active project = CLI will not deploy until set.
 - [ ] **Cron** — Confirm 4-hour pipeline cron in Vercel and one successful run.
 - [ ] **Smoke test** — Login (with MFA if enabled), Settings, Billing link, Admin → Integration health (superadmin), Sync now.
 

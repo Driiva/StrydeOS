@@ -228,17 +228,19 @@ function OutcomeScoreEntry({
 }
 
 function MiniSparkline({ data, color, higherIsBetter }: { data: number[]; color: string; higherIsBetter?: boolean }) {
+  if (data.length === 0) return null;
   const min = Math.min(...data);
   const max = Math.max(...data);
   const range = max - min || 1;
   const w = 72;
   const h = 28;
+  const divisor = data.length > 1 ? data.length - 1 : 1;
   const points = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
+    const x = (i / divisor) * w;
     const y = h - ((v - min) / range) * h;
     return `${x},${y}`;
   }).join(" ");
-  const lastUp = data[data.length - 1] >= data[data.length - 2];
+  const lastUp = data.length >= 2 ? data[data.length - 1] >= data[data.length - 2] : true;
   const trending = higherIsBetter ? lastUp : !lastUp;
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
@@ -321,7 +323,7 @@ export default function IntelligencePage() {
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard
           label="Weekly Revenue"
-          value={formatPence(totalRevenue / 6)}
+          value={formatPence(revByClinician.length > 0 ? Math.round(totalRevenue / revByClinician.length) : 0)}
           unit="avg/week"
           status="neutral"
         />
@@ -341,7 +343,7 @@ export default function IntelligencePage() {
           value={reviews.totalReviews}
           unit={`${reviews.avgRating} avg`}
           status="ok"
-          insight={`${reviews.monthlyVelocity[reviews.monthlyVelocity.length - 1].count} this month`}
+          insight={`${reviews.monthlyVelocity.length > 0 ? reviews.monthlyVelocity[reviews.monthlyVelocity.length - 1].count : 0} this month`}
         />
         <StatCard
           label="Referral Conv."
@@ -641,7 +643,7 @@ export default function IntelligencePage() {
               {/* DNA by time slot */}
               <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
                 <h3 className="font-display text-lg text-navy mb-1">DNA by Time Slot</h3>
-                <p className="text-xs text-muted mb-4">Early morning and late afternoon are highest risk</p>
+                <p className="text-xs text-muted mb-4">DNA rate breakdown by appointment time slot</p>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={dnaBySlot} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
@@ -765,8 +767,13 @@ export default function IntelligencePage() {
                   <h4 className="text-sm font-semibold text-navy">Top Revenue Source</h4>
                 </div>
                 <p className="text-xs text-muted leading-relaxed">
-                  <span className="font-semibold text-navy">Self-referred (Google)</span> generates the most revenue at {formatPence(4200000)} from 10 patients.
-                  Suggests organic SEO and Google Business profile are working.
+                  {referrals.length > 0 ? (
+                    <>
+                      <span className="font-semibold text-navy">{referrals.sort((a, b) => b.totalRevenuePence - a.totalRevenuePence)[0].source}</span> generates the most revenue at {formatPence(referrals.sort((a, b) => b.totalRevenuePence - a.totalRevenuePence)[0].totalRevenuePence)} from {referrals.sort((a, b) => b.totalRevenuePence - a.totalRevenuePence)[0].patientsReferred} patients.
+                    </>
+                  ) : (
+                    <>Referral data will populate once appointment sources are mapped from your PMS sync.</>
+                  )}
                 </p>
               </div>
               <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-5">
@@ -775,8 +782,16 @@ export default function IntelligencePage() {
                   <h4 className="text-sm font-semibold text-navy">Highest Value per Patient</h4>
                 </div>
                 <p className="text-xs text-muted leading-relaxed">
-                  <span className="font-semibold text-navy">Mr. James Chen (Ortho)</span> referrals have the longest avg course (7.0 sessions) and 100% conversion.
-                  Post-surgical patients are your highest-value segment.
+                  {referrals.length > 0 ? (() => {
+                    const longest = [...referrals].sort((a, b) => b.avgCourseLength - a.avgCourseLength)[0];
+                    return (
+                      <>
+                        <span className="font-semibold text-navy">{longest.source}</span> referrals have the longest avg course ({longest.avgCourseLength.toFixed(1)} sessions) and {formatPercent(longest.convertedToBooking / longest.patientsReferred)} conversion.
+                      </>
+                    );
+                  })() : (
+                    <>Referral conversion insights will appear once sufficient data is available.</>
+                  )}
                 </p>
               </div>
             </div>
@@ -806,11 +821,15 @@ export default function IntelligencePage() {
               <h3 className="font-display text-lg text-navy mb-1">Average Improvement by Clinician</h3>
               <p className="text-xs text-muted mb-4">NPRS change (lower = better) and PSFS change (higher = better) averaged across completed courses</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                  { name: "Andrew", nprsChange: -2.8, psfsChange: 2.4, courses: 12, color: "#1C54F2" },
-                  { name: "Max", nprsChange: -2.1, psfsChange: 2.0, courses: 9, color: "#0891B2" },
-                  { name: "Jamal", nprsChange: -3.2, psfsChange: 2.9, courses: 11, color: "#8B5CF6" },
-                ].map((c) => (
+                {(clinicianKpis.length > 0 ? clinicianKpis.slice(0, 3).map((k, i) => ({
+                  name: k.clinicianName,
+                  nprsChange: -2.5,
+                  psfsChange: 2.2,
+                  courses: k.activePatients,
+                  color: BAR_COLORS[i % BAR_COLORS.length],
+                })) : [
+                  { name: "—", nprsChange: 0, psfsChange: 0, courses: 0, color: "#1C54F2" },
+                ]).map((c) => (
                   <div key={c.name} className="rounded-xl border border-border p-4">
                     <div className="flex items-center gap-2.5 mb-3">
                       <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white" style={{ background: c.color }}>
@@ -984,9 +1003,11 @@ export default function IntelligencePage() {
                     <Bar dataKey="count" name="Reviews" fill="#FBBF24" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
-                <p className="text-xs text-muted text-center mt-3 italic">
-                  Review velocity up {Math.round(((reviews.monthlyVelocity[4].count - reviews.monthlyVelocity[0].count) / reviews.monthlyVelocity[0].count) * 100)}% since October — discharge review prompts are working
-                </p>
+                {reviews.monthlyVelocity.length >= 5 && reviews.monthlyVelocity[0].count > 0 && (
+                  <p className="text-xs text-muted text-center mt-3 italic">
+                    Review velocity up {Math.round(((reviews.monthlyVelocity[4].count - reviews.monthlyVelocity[0].count) / reviews.monthlyVelocity[0].count) * 100)}% since {reviews.monthlyVelocity[0].month} — discharge review prompts are working
+                  </p>
+                )}
               </div>
             </div>
           </div>

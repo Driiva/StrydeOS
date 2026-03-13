@@ -31,7 +31,11 @@ import {
   type BillingInterval,
 } from "@/lib/billing";
 
-const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
+function getAppUrl(): string {
+  const url = process.env.APP_URL;
+  if (!url) throw new Error("APP_URL environment variable is not configured");
+  return url;
+}
 
 type CheckoutProduct = ModuleKey | "fullstack";
 
@@ -102,8 +106,8 @@ export async function POST(request: NextRequest) {
       customer: stripeCustomerId,
       mode: "subscription",
       line_items: lineItems,
-      success_url: `${APP_URL}/billing?checkout=success`,
-      cancel_url: `${APP_URL}/billing?checkout=canceled`,
+      success_url: `${getAppUrl()}/billing?checkout=success`,
+      cancel_url: `${getAppUrl()}/billing?checkout=canceled`,
       metadata: { clinicId, tier, interval },
       subscription_data: {
         metadata: { clinicId, tier, interval },

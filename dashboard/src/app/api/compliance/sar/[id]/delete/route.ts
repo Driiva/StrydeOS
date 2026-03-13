@@ -1,12 +1,16 @@
 /**
  * POST /api/compliance/sar/[id]/delete
  *
- * Marks patient data for deletion (soft delete with 30-day grace period)
+ * Marks patient data for deletion (soft delete with 30-day grace period).
+ * Only valid for SAR requests of type "deletion".
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyApiRequest, requireRole, handleApiError } from "@/lib/auth-guard";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { writeAuditLog, extractIpFromRequest } from "@/lib/audit-log";
+
+const DELETION_GRACE_PERIOD_DAYS = 30;
 
 export async function POST(
   request: NextRequest,
@@ -36,6 +40,14 @@ export async function POST(
     }
 
     const sarData = sarDoc.data();
+
+    if (sarData?.type !== "deletion") {
+      return NextResponse.json(
+        { error: `SAR type is "${sarData?.type}" — only deletion SARs can be processed by this endpoint` },
+        { status: 400 }
+      );
+    }
+
     const patientId = sarData?.patientId;
 
     if (!patientId) {
@@ -47,30 +59,41 @@ export async function POST(
 
     const now = new Date().toISOString();
     const gracePeriodEnd = new Date();
-    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 30);
+    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + DELETION_GRACE_PERIOD_DAYS);
 
-    await db
-      .collection("clinics")
-      .doc(clinicId)
-      .collection("patients")
-      .doc(patientId)
-      .update({
+    const batch = db.batch();
+
+    batch.update(
+      db.collection("clinics").doc(clinicId).collection("patients").doc(patientId),
+      {
         markedForDeletion: true,
         deletionRequestedAt: now,
         deletionScheduledAt: gracePeriodEnd.toISOString(),
         updatedAt: now,
-      });
+        updatedBy: user.uid,
+      }
+    );
 
-    await db
-      .collection("clinics")
-      .doc(clinicId)
-      .collection("sar_requests")
-      .doc(sarId)
-      .update({
+    batch.update(
+      db.collection("clinics").doc(clinicId).collection("sar_requests").doc(sarId),
+      {
         status: "completed",
         completedAt: now,
         updatedAt: now,
-      });
+        updatedBy: user.uid,
+      }
+    );
+
+    await batch.commit();
+
+    await writeAuditLog(db, clinicId, {
+      userId: user.uid,
+      userEmail: user.email,
+      action: "write",
+      resource: "sar_deletion",
+      metadata: { sarId, patientId, gracePeriodEnd: gracePeriodEnd.toISOString() },
+      ip: extractIpFromRequest(request),
+    });
 
     return NextResponse.json({
       success: true,

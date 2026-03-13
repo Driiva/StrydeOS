@@ -32,12 +32,18 @@ export async function verifyApiRequest(
   }
 
   const data = userDoc.data()!;
+  const role = data.role as UserRole;
+
+  if (role !== "superadmin" && (!data.clinicId || !data.role)) {
+    throw new ApiAuthError("User profile incomplete — missing clinicId or role", 403);
+  }
+
   return {
     uid: decoded.uid,
     email: decoded.email ?? "",
     clinicId: data.clinicId,
     clinicianId: data.clinicianId,
-    role: data.role as UserRole,
+    role,
   };
 }
 

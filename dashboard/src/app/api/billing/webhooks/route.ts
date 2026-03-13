@@ -17,6 +17,7 @@
  *   stripe listen --forward-to localhost:3000/api/billing/webhooks
  */
 
+import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     // Return 200 to prevent Stripe retrying non-recoverable errors
     console.error(`[Billing webhook] Error processing ${event.type}:`, err);
+    Sentry.captureException(err, { tags: { stripeEvent: event.type } });
   }
 
   return NextResponse.json({ received: true });
@@ -95,6 +97,17 @@ function resolveCustomerId(customer: Stripe.Subscription["customer"]): string {
 
 const ACTIVE_SUB_STATUSES = ["active", "trialing"] as const;
 
+/** Derive the latest period end from subscription items (Stripe v20 moved period to item level). */
+function getSubscriptionPeriodEnd(subscription: Stripe.Subscription): string {
+  let maxEnd = 0;
+  for (const item of subscription.items.data) {
+    const end = (item as unknown as { current_period_end?: number }).current_period_end ?? 0;
+    if (end > maxEnd) maxEnd = end;
+  }
+  if (maxEnd > 0) return new Date(maxEnd * 1000).toISOString();
+  return new Date(subscription.billing_cycle_anchor * 1000).toISOString();
+}
+
 /** Collect all line items from every active/trialing subscription for this customer. */
 async function getAllActiveSubscriptionItems(customerId: string): Promise<Array<{ price: { id: string } }>> {
   const stripe = getStripe();
@@ -118,7 +131,7 @@ async function getAllActiveSubscriptionItems(customerId: string): Promise<Array<
 /** First active/trialing subscription for this customer, or null. */
 async function getPrimaryActiveSubscription(
   customerId: string
-): Promise<{ id: string; status: string; billing_cycle_anchor: number } | null> {
+): Promise<{ id: string; status: string; periodEndIso: string } | null> {
   const stripe = getStripe();
   const subs = await stripe.subscriptions.list({
     customer: customerId,
@@ -132,7 +145,7 @@ async function getPrimaryActiveSubscription(
     ? {
         id: active.id,
         status: active.status,
-        billing_cycle_anchor: active.billing_cycle_anchor ?? 0,
+        periodEndIso: getSubscriptionPeriodEnd(active),
       }
     : null;
 }
@@ -162,7 +175,7 @@ async function handleSubscriptionUpsert(subscription: Stripe.Subscription) {
         stripeCustomerId: customerId,
         subscriptionId: subscription.id,
         subscriptionStatus: status,
-        currentPeriodEnd: new Date(subscription.billing_cycle_anchor * 1000).toISOString(),
+        currentPeriodEnd: getSubscriptionPeriodEnd(subscription),
       },
       updatedAt: now,
     });
@@ -202,8 +215,8 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
         subscriptionId: primary?.id ?? subscription.id,
         subscriptionStatus: (primary?.status as StripeSubscriptionStatus) ?? "canceled",
         currentPeriodEnd: primary
-          ? new Date(primary.billing_cycle_anchor * 1000).toISOString()
-          : new Date(subscription.billing_cycle_anchor * 1000).toISOString(),
+          ? primary.periodEndIso
+          : getSubscriptionPeriodEnd(subscription),
       },
       updatedAt: now,
     });

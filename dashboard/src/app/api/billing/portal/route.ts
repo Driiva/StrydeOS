@@ -19,7 +19,11 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { verifyApiRequest, requireRole, handleApiError } from "@/lib/auth-guard";
 import { getStripe } from "@/lib/stripe";
 
-const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
+function getAppUrl(): string {
+  const url = process.env.APP_URL;
+  if (!url) throw new Error("APP_URL environment variable is not configured");
+  return url;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,7 +55,7 @@ export async function POST(request: NextRequest) {
     const stripe = getStripe();
     const session = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: `${APP_URL}/billing`,
+      return_url: `${getAppUrl()}/billing`,
     });
 
     return NextResponse.json({ url: session.url });

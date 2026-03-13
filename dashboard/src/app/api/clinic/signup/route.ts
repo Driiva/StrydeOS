@@ -22,6 +22,7 @@ import type {
 import { deriveJurisdictionFromCountry } from "@/data/compliance-config";
 
 export async function POST(request: NextRequest) {
+  let uid: string | undefined;
   try {
     const body = await request.json().catch(() => null);
     if (!body) {
@@ -59,7 +60,6 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     // 1. Create Firebase Auth user
-    let uid: string;
     try {
       const userRecord = await auth.createUser({
         email: trimmedEmail,
@@ -73,6 +73,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { error: "An account with this email already exists. Please sign in instead." },
           { status: 409 }
+        );
+      }
+      if (code === "auth/invalid-email") {
+        return NextResponse.json(
+          { error: "Invalid email address format." },
+          { status: 400 }
         );
       }
       throw err;
@@ -161,7 +167,7 @@ export async function POST(request: NextRequest) {
     // 4. Write Firestore docs atomically
     const batch = db.batch();
 
-    batch.set(db.collection("users").doc(uid), {
+    batch.set(db.collection("users").doc(uid!), {
       clinicId,
       role: "owner" as UserRole,
       firstName: "",
@@ -209,7 +215,7 @@ export async function POST(request: NextRequest) {
       await db.collection("funnel_events").add({
         event: "signup_complete",
         clinicId,
-        userId: uid,
+        userId: uid!,
         metadata: { source: "self_serve_signup" },
         timestamp: now,
       });
@@ -223,6 +229,13 @@ export async function POST(request: NextRequest) {
     );
   } catch (err) {
     console.error("[signup error]", err);
+    if (uid) {
+      try {
+        await getAdminAuth().deleteUser(uid);
+      } catch {
+        console.error("[signup cleanup] Failed to delete orphaned auth user:", uid);
+      }
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
