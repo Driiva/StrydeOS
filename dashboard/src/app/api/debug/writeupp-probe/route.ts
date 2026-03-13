@@ -70,9 +70,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract rows from response (could be { data: [] }, { appointments: [] }, or direct array)
-    const rawRows: unknown[] = Array.isArray(rawResponse)
+    const raw = Array.isArray(rawResponse)
       ? rawResponse
-      : (rawResponse as Record<string, unknown>)?.["data"] ?? (rawResponse as Record<string, unknown>)?.["appointments"] ?? [];
+      : (rawResponse as Record<string, unknown>)?.["data"] ?? (rawResponse as Record<string, unknown>)?.["appointments"];
+    const rawRows: unknown[] = Array.isArray(raw) ? raw : [];
 
     const arr = Array.isArray(rawRows) ? rawRows : [];
 
