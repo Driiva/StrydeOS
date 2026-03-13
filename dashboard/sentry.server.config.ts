@@ -1,0 +1,18 @@
+import * as Sentry from "@sentry/nextjs";
+
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  environment: process.env.NEXT_PUBLIC_ENV ?? process.env.NODE_ENV,
+
+  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
+
+  // Log all unhandled promise rejections and uncaught exceptions
+  integrations: [
+    Sentry.captureConsoleIntegration({ levels: ["error"] }),
+  ],
+
+  beforeSend(event) {
+    if (process.env.NODE_ENV === "development") return null;
+    return event;
+  },
+});

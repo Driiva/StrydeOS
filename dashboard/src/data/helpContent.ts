@@ -156,8 +156,8 @@ export const HELP_ENTRIES: HelpEntry[] = [
     category: "general",
     question: "Where does StrydeOS get its data from?",
     answer:
-      "StrydeOS pulls from three primary sources: your PMS (WriteUpp or Cliniko) for appointments and patient records; Physitrack for home exercise programme data; and directly from StrydeOS features like Ava call logs and Pulse engagement scores. Data is stored securely in a London-region data centre with EU data residency, partitioned by clinic — meaning your data is never mixed with another practice's.",
-    tags: ["data", "source", "writeupp", "cliniko", "physitrack", "firestore", "gdpr"],
+      "StrydeOS pulls from three primary sources: your PMS (WriteUpp, Cliniko, Halaxy, or Zanda) for appointments and patient records; Physitrack for home exercise programme data; and directly from StrydeOS features like Ava call logs and Pulse engagement scores. Data is stored securely in a London-region data centre with EU data residency, partitioned by clinic — meaning your data is never mixed with another practice's.",
+    tags: ["data", "source", "writeupp", "cliniko", "halaxy", "zanda", "powerdiary", "physitrack", "firestore", "gdpr"],
   },
   {
     id: "metric-targets",
@@ -170,10 +170,10 @@ export const HELP_ENTRIES: HelpEntry[] = [
   {
     id: "pms-not-listed",
     category: "general",
-    question: "My practice uses TM3 — is it supported?",
+    question: "My practice uses TM3 or another PMS — is it supported?",
     answer:
-      "TM3 (Blue Zinc) is the most widely used legacy PMS in UK physiotherapy and is on the StrydeOS integration roadmap. Full TM3 support is not yet available, but it is the next integration priority after WriteUpp and Cliniko. If you're currently using TM3, contact us and you'll be prioritised for early access when the integration launches.",
-    tags: ["tm3", "blue zinc", "pms", "integration", "support"],
+      "StrydeOS currently supports WriteUpp, Cliniko, Halaxy, and Zanda (Power Diary) with full API integration. TM3 (Blue Zinc) and Pabau are on the integration roadmap. If you're using a different PMS, contact us — we prioritise integrations based on user demand and can often build custom adapters for practices with specific needs.",
+    tags: ["tm3", "pabau", "jane", "blue zinc", "pms", "integration", "support"],
   },
 ];
 

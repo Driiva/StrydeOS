@@ -1,5 +1,25 @@
 # StrydeOS Changelog
 
+## v0.3.1 — HEP Provider Expansion (Mar 2026)
+
+### New HEP Integrations
+- **Wibbi adapter** (formerly Physiotec) — Full implementation with client, adapter, and mappers following existing HEP patterns
+- **Rehab My Patient adapter** — Complete integration with API key auth and programme tracking
+- Both providers now available in Settings with connection testing and secure API key storage
+
+### Provider UI Improvements
+- Added "Recently Added" badges to newly launched integrations: Halaxy, Zanda (Power Diary), Rehab My Patient, and Wibbi
+- Updated Settings page HEP provider grid to reflect current integration status
+- Removed PhysiApp (patient-facing app, not appropriate for clinic integrations)
+
+### Marketing & Documentation Updates
+- Updated website copy to reference Wibbi and Rehab My Patient alongside Physitrack
+- Made HEP messaging platform-agnostic ("HEP: guesswork" vs "Physitrack: guesswork")
+- Updated security documentation to list all active integration providers
+- ROADMAP.md reflects current state: Rehab My Patient and Wibbi marked as "Built"
+
+---
+
 ## v0.3.0 — Intelligence, Pulse & Ava (25 Feb 2026)
 
 Three domains: **Intelligence** (analytics), **Pulse** (continuity & comms), **Ava** (voice AI receptionist).
@@ -43,7 +63,7 @@ Abstracted HEP adapter following the same plugin pattern as PMS integrations.
 
 - `HEPAdapter` interface: `testConnection`, `getProgrammes`, `getProgramme`
 - Physitrack adapter with REST client, programme mapping, completion percentage tracking
-- Factory pattern supporting Physitrack, PhysiApp, Rehab My Patient, Physiotec
+- Factory pattern supporting Physitrack, Rehab My Patient, Wibbi
 - `HEPProgramme` type: exercise count, completion %, last access date, deep link support
 
 ### Clinician Performance (Enhanced)

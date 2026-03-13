@@ -15,7 +15,7 @@
 
 - **Marketing website** (e.g. strydeOS-website): no self-serve signup in-code; typically “Book demo” / “Contact” → manual invite or link to app.
 - **App onboarding** (in-dashboard): after first login, clinic is in status `onboarding`. Steps (Settings / onboarding wizard):
-  1. Connect PMS (WriteUpp / Cliniko)
+  1. Connect PMS (WriteUpp / Cliniko / Halaxy / Zanda)
   2. Confirm clinicians
   3. Set KPI targets  
   When those are done, check-go-live can promote the clinic to `live`.

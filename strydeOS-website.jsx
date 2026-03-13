@@ -431,7 +431,7 @@ const Hero = () => {
             </p>
             <div style={{ marginTop: 20, display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap" }}>
               {[
-                { icon: "🔗", text: "Connects to Cliniko & WriteUpp" },
+                { icon: "🔗", text: "Connects to WriteUpp, Cliniko, Halaxy, Zanda & more" },
                 { icon: "🚫", text: "Not a PMS replacement" },
                 { icon: "⚡", text: "Live above your existing stack" },
               ].map(({ icon, text }) => (
@@ -517,7 +517,7 @@ const Integrations = () => (
           The pitch isn't "switch to StrydeOS."
         </h2>
         <p style={{ fontSize: 16, color: C.muted, maxWidth: 560, margin: "0 auto", lineHeight: 1.75 }}>
-          Cliniko and WriteUpp own the PMS layer — appointments, notes, billing. StrydeOS sits <em>above</em> that. It connects to whatever you're already running and extends it, not replaces it.
+          WriteUpp, Cliniko, Halaxy, and Zanda own the PMS layer — appointments, notes, billing. Physitrack, Rehab My Patient, and Wibbi handle home exercise programmes. StrydeOS sits <em>above</em> that. It connects to whatever you're already running and extends it, not replaces it.
         </p>
       </div>
 
@@ -535,8 +535,10 @@ const Integrations = () => (
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", marginBottom: 14 }}>Your existing PMS — unchanged</div>
             <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
               {[
-                { name: "Cliniko", icon: "🗓️", desc: "Appointments · Notes · Billing" },
                 { name: "WriteUpp", icon: "📝", desc: "Appointments · Notes · Billing" },
+                { name: "Cliniko", icon: "🗓️", desc: "Appointments · Notes · Billing" },
+                { name: "Halaxy", icon: "💙", desc: "Appointments · Notes · Billing" },
+                { name: "Zanda (Power Diary)", icon: "📓", desc: "Appointments · Notes · Billing" },
                 { name: "Jane App", icon: "🏥", desc: "Appointments · Notes · Billing" },
                 { name: "Other PMS", icon: "⚙️", desc: "Via API or webhook" },
               ].map(({ name, icon, desc }) => (
@@ -584,7 +586,7 @@ const Integrations = () => (
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
         {[
-          { q: "Do I need to switch systems?", a: "No. StrydeOS connects to Cliniko, WriteUpp, and most other PMS via API. Your workflows stay exactly as they are.", icon: "🔗" },
+          { q: "Do I need to switch systems?", a: "No. StrydeOS connects to WriteUpp, Cliniko, Halaxy, Zanda, and most other PMS via API. HEP platforms like Physitrack, Rehab My Patient, and Wibbi integrate seamlessly. Your workflows stay exactly as they are.", icon: "🔗" },
           { q: "Will my team need retraining?", a: "They keep using the same PMS they always have. StrydeOS runs quietly in the background — your staff only notice the results.", icon: "👥" },
           { q: "How long does setup take?", a: "Most practices are live within 5 days. API connections to major PMS are pre-built. We handle the integration.", icon: "⚡" },
         ].map(({ q, a, icon }) => (
@@ -868,7 +870,7 @@ const Results = () => (
           {[
             { before: "No performance visibility", after: "Real-time KPI board" },
             { before: "Follow-up rate: unknown", after: "Tracked weekly" },
-            { before: "Physitrack: guesswork", after: "100% compliance" },
+            { before: "HEP: guesswork", after: "100% compliance" },
             { before: "Revenue: quarterly view", after: "Revenue: live" },
           ].map(({ before, after }) => (
             <div key={before} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 14, border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -991,7 +993,7 @@ const Pricing = () => {
         "90-day rolling trend charts",
         "Alert flags when metrics drift below target",
         "NPS tracking and Google Review pipeline",
-        "WriteUpp / Cliniko integration (read)",
+        "PMS integration: WriteUpp, Cliniko, Halaxy, Zanda (read)",
         "Weekly email digest",
       ],
       cta: "Start free trial",
@@ -1013,7 +1015,7 @@ const Pricing = () => {
         "Emergency routing to on-call clinician",
         "SMS confirmations sent automatically",
         "500 SMS/month included",
-        "Cliniko and WriteUpp write-back integration",
+        "PMS write-back: WriteUpp, Cliniko, Halaxy, Zanda",
       ],
       cta: "Get Early Access",
       highlight: true,
@@ -1212,9 +1214,9 @@ const WhyUs = () => {
   const pillars = [
     {
       n: "01",
-      title: "Built from inside the clinic.",
+      title: "Built from the reality of private practice.",
       color: C.blue,
-      body: `Built inside a working practice, not a product lab.\n\nEvery KPI StrydeOS tracks exists because a practice owner needed to see it and could not. We know what Monday handover looks like, what a late cancel really costs, and which metrics actually change outcomes and revenue.\n\nThe practice that built StrydeOS has seen 125% revenue growth in three years. That is what happens when you stop managing tools and start operating a system.`,
+      body: `StrydeOS comes from the operational side of clinic life, where small gaps in follow-up, utilisation, and continuity become meaningful over time.\n\nThat perspective shapes every part of the product.`,
     },
     {
       n: "02",
@@ -1230,9 +1232,9 @@ const WhyUs = () => {
     },
     {
       n: "04",
-      title: "We're in this with you, not just in your invoice.",
+      title: "We treat implementation as part of the product.",
       color: C.blue,
-      body: `To do this properly, we need to know more than your PMS. We need to know what kind of practice you're building, who your patients are, what your clinicians are good at, and where you're losing ground. That's how we set up StrydeOS in a way that actually fits — not a generic template with your logo on it.\n\nWe have clients who call us before they hire. We intend to keep it that way. If that sounds like the kind of relationship you want with a software partner, we should talk.`,
+      body: `A clinic only gets value from software that fits the way it already works.\n\nSo we focus on the practical detail, the setup, and the signals worth acting on.`,
     },
   ];
 
@@ -1321,7 +1323,7 @@ const EarlyAccess = () => (
         Book a free 20-minute Clinical Performance Audit. We'll look at your existing systems, estimate where revenue is leaking — missed calls, early drop-off, admin overhead — and show you exactly where StrydeOS plugs the gaps.
       </p>
       <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 14, lineHeight: 1.65, marginBottom: 40, fontStyle: "italic" }}>
-        No switching required. StrydeOS connects to Cliniko, WriteUpp, and most major PMS. Start with one product, add the rest when you're ready.
+        No switching required. StrydeOS connects to WriteUpp, Cliniko, Halaxy, Zanda, and most major PMS. HEP platforms (Physitrack, Rehab My Patient, Wibbi) sync seamlessly. Start with one product, add the rest when you're ready.
       </p>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
         <a href="https://portal.strydeos.com/login?mode=signup" className="btn-primary" style={{ fontSize: 16, padding: "16px 44px" }}>
@@ -1478,7 +1480,7 @@ const SecurityPolicyPage = () => {
 
           <PolicyBlock icon={<LockIcon />} number="02" title="Encryption & Transport Security">
             <p style={{ marginBottom: 12 }}>
-              <strong style={{ color: C.ink }}>In transit:</strong> All data transmitted between client applications and StrydeOS servers is encrypted using TLS 1.3. API connections to third-party PMS integrations (WriteUpp, Cliniko, Physitrack) enforce TLS 1.2 minimum with certificate pinning.
+              <strong style={{ color: C.ink }}>In transit:</strong> All data transmitted between client applications and StrydeOS servers is encrypted using TLS 1.3. API connections to third-party integrations (WriteUpp, Cliniko, Halaxy, Zanda, Physitrack, Rehab My Patient, Wibbi) enforce TLS 1.2 minimum with certificate pinning.
             </p>
             <p>
               <strong style={{ color: C.ink }}>At rest:</strong> All data stored in Google Cloud Firestore and Cloud Storage is encrypted using AES-256 with Google-managed encryption keys. Database backups are encrypted with the same standard and stored in the same UK region.
@@ -1561,7 +1563,7 @@ const SecurityPolicyPage = () => {
               { name: "Google Cloud (Firebase)", purpose: "Hosting, auth, database", region: "UK (eu-west2)" },
               { name: "Retell AI", purpose: "Voice reception (Ava)", region: "EU/UK processing" },
               { name: "ElevenLabs", purpose: "Voice synthesis", region: "EU processing" },
-              { name: "PMS Providers", purpose: "WriteUpp, Cliniko API sync", region: "UK hosted" },
+              { name: "PMS & HEP Providers", purpose: "WriteUpp, Cliniko, Halaxy, Zanda, Physitrack, Rehab My Patient, Wibbi API sync", region: "UK hosted" },
             ].map(({ name, purpose, region }) => (
               <div key={name} style={{
                 padding: "14px 16px",

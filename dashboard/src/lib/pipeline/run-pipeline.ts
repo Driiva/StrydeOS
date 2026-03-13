@@ -24,6 +24,7 @@ import {
   BACKFILL_WEEKS,
   INCREMENTAL_WEEKS,
 } from "./types";
+import { logIntegrationHealth, cleanOldHealthLogs } from "./health-logger";
 
 export async function runPipeline(
   db: Firestore,
@@ -65,6 +66,7 @@ export async function runPipeline(
   // ── Stage 1: Sync Clinicians ─────────────────────────────────────────────
   const s1 = await syncClinicians(db, clinicId, pmsAdapter);
   stages.push(s1);
+  await logIntegrationHealth(db, clinicId, pmsConfig.provider, "pms", s1);
 
   const clinicianMap = await buildClinicianMap(db, clinicId);
 
@@ -77,6 +79,7 @@ export async function runPipeline(
     options
   );
   stages.push(s2);
+  await logIntegrationHealth(db, clinicId, pmsConfig.provider, "pms", s2);
 
   // ── Stage 3: Resolve Patients ────────────────────────────────────────────
   const s3 = await syncPatients(
@@ -87,6 +90,7 @@ export async function runPipeline(
     clinicianMap
   );
   stages.push(s3);
+  await logIntegrationHealth(db, clinicId, pmsConfig.provider, "pms", s3);
 
   // ── Stage 4: Enrich HEP Data ────────────────────────────────────────────
   const hepSnap = await configBase.doc(HEP_DOC_ID).get();
@@ -96,6 +100,7 @@ export async function runPipeline(
     const hepAdapter = createHEPAdapter(hepConfig);
     const s4 = await syncHep(db, clinicId, hepAdapter);
     stages.push(s4);
+    await logIntegrationHealth(db, clinicId, hepConfig.provider, "hep", s4);
   } else {
     stages.push({
       stage: "sync-hep",
@@ -172,6 +177,7 @@ export async function runPipeline(
       clinicianMap
     );
     stages.push(s7);
+    await logIntegrationHealth(db, clinicId, "google_reviews", "reviews", s7);
   } else {
     stages.push({
       stage: "sync-reviews",
@@ -205,6 +211,8 @@ export async function runPipeline(
     },
     { merge: true }
   );
+
+  await cleanOldHealthLogs(db, clinicId);
 
   return {
     clinicId,

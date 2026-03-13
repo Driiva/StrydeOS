@@ -30,6 +30,7 @@ export interface AuthUser {
   firstLogin: boolean;
   tourCompleted: boolean;
   status: UserStatus;
+  mfaEnrolled: boolean;
   clinicProfile: ClinicProfile | null;
 }
 
@@ -108,7 +109,47 @@ export interface OnboardingV2 {
 }
 
 export type PmsProvider = "writeupp" | "cliniko" | "tm3" | "jane" | "powerdiary" | "pabau" | "halaxy";
+export type HepProvider = "physitrack" | "rehab_my_patient" | "wibbi";
 export type ClinicStatus = "onboarding" | "live" | "paused" | "churned";
+
+// ─── Compliance ──────────────────────────────────────────────────────────────
+
+export type Jurisdiction = "uk" | "us" | "au" | "ca";
+
+export interface ComplianceConfig {
+  jurisdiction: Jurisdiction;
+  consentModel: "gdpr_lawful_basis" | "hipaa_notice" | "pipeda_express" | "app_explicit";
+  mfaRequired: boolean;
+  baaRequired: boolean;
+  baaSignedAt: string | null;
+  dataRegion: string;
+  privacyPolicyVersion: string | null;
+  consentRecordedAt: string | null;
+}
+
+export interface AuditLogEntry {
+  userId: string;
+  userEmail: string;
+  action: "read" | "write" | "delete" | "export" | "login" | "config_change";
+  resource: string;
+  resourceId?: string;
+  metadata?: Record<string, unknown>;
+  ip?: string;
+  timestamp: string;
+}
+
+export interface SarRequest {
+  id: string;
+  type: "access" | "correction" | "deletion";
+  status: "pending" | "in_progress" | "completed" | "rejected";
+  requestedBy: string;
+  patientId?: string;
+  description: string;
+  responseDeadline: string;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface ClinicProfile {
   id: string;
@@ -119,12 +160,16 @@ export interface ClinicProfile {
   pmsType: PmsProvider | null;
   /** Client-visible last PMS sync time (API key stored server-side only in integrations_config). */
   pmsLastSyncAt?: string | null;
+  hepType?: HepProvider | null;
+  /** Client-visible HEP connection status (API key stored server-side only in integrations_config). */
+  hepConnectedAt?: string | null;
   featureFlags: FeatureFlags;
   targets: ClinicTargets;
   brandConfig: BrandConfig;
   onboarding: OnboardingState;
   onboardingV2?: OnboardingV2;
   billing?: BillingState;
+  compliance?: ComplianceConfig;
   trialStartedAt: string | null;
   createdAt: string;
   updatedAt: string;

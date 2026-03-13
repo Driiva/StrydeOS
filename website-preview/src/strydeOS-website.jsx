@@ -1387,13 +1387,11 @@ const WhyUs = ({ darkMode }) => {
   const pillars = [
     {
       n: "01",
-      title: "Built from inside the clinic.",
+      title: "Built from the reality of private practice.",
       color: C.blue,
-      body: `StrydeOS was built inside Spires MSK in West Hampstead — by a physio who still treats one day a week and runs the clinic the other four.
+      body: `StrydeOS comes from the operational side of clinic life, where small gaps in follow-up, utilisation, and continuity become meaningful over time.
 
-We know what a Monday morning handover looks like. We know the difference between a DNA and a late cancel. We know that utilisation means something very specific to a practice owner, and that Physitrack compliance isn't a vanity metric — it's a proxy for clinical outcomes.
-
-That knowledge is baked into every feature. You won't spend three calls explaining your workflow. We already know it.`,
+That perspective shapes every part of the product.`,
     },
     {
       n: "02",
@@ -1415,11 +1413,11 @@ We're not a marketing tool. We're not a retention gimmick. We're infrastructure 
     },
     {
       n: "04",
-      title: "We're in this with you, not just in your invoice.",
+      title: "We treat implementation as part of the product.",
       color: C.blue,
-      body: `To do this properly, we need to know more than your PMS. We need to know what kind of practice you're building, who your patients are, what your clinicians are good at, and where you're losing ground. That's how we set up StrydeOS in a way that actually fits — not a generic template with your logo on it.
+      body: `A clinic only gets value from software that fits the way it already works.
 
-We have clients who call us before they hire. We intend to keep it that way. If that sounds like the kind of relationship you want with a software partner, we should talk.`,
+So we focus on the practical detail, the setup, and the signals worth acting on.`,
     },
   ];
 

@@ -5,7 +5,7 @@
 
 ## Context
 
-StrydeOS is a clinical performance OS for UK private physiotherapy practices. Three modules: AI voice receptionist (inbound call handling), patient continuity engine (retention/follow-up automation), and clinical intelligence dashboard (KPI tracking). Built and validated at Spires Physiotherapy, West Hampstead. Stack: React/Next.js frontend, Firebase backend, Retell AI for voice, n8n for automation, integrations with WriteUpp/Cliniko/Physitrack.
+StrydeOS is a clinical performance OS for UK private physiotherapy practices. Three modules: AI voice receptionist (inbound call handling), patient continuity engine (retention/follow-up automation), and clinical intelligence dashboard (KPI tracking). Built and validated at Spires Physiotherapy, West Hampstead. Stack: React/Next.js frontend, Firebase backend, Retell AI for voice, n8n for automation, integrations with WriteUpp/Cliniko/Halaxy/Zanda/Physitrack.
 
 The product is transitioning from internal tool to sellable SaaS. This prompt addresses: naming upgrades, missing frontend richness, a production-grade Retell voice prompt, Heidi integration positioning, and the structured outcome measures gap.
 
@@ -185,7 +185,7 @@ Heidi is a data source StrydeOS interprets, not a competitor.
 2. StrydeOS Intelligence reads this data to correlate documentation patterns with business outcomes (does faster/more detailed documentation correlate with higher follow-up rates?)
 3. StrydeOS Pulse becomes session-aware: if Heidi notes a high-pain session, the next follow-up touchpoint adjusts timing and tone. If discharge language appears, the system triggers post-discharge pathway instead of rebooking prompts.
 
-**Frontend implication:** Heidi should appear in the "Works with your stack" integration diagram alongside Physitrack, WriteUpp, and Cliniko. It's not a module — it's a compatible data source.
+**Frontend implication:** Heidi should appear in the "Works with your stack" integration diagram alongside Physitrack, WriteUpp, Cliniko, Halaxy, and Zanda. It's not a module — it's a compatible data source.
 
 **Integration method:** OpenClaw-style webhook bridge or direct API if available. No hard dependency — StrydeOS must function without Heidi. It's an enrichment layer, not a requirement.
 
@@ -212,7 +212,7 @@ This becomes a fourth data dimension in Intelligence. Not a separate module — 
 ## Decision 7 — TM3 Integration (Blind Spot Flag)
 
 ### Context
-TM3 (Blue Zinc) dominates the legacy UK physiotherapy PMS market. Current integration priority is WriteUpp and Cliniko, but ignoring TM3 means ignoring the largest installed base of potential customers.
+TM3 (Blue Zinc) dominates the legacy UK physiotherapy PMS market. Current live integrations are WriteUpp, Cliniko, Halaxy, and Zanda, but TM3 still represents the largest installed base of potential customers.
 
 ### Action Required
 - Research TM3 API availability (historically limited/closed)

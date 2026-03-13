@@ -10,7 +10,7 @@ export interface HEPProgramme {
 }
 
 export interface HEPAdapter {
-  provider: "physitrack" | "physiapp" | "rehab_my_patient" | "physiotec";
+  provider: "physitrack" | "rehab_my_patient" | "wibbi";
 
   testConnection(): Promise<{ ok: boolean; error?: string }>;
 
@@ -24,7 +24,7 @@ export interface HEPAdapter {
 }
 
 export interface HEPIntegrationConfig {
-  provider: "physitrack" | "physiapp" | "rehab_my_patient" | "physiotec";
+  provider: "physitrack" | "rehab_my_patient" | "wibbi";
   apiKey: string;
   clinicId?: string;
   baseUrl?: string;

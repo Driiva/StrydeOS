@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { verifyApiRequest, handleApiError, requireRole } from "@/lib/auth-guard";
 import type { HEPIntegrationConfig } from "@/lib/integrations/hep/types";
+import { writeAuditLog, extractIpFromRequest } from "@/lib/audit-log";
 
 const INTEGRATIONS_CONFIG = "integrations_config";
 const HEP_DOC_ID = "hep";
@@ -36,6 +37,25 @@ export async function POST(request: NextRequest) {
         },
         { merge: true }
       );
+
+    await db
+      .collection("clinics")
+      .doc(clinicId)
+      .update({
+        hepType: provider,
+        hepConnectedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+    await writeAuditLog(db, clinicId, {
+      userId: user.uid,
+      userEmail: user.email,
+      action: "config_change",
+      resource: "integrations_config",
+      resourceId: HEP_DOC_ID,
+      metadata: { provider, action: "connect" },
+      ip: extractIpFromRequest(request),
+    });
 
     return NextResponse.json({ ok: true });
   } catch (e) {

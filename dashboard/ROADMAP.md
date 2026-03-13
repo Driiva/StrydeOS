@@ -12,7 +12,12 @@ Three product domains: **Ava** (voice AI receptionist), **Intelligence** (analyt
 | **Pulse** (Continuity / Comms)  | Live        | Sequences, send log, patient board            |
 | **Ava** (Voice AI Receptionist) | Live (Demo) | Call dashboard, config panel, mock data       |
 | PMS Layer (WriteUpp)            | Built       | Adapter, client, mappers, API routes          |
+| PMS Layer (Cliniko)             | Built       | Adapter, client, mappers                      |
+| PMS Layer (Halaxy)              | Built       | Adapter, client, mappers                      |
+| PMS Layer (Zanda/Power Diary)   | Built       | Adapter, client, mappers                      |
 | HEP Layer (Physitrack)          | Built       | Adapter, client, factory                      |
+| HEP Layer (Rehab My Patient)    | Built       | Adapter, client, mappers                      |
+| HEP Layer (Wibbi)               | Built       | Adapter, client, mappers                      |
 | Patient Profiles                | Live        | Timeline, stats, course progress              |
 | Settings / Onboarding           | Live        | PMS connection, targets, clinician mgmt       |
 | Auth (Firebase)                 | Live        | Email/password, role-based, demo mode         |
@@ -111,11 +116,7 @@ Priority: First automated patient messages sent from Spires.
 
 - **WhatsApp comms channel** (Business API, phase 2 of Pulse)
 - **Jane App adapter** (growing UK footprint)
-- **Power Diary adapter** (solo/small practice volume)
 - **Pabau adapter** (medspa/aesthetics crossover for future vertical)
-- **Halaxy adapter** (free tier drives adoption)
-- **PhysiApp adapter** (UK-native HEP alternative)
-- **Rehab My Patient adapter** (cheaper Physitrack alternative)
 - **AI-generated clinician coaching notes** (weekly performance summaries)
 - **Predictive churn model** (ML on session gaps + outcome trajectories)
 - **Insurance pre-auth automation** (Bupa/AXA/Vitality portal integration)

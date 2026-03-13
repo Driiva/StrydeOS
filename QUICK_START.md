@@ -32,10 +32,12 @@ Go to **https://www.strydeos.com/login** and sign in with your owner or admin ac
 
 ---
 
-## Step 4: Optional — Connect WriteUpp
+## Step 4: Optional — Connect Your PMS
+
+Supported PMS: WriteUpp, Cliniko, Halaxy, Zanda (Power Diary)
 
 1. Go to **Settings** → PMS Integration
-2. Enter WriteUpp API key
+2. Select your PMS provider and enter API key
 3. Test connection and save
 4. Trigger sync: `POST https://www.strydeos.com/api/pipeline/run`
    - Header: `Authorization: Bearer <CRON_SECRET>`

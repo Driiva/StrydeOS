@@ -44,7 +44,7 @@ import {
   ChevronLeft,
   Upload,
 } from "lucide-react";
-import type { ClinicProfile, PmsProvider } from "@/types";
+import type { ClinicProfile, PmsProvider, HepProvider } from "@/types";
 import type { CanonicalField } from "@/lib/csv-import/types";
 
 interface PmsProviderOption {
@@ -52,6 +52,7 @@ interface PmsProviderOption {
   label: string;
   icon: string;
   comingSoon: boolean;
+  recentlyAdded?: boolean;
 }
 
 const CANONICAL_FIELD_OPTIONS: { value: string; label: string; required?: boolean }[] = [
@@ -100,6 +101,8 @@ const ONBOARDING_PMS_OPTIONS = [
   { id: "cliniko", label: "Cliniko", icon: "🗂️" },
   { id: "tm3", label: "TM3", icon: "⚕️" },
   { id: "jane", label: "Jane App", icon: "🌿" },
+  { id: "powerdiary", label: "Zanda (Power Diary)", icon: "📓" },
+  { id: "halaxy", label: "Halaxy", icon: "💙" },
   { id: "other", label: "Other / Custom", icon: "📄" },
 ];
 
@@ -110,9 +113,23 @@ const PMS_PROVIDERS: PmsProviderOption[] = [
   { id: "cliniko", label: "Cliniko", icon: "🗂️", comingSoon: false },
   { id: "tm3", label: "TM3", icon: "⚕️", comingSoon: true },
   { id: "jane", label: "Jane App", icon: "🌿", comingSoon: true },
-  { id: "powerdiary", label: "Power Diary", icon: "📓", comingSoon: true },
+  { id: "powerdiary", label: "Zanda (Power Diary)", icon: "📓", comingSoon: false, recentlyAdded: true },
   { id: "pabau", label: "Pabau", icon: "🏥", comingSoon: true },
-  { id: "halaxy", label: "Halaxy", icon: "💙", comingSoon: true },
+  { id: "halaxy", label: "Halaxy", icon: "💙", comingSoon: false, recentlyAdded: true },
+];
+
+interface HepProviderOption {
+  id: string;
+  label: string;
+  icon: string;
+  comingSoon: boolean;
+  recentlyAdded?: boolean;
+}
+
+const HEP_PROVIDERS: HepProviderOption[] = [
+  { id: "physitrack", label: "Physitrack", icon: "🏃", comingSoon: false },
+  { id: "rehab_my_patient", label: "Rehab My Patient", icon: "💪", comingSoon: false, recentlyAdded: true },
+  { id: "wibbi", label: "Wibbi", icon: "🎯", comingSoon: false, recentlyAdded: true },
 ];
 
 function RetriggerTourButton() {
@@ -290,7 +307,9 @@ const cp = user?.clinicProfile ?? null;
     setUtilisationTarget(String(t.utilisationRate));
     setPmsProvider(cp.pmsType ?? "");
     setPmsConnected(cp.onboarding?.pmsConnected ?? false);
-    // API key is never read from server (stored in integrations_config only)
+    setHepProvider(cp.hepType ?? "");
+    setHepConnected(!!cp.hepConnectedAt);
+    // API keys are never read from server (stored in integrations_config only)
   }, [cp]);
 
   const clinicId = user?.clinicId;
@@ -661,6 +680,7 @@ const cp = user?.clinicProfile ?? null;
       }
       setHepConnected(true);
       setHepApiKey("");
+      await refreshClinicProfile();
       toast("HEP platform connected and key saved securely", "success");
     } catch {
       toast("Connection failed. Check your API key and try again.", "error");
@@ -1218,6 +1238,11 @@ const cp = user?.clinicProfile ?? null;
                     {pmsProvider === p.id && !p.comingSoon && (
                       <Check size={11} className="absolute top-1.5 right-1.5 text-blue" />
                     )}
+                    {p.recentlyAdded && !p.comingSoon && (
+                      <span className="text-[9px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-success/10 text-success absolute top-1.5 left-1.5">
+                        New
+                      </span>
+                    )}
                     {p.comingSoon && (
                       <span className="text-[9px] font-semibold text-muted/60 uppercase tracking-wide">
                         Soon
@@ -1306,10 +1331,25 @@ const cp = user?.clinicProfile ?? null;
                 <p className="text-sm font-medium text-navy">
                   {PMS_PROVIDERS.find((p) => p.id === pmsProvider)?.label} integration is coming soon
                 </p>
-                <p className="text-[12px] text-muted mt-1">
-                  We&apos;re building the API adapter for this provider. You&apos;ll be notified when it&apos;s ready.
-                  In the meantime, contact support to discuss early access.
-                </p>
+                {pmsProvider === "tm3" ? (
+                  <p className="text-[12px] text-muted mt-1">
+                    TM3 has no public API. In the meantime, use the email-ingest pathway below — export your appointments CSV from TM3, then email it to your clinic&apos;s unique ingest address and it will be imported automatically.{" "}
+                    <button
+                      onClick={() => {
+                        const el = document.getElementById("csv-import-section");
+                        if (el) el.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="underline text-navy hover:text-blue transition-colors"
+                    >
+                      See ingest address ↓
+                    </button>
+                  </p>
+                ) : (
+                  <p className="text-[12px] text-muted mt-1">
+                    We&apos;re building the API adapter for this provider. You&apos;ll be notified when it&apos;s ready.
+                    In the meantime, contact support to discuss early access.
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -1712,7 +1752,15 @@ const cp = user?.clinicProfile ?? null;
 
       {/* HEP Integration */}
       <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
-        <h3 className="font-display text-lg text-navy mb-4">HEP Integration</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display text-lg text-navy">HEP Integration</h3>
+          <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-teal/10 text-teal">
+            Programme Assignment
+          </span>
+        </div>
+        <p className="text-[12px] text-muted mb-5">
+          Connect your home exercise platform to track programme assignment rates. Most providers track &quot;was a programme assigned&quot; — full compliance tracking varies by platform.
+        </p>
 
         {hepConnected ? (
           <div className="flex items-center gap-4 p-4 rounded-xl border border-success/20 bg-success/5">
@@ -1721,12 +1769,41 @@ const cp = user?.clinicProfile ?? null;
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-navy">
-                {hepProvider === "physitrack" ? "Physitrack" : "HEP Platform"} — Connected
+                {HEP_PROVIDERS.find((p) => p.id === hepProvider)?.label ?? "HEP Platform"} — Connected
               </p>
               <p className="text-[11px] text-muted">
-                Exercise compliance data syncs automatically with the pipeline
+                Programme assignment data syncs automatically with the pipeline
               </p>
             </div>
+            <button
+              onClick={async () => {
+                if (!clinicId || !firebaseUser) return;
+                try {
+                  const token = await firebaseUser.getIdToken();
+                  const base = typeof window !== "undefined" ? window.location.origin : "";
+                  const res = await fetch(`${base}/api/hep/disconnect`, {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` },
+                  });
+                  const data = await res.json().catch(() => ({}));
+                  if (!res.ok) {
+                    toast(normalizeApiError(res.status, data?.error, "Failed to disconnect"), "error");
+                    return;
+                  }
+                  setHepConnected(false);
+                  setHepProvider("");
+                  setHepApiKey("");
+                  await refreshClinicProfile();
+                  toast("HEP platform disconnected", "success");
+                } catch {
+                  toast("Failed to disconnect", "error");
+                }
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-danger border border-danger/20 hover:bg-danger/5 transition-colors"
+            >
+              <Unplug size={12} />
+              Disconnect
+            </button>
           </div>
         ) : (
           <div className="space-y-4">
@@ -1734,25 +1811,41 @@ const cp = user?.clinicProfile ?? null;
               <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">
                 HEP Provider
               </label>
-              <div className="flex gap-3">
-                {(["physitrack"] as const).map((p) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                {HEP_PROVIDERS.map((p) => (
                   <button
-                    key={p}
-                    onClick={() => setHepProvider(p)}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
-                      hepProvider === p
-                        ? "border-blue bg-blue/5 text-blue"
-                        : "border-border hover:border-blue/30 text-navy"
+                    key={p.id}
+                    onClick={() => !p.comingSoon && setHepProvider(p.id)}
+                    className={`relative flex flex-col items-center justify-center gap-1 px-3 py-3 rounded-xl border text-sm font-medium transition-all ${
+                      hepProvider === p.id
+                        ? "border-teal bg-teal/5 text-teal"
+                        : p.comingSoon
+                          ? "border-border/50 text-muted/50 cursor-default"
+                          : "border-border hover:border-teal/30 text-navy"
                     }`}
+                    title={p.comingSoon ? "Coming soon — integration in development" : undefined}
                   >
-                    Physitrack
-                    {hepProvider === p && <Check size={14} />}
+                    <span className="text-lg leading-none">{p.icon}</span>
+                    <span className="text-[12px] font-semibold leading-tight text-center">{p.label}</span>
+                    {hepProvider === p.id && !p.comingSoon && (
+                      <Check size={11} className="absolute top-1.5 right-1.5 text-teal" />
+                    )}
+                    {p.recentlyAdded && !p.comingSoon && (
+                      <span className="text-[9px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-success/10 text-success absolute top-1.5 left-1.5">
+                        New
+                      </span>
+                    )}
+                    {p.comingSoon && (
+                      <span className="text-[9px] font-semibold text-muted/60 uppercase tracking-wide">
+                        Soon
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
-            {hepProvider && (
+            {hepProvider && !HEP_PROVIDERS.find((p) => p.id === hepProvider)?.comingSoon && (
               <div>
                 <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-1.5">
                   API Key
@@ -1761,7 +1854,7 @@ const cp = user?.clinicProfile ?? null;
                   type="password"
                   value={hepApiKey}
                   onChange={(e) => setHepApiKey(e.target.value)}
-                  placeholder="Enter your Physitrack API key"
+                  placeholder={`Enter your ${HEP_PROVIDERS.find((p) => p.id === hepProvider)?.label ?? hepProvider} API key`}
                   className="w-full px-3 py-2.5 rounded-[var(--radius-inner)] border border-border bg-cloud-light text-sm text-navy focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/20 transition-colors"
                 />
                 <button
@@ -1777,6 +1870,17 @@ const cp = user?.clinicProfile ?? null;
                   )}
                   {hepTesting ? "Testing..." : "Test Connection"}
                 </button>
+              </div>
+            )}
+
+            {hepProvider && HEP_PROVIDERS.find((p) => p.id === hepProvider)?.comingSoon && (
+              <div className="p-4 rounded-xl border border-warn/20 bg-warn/5">
+                <p className="text-sm font-medium text-navy">
+                  {HEP_PROVIDERS.find((p) => p.id === hepProvider)?.label} integration is coming soon
+                </p>
+                <p className="text-[12px] text-muted mt-1">
+                  We're building the API adapter for this provider. You'll be notified when it's ready.
+                </p>
               </div>
             )}
           </div>

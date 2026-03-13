@@ -43,6 +43,7 @@ function LoginPageInner() {
   const [clinicName, setClinicName] = useState("");
   const [profession, setProfession] = useState("");
   const [clinicSize, setClinicSize] = useState("");
+  const [country, setCountry] = useState("uk");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -96,6 +97,7 @@ function LoginPageInner() {
           password,
           profession,
           clinicSize,
+          country,
         }),
       });
 
@@ -483,6 +485,23 @@ function LoginPageInner() {
                               <option value="large">Large (10+)</option>
                             </select>
                           </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-muted uppercase tracking-widest mb-2">
+                            Country / Region
+                          </label>
+                          <select
+                            value={country}
+                            onChange={(e) => setCountry(e.target.value)}
+                            required
+                            className="w-full px-4 py-3 rounded-xl text-sm text-navy border border-border bg-cloud-light focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition-all appearance-none"
+                          >
+                            <option value="uk">United Kingdom / EU</option>
+                            <option value="us">United States</option>
+                            <option value="au">Australia</option>
+                            <option value="ca">Canada</option>
+                          </select>
                         </div>
 
                         <div>

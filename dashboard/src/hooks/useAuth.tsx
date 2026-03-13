@@ -12,6 +12,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut as fbSignOut,
+  multiFactor,
   type User,
 } from "firebase/auth";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
@@ -34,6 +35,7 @@ const DEMO_USER: AuthUser = {
   firstLogin: true,
   tourCompleted: true,
   status: "registered",
+  mfaEnrolled: false,
   clinicProfile: {
     id: "demo-clinic",
     name: "Demo Clinic",
@@ -158,6 +160,8 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
       }
     }
 
+    const mfaEnrolled = multiFactor(fbUser).enrolledFactors.length > 0;
+
     return {
       uid: fbUser.uid,
       email: fbUser.email ?? "",
@@ -169,6 +173,7 @@ async function fetchUserProfile(fbUser: User): Promise<AuthUser | null> {
       firstLogin: userData.firstLogin ?? true,
       tourCompleted: userData.tourCompleted ?? false,
       status: userData.status ?? "registered",
+      mfaEnrolled,
       clinicProfile,
     };
   } catch {

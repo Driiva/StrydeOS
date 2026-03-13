@@ -86,7 +86,8 @@ StrydeOS is built and validated at Spires first.
 - **Automation:** n8n
 - **Voice AI:** Retell AI + ElevenLabs
 - **White-label voice layer (future):** Vapify
-- **PMS integrations:** WriteUpp (primary), Cliniko
+- **PMS integrations:** WriteUpp (primary), Cliniko, Halaxy, Zanda (Power Diary) — all live
+- **Roadmap:** TM3 (Blue Zinc), Pabau (requires API key), Jane App
 - **Clinical tools:** Physitrack (HEP data), Heidi Health (clinical docs — data enrichment, not a competitor)
 - **PMS API bridge:** OpenClaw (handles PMS API access without official integration)
 
@@ -272,6 +273,7 @@ Irreversible = multi-tenant data modelling, real-time listener architecture, com
 ## Pending / Known Gaps
 
 - **TM3 (Blue Zinc)** — critical UK PMS integration, not yet built
+- **Pabau** — medspa/aesthetics PMS integration, awaiting API key access
 - **Outcome measures** — NPRS, PSFS, QuickDASH, ODI, NDI layer not yet started
 - **Loom embed** — demo video section on website, not yet implemented
 - **Driiva project** — separate auth + real-time + AI/ML project, requires same structured treatment

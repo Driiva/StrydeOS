@@ -1,5 +1,8 @@
 import type { PMSAdapter, PMSIntegrationConfig } from "@/types/pms";
 import { createWriteUppAdapter } from "./writeupp/adapter";
+import { createClinikoAdapter } from "./cliniko/adapter";
+import { createHalaxyAdapter } from "./halaxy/adapter";
+import { createZandaAdapter } from "./zanda/adapter";
 
 export function createPMSAdapter(config: PMSIntegrationConfig): PMSAdapter {
   const { provider, apiKey, baseUrl } = config;
@@ -7,7 +10,11 @@ export function createPMSAdapter(config: PMSIntegrationConfig): PMSAdapter {
     case "writeupp":
       return createWriteUppAdapter({ apiKey, baseUrl });
     case "cliniko":
-      throw new Error("Cliniko adapter not yet implemented");
+      return createClinikoAdapter({ apiKey, baseUrl });
+    case "halaxy":
+      return createHalaxyAdapter({ apiKey, baseUrl });
+    case "powerdiary":
+      return createZandaAdapter({ apiKey, baseUrl });
     case "tm3":
       throw new Error("TM3 adapter not yet implemented");
     default:

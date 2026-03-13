@@ -104,3 +104,21 @@ export const CLINIKO_STATUS_MAP: PMSStatusMap = {
   did_not_arrive: "dna",
   cancelled: "cancelled",
 };
+
+export const HALAXY_STATUS_MAP: PMSStatusMap = {
+  booked: "scheduled",
+  fulfilled: "completed",
+  noshow: "dna",
+  cancelled: "cancelled",
+  "entered-in-error": "cancelled",
+};
+
+export const ZANDA_STATUS_MAP: PMSStatusMap = {
+  confirmed: "scheduled",
+  arrived: "completed",
+  dna: "dna",
+  "did not attend": "dna",
+  cancelled: "cancelled",
+  "late cancellation": "late_cancel",
+  "no show": "dna",
+};

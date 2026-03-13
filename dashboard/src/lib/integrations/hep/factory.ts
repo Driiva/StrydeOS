@@ -1,16 +1,16 @@
 import type { HEPAdapter, HEPIntegrationConfig } from "./types";
 import { createPhysitrackAdapter } from "./physitrack/adapter";
+import { createRehabMyPatientAdapter } from "./rehabmypatient/adapter";
+import { createWibbiAdapter } from "./wibbi/adapter";
 
 export function createHEPAdapter(config: HEPIntegrationConfig): HEPAdapter {
   switch (config.provider) {
     case "physitrack":
       return createPhysitrackAdapter(config);
-    case "physiapp":
-      throw new Error("PhysiApp adapter not yet implemented");
     case "rehab_my_patient":
-      throw new Error("Rehab My Patient adapter not yet implemented");
-    case "physiotec":
-      throw new Error("Physiotec adapter not yet implemented");
+      return createRehabMyPatientAdapter(config);
+    case "wibbi":
+      return createWibbiAdapter(config);
     default:
       throw new Error(`Unknown HEP provider: ${config.provider}`);
   }

@@ -17,7 +17,9 @@ import type {
   OnboardingState,
   OnboardingV2,
   BrandConfig,
+  ComplianceConfig,
 } from "@/types";
+import { deriveJurisdictionFromCountry } from "@/data/compliance-config";
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,12 +28,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { clinicName, email, password, profession, clinicSize } = body as {
+    const { clinicName, email, password, profession, clinicSize, country } = body as {
       clinicName?: string;
       email?: string;
       password?: string;
       profession?: string;
       clinicSize?: string;
+      country?: string;
     };
 
     if (!clinicName?.trim() || !email?.trim() || !password) {
@@ -110,6 +113,33 @@ export async function POST(request: NextRequest) {
 
     const defaultBrandConfig: BrandConfig = {};
 
+    // Derive compliance config from country
+    const jurisdiction = deriveJurisdictionFromCountry(country || "uk");
+    const complianceConfig: ComplianceConfig = {
+      jurisdiction,
+      consentModel:
+        jurisdiction === "uk"
+          ? "gdpr_lawful_basis"
+          : jurisdiction === "us"
+          ? "hipaa_notice"
+          : jurisdiction === "au"
+          ? "app_explicit"
+          : "pipeda_express",
+      mfaRequired: jurisdiction === "us",
+      baaRequired: jurisdiction === "us",
+      baaSignedAt: null,
+      dataRegion:
+        jurisdiction === "uk"
+          ? "europe-west2"
+          : jurisdiction === "us"
+          ? "us-central1"
+          : jurisdiction === "au"
+          ? "australia-southeast1"
+          : "us-central1",
+      privacyPolicyVersion: null,
+      consentRecordedAt: null,
+    };
+
     // 3. Create Stripe customer (non-blocking — clinic works without it)
     let stripeCustomerId: string | null = null;
     try {
@@ -164,6 +194,7 @@ export async function POST(request: NextRequest) {
         subscriptionStatus: null,
         currentPeriodEnd: null,
       },
+      compliance: complianceConfig,
       profession: profession?.trim() || null,
       clinicSize: clinicSize?.trim() || null,
       trialStartedAt: now,

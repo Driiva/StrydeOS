@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "./firebase-admin";
 import type { UserRole } from "@/types";
@@ -77,21 +78,20 @@ export function handleApiError(error: unknown): NextResponse {
     );
   }
 
-  console.error("[API Error]", error);
+  Sentry.captureException(error);
   return NextResponse.json(
     { error: "Internal server error" },
     { status: 500 }
   );
 }
 
-const CRON_SECRET = process.env.CRON_SECRET?.trim() ?? "";
-
 export function verifyCronRequest(request: NextRequest): void {
-  if (!CRON_SECRET) {
+  const secret = process.env.CRON_SECRET?.trim() ?? "";
+  if (!secret) {
     throw new ApiAuthError("CRON_SECRET not configured", 500);
   }
   const auth = request.headers.get("authorization")?.trim();
-  if (auth !== `Bearer ${CRON_SECRET}`) {
+  if (auth !== `Bearer ${secret}`) {
     throw new ApiAuthError("Invalid cron secret", 401);
   }
 }

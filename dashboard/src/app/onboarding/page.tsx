@@ -19,7 +19,9 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { db } from "@/lib/firebase";
-import type { OnboardingStage, PmsProvider } from "@/types";
+import type { OnboardingStage, PmsProvider, Jurisdiction } from "@/types";
+import { getJurisdictionConfig } from "@/data/compliance-config";
+import { BaaClickthrough } from "@/components/BaaClickthrough";
 
 type StepId = "pms" | "ava" | "pulse" | "golive";
 
@@ -65,6 +67,8 @@ const STEPS: WizardStep[] = [
 const PMS_OPTIONS = [
   { id: "writeupp" as PmsProvider, label: "WriteUpp", description: "Most popular in UK private physio — 50,000+ clinicians", badge: "Recommended" as string | null, disabled: false },
   { id: "cliniko" as PmsProvider, label: "Cliniko", description: "Global PMS with strong UK adoption via CSP partnership", badge: null, disabled: false },
+  { id: "halaxy" as PmsProvider, label: "Halaxy", description: "UK/EU practice management with FHIR-standard API", badge: null, disabled: false },
+  { id: "powerdiary" as PmsProvider, label: "Zanda (Power Diary)", description: "UK & Australian PMS with self-serve API access", badge: null, disabled: false },
   { id: "tm3" as PmsProvider, label: "TM3 (Blue Zinc)", description: "Dominant in MSK and insurance-funded UK clinics", badge: "Coming soon" as string | null, disabled: true },
 ];
 
@@ -97,6 +101,10 @@ export default function OnboardingPage() {
   );
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [consentAccepted, setConsentAccepted] = useState(false);
+  const [showConsentStep, setShowConsentStep] = useState(true);
+  const [baaAccepted, setBaaAccepted] = useState(false);
+  const [showBaaStep, setShowBaaStep] = useState(false);
 
   const clinicId = user?.clinicId;
 
@@ -106,6 +114,20 @@ export default function OnboardingPage() {
       const clinicDoc = await getDoc(doc(db, "clinics", clinicId));
       if (!clinicDoc.exists()) { setHydrated(true); return; }
       const data = clinicDoc.data();
+
+      const compliance = data.compliance;
+
+      if (compliance?.consentRecordedAt) {
+        setConsentAccepted(true);
+        setShowConsentStep(false);
+      }
+
+      if (compliance?.baaRequired && !compliance?.baaSignedAt) {
+        setShowBaaStep(true);
+      } else if (compliance?.baaSignedAt) {
+        setBaaAccepted(true);
+        setShowBaaStep(false);
+      }
 
       if (data.pmsType) setSelectedPms(data.pmsType as PmsProvider);
       if (data.onboarding?.pmsConnected) setCompletedSteps((p) => new Set([...p, 0]));
@@ -131,6 +153,35 @@ export default function OnboardingPage() {
   useEffect(() => {
     hydrateFromFirestore();
   }, [hydrateFromFirestore]);
+
+  async function handleConsentAccept() {
+    if (!db || !clinicId) return;
+    setSaving(true);
+    try {
+      const clinicRef = doc(db, "clinics", clinicId);
+      const now = new Date().toISOString();
+      await updateDoc(clinicRef, {
+        "compliance.consentRecordedAt": now,
+        updatedAt: now,
+      });
+      setConsentAccepted(true);
+      setShowConsentStep(false);
+      
+      const clinicDoc = await getDoc(clinicRef);
+      const data = clinicDoc.data();
+      if (data?.compliance?.baaRequired) {
+        setShowBaaStep(true);
+      }
+    } catch (err) {
+      console.error("[consent error]", err);
+    }
+    setSaving(false);
+  }
+
+  function handleBaaAccept() {
+    setBaaAccepted(true);
+    setShowBaaStep(false);
+  }
 
   async function persistStep(stepIdx: number) {
     if (!db || !clinicId) return;
@@ -212,6 +263,127 @@ export default function OnboardingPage() {
         style={{ background: "linear-gradient(135deg, #0B2545 0%, #132D5E 60%, #1C54F2 100%)" }}
       >
         <Loader2 size={24} className="animate-spin text-white/60" />
+      </div>
+    );
+  }
+
+  const jurisdiction = user?.clinicProfile?.compliance?.jurisdiction || "uk";
+  const consentConfig = getJurisdictionConfig(jurisdiction);
+
+  if (showBaaStep && consentAccepted && !baaAccepted && clinicId) {
+    return <BaaClickthrough clinicId={clinicId} onAccept={handleBaaAccept} />;
+  }
+
+  if (showConsentStep && !consentAccepted) {
+    return (
+      <div
+        className="min-h-screen flex flex-col"
+        style={{ background: "linear-gradient(135deg, #0B2545 0%, #132D5E 60%, #1C54F2 100%)" }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-display text-sm font-bold"
+              style={{ background: "rgba(255,255,255,0.15)" }}
+            >
+              S
+            </div>
+            <span className="font-display text-[16px] text-white">StrydeOS</span>
+          </div>
+        </div>
+
+        {/* Consent content */}
+        <div className="flex-1 flex items-center justify-center px-6 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="w-full max-w-2xl rounded-2xl bg-white overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.25)]"
+          >
+            <div className="p-8">
+              <h1 className="font-display text-[28px] text-navy leading-tight mb-2">
+                {consentConfig.consentTitle}
+              </h1>
+              <p className="text-sm text-muted mb-6">{consentConfig.label}</p>
+
+              <div className="space-y-6 mb-8">
+                <div className="prose prose-sm max-w-none">
+                  <p className="text-[14px] text-navy leading-relaxed whitespace-pre-line">
+                    {consentConfig.consentBody}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-cloud-light border border-border">
+                  <h3 className="text-xs font-semibold text-navy uppercase tracking-widest mb-2">
+                    Data Processing Basis
+                  </h3>
+                  <p className="text-[13px] text-muted">{consentConfig.dataProcessingBasis}</p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-cloud-light border border-border">
+                  <h3 className="text-xs font-semibold text-navy uppercase tracking-widest mb-2">
+                    Health Information
+                  </h3>
+                  <p className="text-[13px] text-muted">{consentConfig.healthDataNote}</p>
+                </div>
+
+                {consentConfig.automatedDecisionDisclosure && (
+                  <div className="p-4 rounded-xl bg-blue/5 border border-blue/20">
+                    <h3 className="text-xs font-semibold text-blue uppercase tracking-widest mb-2">
+                      Automated Decision-Making
+                    </h3>
+                    <p className="text-[13px] text-navy whitespace-pre-line">
+                      {consentConfig.automatedDecisionDisclosure}
+                    </p>
+                  </div>
+                )}
+
+                {consentConfig.crossBorderTransferNote && (
+                  <div className="p-4 rounded-xl bg-blue/5 border border-blue/20">
+                    <h3 className="text-xs font-semibold text-blue uppercase tracking-widest mb-2">
+                      Cross-Border Data Transfer
+                    </h3>
+                    <p className="text-[13px] text-navy whitespace-pre-line">
+                      {consentConfig.crossBorderTransferNote}
+                    </p>
+                  </div>
+                )}
+
+                <div className="p-4 rounded-xl bg-cloud-light border border-border">
+                  <h3 className="text-xs font-semibold text-navy uppercase tracking-widest mb-3">
+                    Privacy Highlights
+                  </h3>
+                  <ul className="space-y-2">
+                    {consentConfig.privacyHighlights.map((highlight, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-[13px] text-muted">
+                        <CheckCircle2 size={14} className="text-success mt-0.5 shrink-0" />
+                        <span>{highlight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <motion.button
+                type="button"
+                onClick={handleConsentAccept}
+                disabled={saving}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white bg-blue transition-colors hover:opacity-90 disabled:opacity-50"
+                whileTap={{ scale: 0.97 }}
+              >
+                {saving ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <>
+                    I Accept
+                    <ArrowRight size={14} />
+                  </>
+                )}
+              </motion.button>
+            </div>
+          </motion.div>
+        </div>
       </div>
     );
   }

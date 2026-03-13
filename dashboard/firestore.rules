@@ -86,6 +86,19 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Audit Logs — owners/admins can read, write is server-only
+      match /audit_logs/{logId} {
+        allow read: if isClinicOwnerOrAdmin(clinicId) || isSuperAdmin();
+        allow write: if false;
+      }
+
+      // Subject Access Requests — owners/admins can read and create, write is server-only for updates
+      match /sar_requests/{requestId} {
+        allow read: if isClinicOwnerOrAdmin(clinicId) || isSuperAdmin();
+        allow create: if isClinicOwnerOrAdmin(clinicId);
+        allow update, delete: if false;
+      }
+
       // Integration Config — server-side only, never exposed to client
       match /integrations_config/{configId} {
         allow read, write: if false;

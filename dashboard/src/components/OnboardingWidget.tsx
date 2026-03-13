@@ -89,7 +89,7 @@ export default function OnboardingWidget() {
     {
       key: "pms",
       label: "Connect your PMS",
-      description: "Link WriteUpp or Cliniko to sync patient data",
+      description: "Link WriteUpp, Cliniko, Halaxy, or Zanda to sync patient data",
       done: onboarding.pmsConnected,
     },
     {
