@@ -139,7 +139,7 @@ export async function triggerCommsSequences(
       const triggerDate = getTriggerDate(patient, def.sequenceType);
       if (!triggerDate) { skipped++; continue; }
 
-      if (!isEligible(patient, def.sequenceType, now)) { skipped++; continue; }
+      if (!isEligible(patient, def.sequenceType, now, priorLogs.length > 0)) { skipped++; continue; }
 
       // ── Step progression ──────────────────────────────────────────────
       const nextStep = getNextStep(def, priorLogs, triggerDate, now);
@@ -147,13 +147,18 @@ export async function triggerCommsSequences(
 
       // ── Cooldown: last log entry must be older than cooldownDays ──────
       if (priorLogs.length > 0) {
-        const lastSent = priorLogs[priorLogs.length - 1].sentAt;
+        const lastLog = priorLogs[priorLogs.length - 1];
         const daysSinceLast = Math.floor(
-          (now.getTime() - new Date(lastSent).getTime()) / 86_400_000
+          (now.getTime() - new Date(lastLog.sentAt).getTime()) / 86_400_000
         );
-        if (daysSinceLast < def.cooldownDays && nextStep.stepNumber > 1) {
-          const lastStepNum = priorLogs[priorLogs.length - 1].stepNumber;
-          if (lastStepNum === nextStep.stepNumber) { skipped++; continue; }
+
+        // Never re-send the same step number regardless of cooldown
+        if (lastLog.stepNumber === nextStep.stepNumber) { skipped++; continue; }
+
+        // Enforce cooldown between steps
+        if (nextStep.stepNumber > 1 && daysSinceLast < def.cooldownDays) {
+          skipped++;
+          continue;
         }
       }
 
@@ -342,7 +347,8 @@ function getTriggerDate(
 function isEligible(
   patient: Record<string, unknown>,
   sequenceType: SequenceType,
-  now: Date
+  now: Date,
+  hasBeenStarted: boolean  // true if prior logs exist for this patient+sequence
 ): boolean {
   const sessionCount = (patient.sessionCount as number) ?? 0;
 
@@ -354,12 +360,15 @@ function isEligible(
       return patient.churnRisk === true && sessionCount >= 2;
 
     case "hep_reminder": {
-      // Only fire within 20–48h of last session
-      // Lower bound (~1 day) handled by daysAfterTrigger: 1 in the step definition
-      // Upper bound (48h / 2 days): do not fire if last session was >2 days ago
-      const lastSess = patient.lastSessionDate ? new Date(patient.lastSessionDate as string) : null;
-      const hoursAgo = lastSess ? (now.getTime() - lastSess.getTime()) / 3_600_000 : Infinity;
-      return !!(patient.hepProgramId) && !patient.nextSessionDate && hoursAgo <= 48;
+      if (!patient.hepProgramId || patient.nextSessionDate) return false;
+      // 48h entry guard applies only to step 1 (first contact).
+      // Subsequent steps are already underway — no window restriction.
+      if (!hasBeenStarted) {
+        const lastSess = patient.lastSessionDate ? new Date(patient.lastSessionDate as string) : null;
+        const hoursAgo = lastSess ? (now.getTime() - lastSess.getTime()) / 3_600_000 : Infinity;
+        if (hoursAgo > 48) return false;
+      }
+      return true;
     }
 
     case "review_prompt":
