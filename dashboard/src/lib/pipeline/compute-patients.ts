@@ -119,12 +119,11 @@ export async function computePatientFields(
 
       // ── Risk score + lifecycle state ────────────────────────────────────────
       const lastAppt = completed.length > 0 ? completed[completed.length - 1] : null;
-      const firstThreeAppts = completed.slice(0, 3);
-      const dnaInFirstThree = appointments.filter(
-        (a) =>
-          a.status === "dna" &&
-          firstThreeAppts.some((c) => c.dateTime === a.dateTime)
-      ).length;
+      // First 3 SLOTS (all statuses sorted by dateTime) — used to detect early DNAs
+      const firstThreeSlots = [...appointments]
+        .sort((a, b) => a.dateTime.localeCompare(b.dateTime))
+        .slice(0, 3);
+      const dnaInFirstThree = firstThreeSlots.filter((a) => a.status === "dna").length;
 
       // Appointments in last 4 weeks
       const fourWeeksAgo = new Date(now.getTime() - 28 * 86_400_000).toISOString();

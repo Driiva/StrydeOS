@@ -101,13 +101,17 @@ export function computeRiskScore(input: RiskScoreInput): RiskScoreResult {
   staticRisk = Math.max(0, Math.min(100, staticRisk));
 
   // ── Composite score ─────────────────────────────────────────────────────
-  const riskScore = Math.round(
+  // Factors produce an engagement score where 100 = best health.
+  // Invert to produce a risk score where 100 = highest risk, so that
+  // the AT_RISK threshold (>= 60) correctly targets disengaged patients.
+  const engagementScore = Math.round(
     attendance * 0.3 +
       treatmentProgress * 0.25 +
       hepEngagement * 0.2 +
       sentiment * 0.15 +
       staticRisk * 0.1
   );
+  const riskScore = 100 - engagementScore;
 
   const riskFactors: RiskFactors = {
     attendance,
