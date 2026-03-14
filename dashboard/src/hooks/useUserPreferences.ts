@@ -70,6 +70,10 @@ export function useUserPreferences() {
         setPreferences(defaultPreferences(userId, clinicId));
       })
       .finally(() => setLoading(false));
+
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
   }, [userId, clinicId]);
 
   const updatePreferences = useCallback(
