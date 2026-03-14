@@ -93,7 +93,7 @@ function ContinuityPage() {
 
   const { sequences, toggleSequence } = useSequences();
   const { user } = useAuth();
-  const { commsLog, commsStats, statsBySequence, isDemo: commsIsDemo } = useCommsLog();
+  const { commsLog, commsStats, statsBySequence, totalAttributedRevenuePence, isDemo: commsIsDemo } = useCommsLog();
   const { preferences, updatePreferences } = useUserPreferences();
   const [customiseOpen, setCustomiseOpen] = useState(false);
   const allPatients = useDemoPatients();
