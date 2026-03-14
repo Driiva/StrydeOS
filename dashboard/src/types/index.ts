@@ -345,7 +345,8 @@ export type SequenceType =
   | "pre_auth_collection"
   | "review_prompt"
   | "reactivation_90d"
-  | "reactivation_180d";
+  | "reactivation_180d"
+  | "early_intervention";
 
 export interface CommsLogEntry {
   id: string;
@@ -357,6 +358,16 @@ export interface CommsLogEntry {
   clickedAt?: string;
   outcome: CommsOutcome;
   n8nExecutionId?: string;
+  // Step tracking (multi-touch cadence)
+  stepNumber?: number;                           // which step in the 6-touch cadence (1–6)
+  attributionWindowDays?: number;                // from sequence_definition at send time
+  patientLifecycleStateAtSend?: LifecycleState;  // patient state when this message was sent
+  // Attribution
+  attributedRevenuePence?: number;               // populated when outcome = 'booked'
+  attributedAppointmentId?: string;
+  // Inbound reply
+  inboundReply?: string | null;
+  inboundAt?: string | null;
 }
 
 // ─── Reviews ─────────────────────────────────────────────────────────────────
