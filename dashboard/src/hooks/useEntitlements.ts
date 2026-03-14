@@ -33,8 +33,8 @@ export function useEntitlements(): Entitlements {
   const trialStartedAt = user?.clinicProfile?.trialStartedAt ?? null;
   const clinicId = user?.clinicId;
 
-  const trialActive = isTrialActive(trialStartedAt, clinicId);
-  const daysLeft = computeDaysRemaining(trialStartedAt, clinicId);
+  const trialActive = isTrialActive(trialStartedAt);
+  const daysLeft = computeDaysRemaining(trialStartedAt);
 
   // Trial grants full access; falls through to Stripe flags otherwise
   const hasIntelligence = trialActive || (flags?.intelligence ?? false);

@@ -8,11 +8,12 @@ import StatCard from "@/components/ui/StatCard";
 import PatientRow from "@/components/ui/PatientRow";
 import EmptyState from "@/components/ui/EmptyState";
 import DemoBanner from "@/components/ui/DemoBanner";
+import { useAuth } from "@/hooks/useAuth";
 import { useClinicians } from "@/hooks/useClinicians";
 import { usePatients } from "@/hooks/usePatients";
 import { useToast } from "@/components/ui/Toast";
-import { getDemoCommsSequences } from "@/hooks/useDemoComms";
 import { useDemoPatients } from "@/hooks/useDemoData";
+import { useSequences } from "@/hooks/useSequences";
 import { useCommsLog } from "@/hooks/useCommsLog";
 import { formatPercent, daysSince } from "@/lib/utils";
 import {
@@ -84,14 +85,48 @@ function ContinuityPage() {
   const { toast } = useToast();
   const clinicianMap = Object.fromEntries(clinicians.map((c) => [c.id, c]));
 
-  const sequences = getDemoCommsSequences();
+  const { sequences, toggleSequence } = useSequences();
+  const { user } = useAuth();
   const { commsLog, commsStats, isDemo: commsIsDemo } = useCommsLog();
   const allPatients = useDemoPatients();
   const patientMap = Object.fromEntries(allPatients.map((p) => [p.id, p]));
 
-  function handleSendReminder(patientId: string) {
+  async function handleSendReminder(patientId: string) {
     const patient = [...active, ...churnRisk, ...postDischarge].find((p) => p.id === patientId);
-    toast(patient ? `Reminder sent to ${patient.name}` : "Reminder sent", "success");
+    if (!patient) return;
+
+    const to = patient.contact.phone ?? patient.contact.email;
+    const channel = patient.contact.phone ? "sms" : "email";
+    if (!to) {
+      toast(`No contact details for ${patient.name}`, "error");
+      return;
+    }
+
+    const clinicId = user?.clinicId;
+    if (!clinicId) return;
+
+    const REBOOKING_BODY =
+      "Hi [Name], we noticed you haven't booked your next appointment yet. You've made great progress — let's keep the momentum going. Reply to this message or call us on 020 7794 0202.";
+
+    try {
+      const res = await fetch("/api/comms/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clinicId,
+          patientId: patient.id,
+          patientName: patient.name,
+          sequenceType: "rebooking_prompt",
+          channel,
+          to,
+          body: REBOOKING_BODY,
+        }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      toast(`Re-engagement ${channel === "sms" ? "SMS" : "email"} sent to ${patient.name}`, "success");
+    } catch {
+      toast(`Failed to send to ${patient.name}`, "error");
+    }
   }
 
   const channelIcon = (ch: string) =>
@@ -375,7 +410,11 @@ function ContinuityPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => toast(`${seq.name} ${seq.enabled ? "disabled" : "enabled"} (demo)`, "success")}
+                  onClick={() => {
+                    const next = !seq.enabled;
+                    toggleSequence(seq.type, next);
+                    toast(`${seq.name} ${next ? "enabled" : "disabled"}`, "success");
+                  }}
                   className="shrink-0"
                 >
                   {seq.enabled ? (

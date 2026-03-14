@@ -172,15 +172,13 @@ export function getTrialEndsAt(trialStartedAt: string | null): Date | null {
   return end;
 }
 
-export function isTrialActive(trialStartedAt: string | null, clinicId?: string): boolean {
-  if (clinicId === "demo-clinic") return true;
+export function isTrialActive(trialStartedAt: string | null): boolean {
   const endsAt = getTrialEndsAt(trialStartedAt);
   if (!endsAt) return false;
   return Date.now() < endsAt.getTime();
 }
 
-export function trialDaysRemaining(trialStartedAt: string | null, clinicId?: string): number | null {
-  if (clinicId === "demo-clinic") return TRIAL_DURATION_DAYS;
+export function trialDaysRemaining(trialStartedAt: string | null): number | null {
   const endsAt = getTrialEndsAt(trialStartedAt);
   if (!endsAt) return null;
   const ms = endsAt.getTime() - Date.now();

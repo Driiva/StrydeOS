@@ -180,10 +180,12 @@ async function handleSubscriptionUpsert(subscription: Stripe.Subscription) {
       updatedAt: now,
     });
 
-  console.log(
-    `[Billing webhook] Clinic ${clinic.id} — sub ${subscription.id} ${status} (merged ${allItems.length} items). Flags:`,
-    updatedFlags
-  );
+  Sentry.addBreadcrumb({
+    category: "billing",
+    message: `Clinic ${clinic.id} — sub ${subscription.id} ${status} (${allItems.length} items)`,
+    data: updatedFlags,
+    level: "info",
+  });
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -221,10 +223,12 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       updatedAt: now,
     });
 
-  console.log(
-    `[Billing webhook] Clinic ${clinic.id} — sub ${subscription.id} deleted. Remaining items: ${allItems.length}. Flags:`,
-    updatedFlags
-  );
+  Sentry.addBreadcrumb({
+    category: "billing",
+    message: `Clinic ${clinic.id} — sub ${subscription.id} deleted. Remaining: ${allItems.length}`,
+    data: updatedFlags,
+    level: "info",
+  });
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
