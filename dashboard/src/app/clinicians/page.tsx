@@ -101,6 +101,7 @@ function CliniciansPage() {
                 <SkeletonCard />
                 <SkeletonCard />
                 <SkeletonCard />
+                <SkeletonCard />
               </>
             ) : (
               <>

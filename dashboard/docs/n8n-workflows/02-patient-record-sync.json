@@ -41,7 +41,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const call = $json.call;\nconst analysis = call.call_analysis ?? {};\nconst custom = analysis.custom_analysis_data ?? {};\n\n// Extract patient details from custom analysis data or transcript summary\nconst now = new Date().toISOString();\n\nreturn [{\n  clinicId: call.metadata?.clinicId ?? $env.RETELL_CLINIC_ID,\n  patientName: custom.patientName ?? 'Unknown (via Ava)',\n  patientEmail: custom.patientEmail ?? null,\n  patientPhone: call.from_number ?? custom.patientPhone ?? null,\n  appointmentType: custom.appointmentType ?? 'initial_assessment',\n  insuranceFlag: custom.insurance_flag ?? false,\n  insurerName: custom.insurer ?? null,\n  callId: call.call_id,\n  callSummary: analysis.call_summary ?? null,\n  source: 'strydeos_receptionist',\n  createdAt: now,\n  updatedAt: now,\n}];"
+        "jsCode": "const call = $json.call;\nconst analysis = call.call_analysis ?? {};\nconst custom = analysis.custom_analysis_data ?? {};\n\nconst now = new Date().toISOString();\n\n// Build full name from split fields; fall back to legacy patientName if present\nconst firstName = custom.patientFirstName ?? '';\nconst lastName = custom.patientLastName ?? '';\nconst fullName = [firstName, lastName].filter(Boolean).join(' ') || custom.patientName || 'Unknown (via Ava)';\n\nreturn [{\n  clinicId: call.metadata?.clinicId ?? $env.RETELL_CLINIC_ID,\n  patientFirstName: firstName || null,\n  patientLastName: lastName || null,\n  patientName: fullName,\n  patientEmail: custom.patientEmail ?? null,\n  patientPhone: custom.patientPhone ?? call.from_number ?? null,\n  appointmentType: custom.appointmentType ?? 'initial_assessment',\n  appointmentDate: custom.appointmentDate ?? null,\n  appointmentTime: custom.appointmentTime ?? null,\n  clinicianName: custom.clinicianName ?? null,\n  insuranceFlag: custom.insurance_flag ?? false,\n  insurerName: custom.insurer ?? null,\n  callId: call.call_id,\n  callSummary: analysis.call_summary ?? null,\n  source: 'strydeos_receptionist',\n  createdAt: now,\n  updatedAt: now,\n}];"
       },
       "id": "extract-patient",
       "name": "Extract patient details",
@@ -65,7 +65,7 @@
         },
         "sendBody": true,
         "bodyContentType": "json",
-        "jsonBody": "={\n  \"clinicId\": \"{{ $json.clinicId }}\",\n  \"source\": \"receptionist\",\n  \"patientData\": {\n    \"name\": \"{{ $json.patientName }}\",\n    \"email\": \"{{ $json.patientEmail }}\",\n    \"phone\": \"{{ $json.patientPhone }}\",\n    \"appointmentType\": \"{{ $json.appointmentType }}\",\n    \"insuranceFlag\": {{ $json.insuranceFlag }},\n    \"insurerName\": \"{{ $json.insurerName ?? '' }}\",\n    \"callId\": \"{{ $json.callId }}\",\n    \"source\": \"strydeos_receptionist\"\n  }\n}",
+        "jsonBody": "={\n  \"clinicId\": \"{{ $json.clinicId }}\",\n  \"source\": \"receptionist\",\n  \"patientData\": {\n    \"firstName\": \"{{ $json.patientFirstName ?? '' }}\",\n    \"lastName\": \"{{ $json.patientLastName ?? '' }}\",\n    \"name\": \"{{ $json.patientName }}\",\n    \"email\": \"{{ $json.patientEmail }}\",\n    \"phone\": \"{{ $json.patientPhone }}\",\n    \"appointmentType\": \"{{ $json.appointmentType }}\",\n    \"appointmentDate\": \"{{ $json.appointmentDate ?? '' }}\",\n    \"appointmentTime\": \"{{ $json.appointmentTime ?? '' }}\",\n    \"clinicianName\": \"{{ $json.clinicianName ?? '' }}\",\n    \"insuranceFlag\": {{ $json.insuranceFlag }},\n    \"insurerName\": \"{{ $json.insurerName ?? '' }}\",\n    \"callId\": \"{{ $json.callId }}\",\n    \"source\": \"strydeos_receptionist\"\n  }\n}",
         "options": {}
       },
       "id": "create-patient",
@@ -103,6 +103,6 @@
   },
   "settings": { "executionOrder": "v1" },
   "meta": {
-    "description": "Creates or updates a patient record in Firestore when Ava books a new appointment.\n\nRequired env vars:\n  RETELL_CLINIC_ID — Firestore clinic document ID\n  APP_URL          — StrydeOS Vercel URL\n  CRON_SECRET      — Bearer auth secret (matches Vercel CRON_SECRET env var)\n\nOptional improvement: configure Retell agent with a custom data extraction schema\nso patient name, email, insurance info appear in call_analysis.custom_analysis_data."
+    "description": "Creates or updates a patient record in Firestore when Ava books a new appointment.\n\nRequired env vars:\n  RETELL_CLINIC_ID — Firestore clinic document ID\n  APP_URL          — StrydeOS Vercel URL\n  CRON_SECRET      — Bearer auth secret (matches Vercel CRON_SECRET env var)\n\nRetell agent must extract the following fields into custom_analysis_data:\n  patientFirstName, patientLastName, patientEmail, patientPhone (confirmed full number),\n  appointmentType, appointmentDate, appointmentTime, clinicianName,\n  insurance_flag, insurer"
   }
 }

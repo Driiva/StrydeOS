@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, CheckCircle, Lightbulb } from "lucide-react";
 import type { WeeklyStats } from "@/types";
 
 interface InsightNudgeProps {
@@ -86,17 +86,17 @@ export default function InsightNudge({ stats, previousStats }: InsightNudgeProps
 
   return (
     <div
-      className="rounded-[var(--radius-card)] px-5 py-4 flex items-start gap-3 border-l-[3px]"
+      className="rounded-[var(--radius-card)] px-5 py-4 flex items-start gap-3"
       style={{
-        background: "rgba(28,84,242,0.04)",
-        borderLeftColor: isAllGood ? "#059669" : "#1C54F2",
-        border: "1px solid rgba(28,84,242,0.10)",
+        background: isAllGood ? "rgba(5,150,105,0.04)" : "rgba(28,84,242,0.04)",
+        border: isAllGood ? "1px solid rgba(5,150,105,0.10)" : "1px solid rgba(28,84,242,0.10)",
         borderLeft: `3px solid ${isAllGood ? "#059669" : "#1C54F2"}`,
       }}
     >
-      <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden="true">
-        {isAllGood ? "✅" : "💡"}
-      </span>
+      {isAllGood
+        ? <CheckCircle size={16} className="text-success shrink-0 mt-0.5" />
+        : <Lightbulb size={16} className="text-blue shrink-0 mt-0.5" />
+      }
       <p className="text-sm text-muted flex-1 leading-relaxed">{message}</p>
       <button
         onClick={handleDismiss}

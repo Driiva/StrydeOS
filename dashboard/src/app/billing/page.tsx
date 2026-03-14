@@ -73,26 +73,32 @@ function TierSelector({ value, onChange }: { value: TierKey; onChange: (t: TierK
 
 function IntervalToggle({ value, onChange }: { value: BillingInterval; onChange: (i: BillingInterval) => void }) {
   return (
-    <div className="flex items-center justify-center gap-3 mb-8">
-      {(["month", "year"] as BillingInterval[]).map((interval) => {
-        const active = value === interval;
-        return (
-          <button
-            key={interval}
-            onClick={() => onChange(interval)}
-            className="flex items-center gap-2 transition-all"
-          >
-            <span className={`text-[13px] font-medium ${active ? "text-ink" : "text-muted"}`}>
-              {interval === "month" ? "Monthly" : "Annual"}
-            </span>
-            {interval === "year" && (
-              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-success/15 text-success">
-                Save 20%
+    <div className="flex items-center justify-center mb-8">
+      <div className="flex gap-1 p-1 rounded-xl bg-cloud-dark border border-border">
+        {(["month", "year"] as BillingInterval[]).map((interval) => {
+          const active = value === interval;
+          return (
+            <button
+              key={interval}
+              onClick={() => onChange(interval)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                active
+                  ? "bg-white shadow-sm border border-border text-navy font-semibold"
+                  : "text-muted hover:text-navy"
+              }`}
+            >
+              <span className="text-[13px]">
+                {interval === "month" ? "Monthly" : "Annual"}
               </span>
-            )}
-          </button>
-        );
-      })}
+              {interval === "year" && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-success/15 text-success">
+                  Save 20%
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -125,7 +131,7 @@ function ModuleCard({ moduleKey, isActive, isLoading, tier, interval, canManage,
       {/* Name + status */}
       <div className="flex items-center gap-3 mt-1">
         <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: color, boxShadow: `0 0 8px ${color}80` }} />
-        <h3 className="text-[15px] font-semibold text-ink font-display">{name}</h3>
+        <h3 className="text-[15px] font-semibold text-navy font-display">{name}</h3>
         {isActive ? (
           <span className="ml-auto flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: `${color}20`, color }}>
             <Check size={10} strokeWidth={2.5} /> Active
@@ -140,7 +146,7 @@ function ModuleCard({ moduleKey, isActive, isLoading, tier, interval, canManage,
       {/* Price */}
       <div>
         <div className="flex items-baseline gap-1">
-          <span className="text-[28px] font-light text-ink font-display">
+          <span className="text-[28px] font-light text-navy font-display">
             {formatGBP(price)}
           </span>
           <span className="text-[12px] text-muted">/{interval === "month" ? "mo" : "yr"}</span>
@@ -204,7 +210,7 @@ function FullStackCard({ tier, interval, allActive, isLoading, onActivate }: Ful
           <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded mb-3 bg-cloud-dark text-muted">
             <Zap size={9} strokeWidth={2.5} /> Best value
           </div>
-          <h3 className="text-[20px] text-ink font-display font-normal mb-1">
+          <h3 className="text-[20px] text-navy font-display font-normal mb-1">
             StrydeOS Full Stack
           </h3>
           <p className="text-[13px] text-muted mb-4">One system. Every metric. Every call. Every patient.</p>
@@ -220,7 +226,7 @@ function FullStackCard({ tier, interval, allActive, isLoading, onActivate }: Ful
 
         <div className="text-right shrink-0">
           <div className="flex items-baseline justify-end gap-1">
-            <span className="text-[36px] font-light text-ink font-display">
+            <span className="text-[36px] font-light text-navy font-display">
               {formatGBP(price)}
             </span>
             <span className="text-[12px] text-muted">/{interval === "month" ? "mo" : "yr"}</span>
@@ -344,7 +350,7 @@ export default function BillingPage() {
     <div className="max-w-3xl mx-auto px-6 py-12">
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-[28px] text-ink font-display font-normal mb-2">
+        <h1 className="text-[28px] text-navy font-display font-normal mb-2">
           Billing &amp; Modules
         </h1>
         <p className="text-[14px] text-muted">
@@ -354,17 +360,17 @@ export default function BillingPage() {
 
       {/* Checkout banners */}
       {checkoutSuccess && (
-        <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" style={{ background: "rgba(5,150,105,0.12)", border: "1px solid rgba(5,150,105,0.25)", color: "#34D399" }}>
+        <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" style={{ background: "rgba(5,150,105,0.12)", border: "1px solid rgba(5,150,105,0.25)", color: "#059669" }}>
           <Check size={16} /> Subscription activated. Your modules are now live.
         </div>
       )}
       {checkoutCanceled && (
-        <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" style={{ background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.20)", color: "#F87171" }}>
+        <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" style={{ background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.20)", color: "#EF4444" }}>
           <AlertTriangle size={16} /> Checkout was canceled. No changes were made.
         </div>
       )}
       {error && (
-        <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" style={{ background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.20)", color: "#F87171" }}>
+        <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium" style={{ background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.20)", color: "#EF4444" }}>
           <AlertTriangle size={16} /> {error}
         </div>
       )}
@@ -376,7 +382,7 @@ export default function BillingPage() {
           {trialActive ? (
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[14px] font-semibold text-ink">
+                <p className="text-[14px] font-semibold text-navy">
                   {trialDaysRemaining === 0 ? "Trial ends today" : trialDaysRemaining === 1 ? "1 day remaining" : `${trialDaysRemaining} days remaining`}
                 </p>
                 {trialEndsAt && (
@@ -401,7 +407,7 @@ export default function BillingPage() {
           <p className="text-[11px] font-semibold uppercase tracking-widest text-muted mb-1">Subscription</p>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full shrink-0" style={{ background: statusDisplay.color }} />
-            <span className="text-[14px] font-semibold text-ink">{statusDisplay.label}</span>
+            <span className="text-[14px] font-semibold text-navy">{statusDisplay.label}</span>
             {billing?.currentPeriodEnd && (
               <span className="text-[12px] text-muted">
                 · renews {new Date(billing.currentPeriodEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
@@ -410,7 +416,7 @@ export default function BillingPage() {
           </div>
         </div>
         {hasActiveSubscription && canManageBilling && (
-          <button onClick={handleManageBilling} disabled={portalLoading} className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold text-muted hover:text-ink transition-colors disabled:opacity-50 bg-white border border-border">
+          <button onClick={handleManageBilling} disabled={portalLoading} className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold text-muted hover:text-navy transition-colors disabled:opacity-50 bg-white border border-border">
             {portalLoading ? <Loader2 size={13} className="animate-spin" /> : <><CreditCard size={13} /> Manage billing <ExternalLink size={11} className="opacity-60" /></>}
           </button>
         )}

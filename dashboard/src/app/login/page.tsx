@@ -24,7 +24,7 @@ type AuthMode = "signin" | "signup";
 
 function LoginHeader({ onTryDemo }: { onTryDemo: () => void }) {
   return (
-    <header className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 z-10 bg-cloud-dancer">
+    <header className="fixed top-0 left-0 right-0 flex items-center justify-between px-6 py-4 z-10 bg-cloud-dancer">
       <StrydeOSLogo size={34} fontSize={17} theme="light" gap={10} />
       <button
         type="button"

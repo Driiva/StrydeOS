@@ -12,7 +12,6 @@ import {
   FileText,
   Voicemail,
   Moon,
-  PoundSterling,
   Radio,
   AlertCircle,
 } from "lucide-react";
@@ -45,12 +44,12 @@ const OUTCOME_COLORS: Record<string, { bg: string; text: string; label: string }
   follow_up_required: { bg: "bg-warn/10", text: "text-warn", label: "Cancelled" },
   resolved: { bg: "bg-blue/10", text: "text-blue", label: "Info" },
   voicemail: { bg: "bg-danger/10", text: "text-danger", label: "Missed" },
-  escalated: { bg: "bg-purple-100", text: "text-purple-600", label: "Escalated" },
+  escalated: { bg: "bg-purple/10", text: "text-purple", label: "Escalated" },
   // Fallback for legacy demo data
   cancelled: { bg: "bg-warn/10", text: "text-warn", label: "Cancelled" },
   info: { bg: "bg-blue/10", text: "text-blue", label: "Info" },
   missed: { bg: "bg-danger/10", text: "text-danger", label: "Missed" },
-  transferred: { bg: "bg-purple-100", text: "text-purple-600", label: "Transferred" },
+  transferred: { bg: "bg-purple/10", text: "text-purple", label: "Transferred" },
 };
 
 function formatTime(ts: number | null): string {
@@ -166,19 +165,18 @@ class AvaErrorBoundary extends Component<{ children: ReactNode }, BoundaryState>
 // ─── Page content ─────────────────────────────────────────────────────────────
 
 function ReceptionistContent() {
-  const { calls, isDemo, isLoading, activeCall } = useCallLogs();
+  const { calls, isDemo, isLoading, activeCall, error: callsError } = useCallLogs();
   const [activeView, setActiveView] = useState<View>("dashboard");
   const [promptExpanded, setPromptExpanded] = useState(false);
   const [expandedCallId, setExpandedCallId] = useState<string | null>(null);
   const [digestExpanded, setDigestExpanded] = useState(false);
-  const [callsError, setCallsError] = useState<string | null>(null);
 
   // Stats derived from live/demo calls
   const todaysCalls = useMemo(() => {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     return calls.filter(
-      (c) => !c.startTimestamp || c.startTimestamp >= todayStart.getTime()
+      (c) => c.startTimestamp && c.startTimestamp >= todayStart.getTime()
     );
   }, [calls]);
 
@@ -211,7 +209,7 @@ function ReceptionistContent() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-[var(--radius-card)] bg-white border border-border h-24 animate-pulse"
+              className="rounded-[var(--radius-card)] bg-white border border-border h-24 skeleton-shimmer"
             />
           ))}
         </div>
@@ -290,20 +288,13 @@ function ReceptionistContent() {
               unit="min:sec"
               status="neutral"
             />
-            <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-4 flex flex-col gap-1">
-              <div className="flex items-center gap-1.5 mb-1">
-                <PoundSterling size={13} className="text-success" />
-                <span className="text-xs font-semibold text-muted uppercase tracking-wide">
-                  Revenue Captured
-                </span>
-              </div>
-              <span className="font-display text-2xl text-navy">
-                £{revenueCaptured}
-              </span>
-              <span className="text-[11px] text-muted">
-                est. from {booked} bookings · £{AVG_APPOINTMENT_VALUE} avg
-              </span>
-            </div>
+            <StatCard
+              label="Revenue Captured"
+              value={`£${revenueCaptured}`}
+              unit={`est. from ${booked} bookings`}
+              status={booked > 0 ? "ok" : "neutral"}
+              insight={`£${AVG_APPOINTMENT_VALUE} avg session value`}
+            />
           </div>
 
           {/* 7-day call volume chart */}
@@ -536,7 +527,7 @@ function ReceptionistContent() {
               <div className="border-t border-border p-5">
                 <div className="rounded-xl border border-border bg-cloud-light p-5 max-w-xl font-mono text-[12px] leading-relaxed text-navy">
                   <p className="font-bold mb-3">
-                    Ava Overnight Summary — {new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
+                    Ava Overnight Summary — Last night, {new Date(Date.now() - 86_400_000).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
                   </p>
                   {missed > 0 ? (
                     <>

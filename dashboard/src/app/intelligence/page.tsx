@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, Fragment } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -347,8 +347,8 @@ export default function IntelligencePage() {
         />
         <StatCard
           label="Referral Conv."
-          value={formatPercent(totalConverted / totalReferrals)}
-          status={totalConverted / totalReferrals >= 0.8 ? "ok" : "warn"}
+          value={totalReferrals > 0 ? formatPercent(totalConverted / totalReferrals) : "—"}
+          status={totalReferrals > 0 && totalConverted / totalReferrals >= 0.8 ? "ok" : totalReferrals > 0 ? "warn" : "neutral"}
           insight={`${totalReferrals} referred, ${totalConverted} booked`}
         />
       </div>
@@ -374,9 +374,8 @@ export default function IntelligencePage() {
               {clinicianKpis.map((c) => {
                 const isExpanded = expandedClinician === c.clinicianId;
                 return (
-                  <>
+                  <Fragment key={c.clinicianId}>
                     <tr
-                      key={c.clinicianId}
                       onClick={() => toggleClinician(c.clinicianId)}
                       className={`border-b border-border/50 cursor-pointer transition-colors ${isExpanded ? "bg-cloud-light/50" : "hover:bg-cloud-light/30"}`}
                     >
@@ -468,7 +467,7 @@ export default function IntelligencePage() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>
@@ -479,7 +478,7 @@ export default function IntelligencePage() {
       {/* Benchmark comparison */}
       <div className="rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] p-6">
         <div className="flex items-center gap-2 mb-1">
-          <BarChart2 size={16} className="text-purple-600" />
+          <BarChart2 size={16} className="text-purple" />
           <h3 className="font-display text-lg text-navy">Benchmark Comparison</h3>
         </div>
         <p className="text-xs text-muted mb-5">Your clinic vs. similar UK private physio practices (3–5 clinicians) · anonymised aggregate data</p>
@@ -584,7 +583,7 @@ export default function IntelligencePage() {
               <p className="text-xs text-muted mb-4">Which conditions drive the most revenue across the practice</p>
               {revByCondition.length === 0 ? (
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-cloud-light border border-border text-sm text-muted">
-                  <Activity size={16} className="shrink-0 text-purple-400" />
+                  <Activity size={16} className="shrink-0 text-purple" />
                   <span>Condition data will populate once appointment types are mapped from your PMS sync.</span>
                 </div>
               ) : (
@@ -746,8 +745,8 @@ export default function IntelligencePage() {
                           <td className="py-3 px-3 text-right text-navy">{r.patientsReferred}</td>
                           <td className="py-3 px-3 text-right text-navy">{r.convertedToBooking}</td>
                           <td className="py-3 px-3 text-right">
-                            <span className={`font-semibold ${r.convertedToBooking / r.patientsReferred >= 0.8 ? "text-success" : "text-warn"}`}>
-                              {formatPercent(r.convertedToBooking / r.patientsReferred)}
+                            <span className={`font-semibold ${r.patientsReferred > 0 && r.convertedToBooking / r.patientsReferred >= 0.8 ? "text-success" : r.patientsReferred > 0 ? "text-warn" : "text-muted"}`}>
+                              {r.patientsReferred > 0 ? formatPercent(r.convertedToBooking / r.patientsReferred) : "—"}
                             </span>
                           </td>
                           <td className="py-3 px-3 text-right font-bold text-navy">{formatPence(r.totalRevenuePence)}</td>
@@ -801,10 +800,10 @@ export default function IntelligencePage() {
         {activeTab === "outcomes" && (
           <div className="space-y-6">
             {/* Correlation insight */}
-            <div className="rounded-[var(--radius-card)] border border-purple-200 bg-purple-50 p-5">
+            <div className="rounded-[var(--radius-card)] border border-purple/20 bg-purple/5 p-5">
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
-                  <Activity size={16} className="text-purple-600" />
+                <div className="w-9 h-9 rounded-xl bg-purple/10 flex items-center justify-center shrink-0">
+                  <Activity size={16} className="text-purple" />
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-navy mb-1">Clinical outcomes correlate with revenue</h4>
@@ -823,12 +822,12 @@ export default function IntelligencePage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {(clinicianKpis.length > 0 ? clinicianKpis.slice(0, 3).map((k, i) => ({
                   name: k.clinicianName,
-                  nprsChange: -2.5,
-                  psfsChange: 2.2,
+                  nprsChange: null as number | null,
+                  psfsChange: null as number | null,
                   courses: k.activePatients,
                   color: BAR_COLORS[i % BAR_COLORS.length],
                 })) : [
-                  { name: "—", nprsChange: 0, psfsChange: 0, courses: 0, color: "#1C54F2" },
+                  { name: "—", nprsChange: null as number | null, psfsChange: null as number | null, courses: 0, color: "#1C54F2" },
                 ]).map((c) => (
                   <div key={c.name} className="rounded-xl border border-border p-4">
                     <div className="flex items-center gap-2.5 mb-3">
@@ -842,11 +841,11 @@ export default function IntelligencePage() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="text-center p-2 rounded-lg bg-success/5">
-                        <p className="font-display text-xl text-success">{c.nprsChange}</p>
+                        <p className="font-display text-xl text-success">{c.nprsChange !== null ? c.nprsChange : "—"}</p>
                         <p className="text-[10px] text-muted">NPRS change</p>
                       </div>
                       <div className="text-center p-2 rounded-lg bg-blue/5">
-                        <p className="font-display text-xl text-blue">+{c.psfsChange}</p>
+                        <p className="font-display text-xl text-blue">{c.psfsChange !== null ? `+${c.psfsChange}` : "—"}</p>
                         <p className="text-[10px] text-muted">PSFS change</p>
                       </div>
                     </div>
@@ -985,7 +984,8 @@ export default function IntelligencePage() {
                         <Star
                           key={s}
                           size={16}
-                          className={s <= Math.round(reviews.avgRating) ? "text-yellow-400" : "text-gray-200"}
+                          className={s <= Math.round(reviews.avgRating) ? "" : "text-muted/30"}
+                          style={s <= Math.round(reviews.avgRating) ? { color: "#FBBF24" } : undefined}
                           fill={s <= Math.round(reviews.avgRating) ? "#FBBF24" : "#E5E7EB"}
                         />
                       ))}

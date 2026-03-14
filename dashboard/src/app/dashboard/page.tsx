@@ -159,7 +159,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Welcome greeting + sync indicator */}
       <motion.div
-        className="sticky top-0 z-10 mb-2 -mx-6 px-6 py-2 bg-cloud-dancer/90 dark:bg-navy/90 backdrop-blur-sm"
+        className="sticky top-0 z-20 mb-2 -mx-6 px-6 py-2 bg-cloud-dancer/90 dark:bg-navy/90 backdrop-blur-sm"
         style={{ paddingTop: 8 }}
         {...staggerItem(0)}
       >
@@ -169,7 +169,7 @@ export default function DashboardPage() {
               className="font-display text-navy leading-tight relative"
               style={{ fontSize: headerFontSize }}
             >
-              <span className="relative z-10">{greeting}.</span>
+              <span className="relative z-10">{greeting}{greeting.endsWith("?") ? "" : "."}</span>
               <motion.span className="chevron-trail" aria-hidden="true" style={{ opacity: chevronOpacity }}>
                 <span className="chevron-glyph" style={{ animationDelay: "0s" }}>&rsaquo;</span>
                 <span className="chevron-glyph" style={{ animationDelay: "0.4s" }}>&rsaquo;</span>
@@ -291,7 +291,7 @@ export default function DashboardPage() {
       {!loading && alerts.length > 0 && <AlertBanner alerts={alerts} />}
 
       {/* Stat cards — row 1 */}
-      <motion.section className="grid grid-cols-1 md:grid-cols-2 gap-4" data-tour="stat-cards" {...staggerItem(0.1)}>
+      <motion.section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4" data-tour="stat-cards" {...staggerItem(0.1)}>
         {loading ? (
           <>
             <SkeletonCard />
@@ -337,9 +337,10 @@ export default function DashboardPage() {
       </motion.section>
 
       {/* Stat cards — row 2 */}
-      <motion.section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" {...staggerItem(0.18)}>
+      <motion.section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" {...staggerItem(0.18)}>
         {loading ? (
           <>
+            <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />

@@ -10,9 +10,14 @@ import Link from "next/link";
 import { Clock, X } from "lucide-react";
 import { useEntitlements } from "@/hooks/useEntitlements";
 
+const DISMISS_KEY = "strydeos_trial_banner_dismissed";
+
 export default function TrialBanner() {
   const { trialActive, trialDaysRemaining } = useEntitlements();
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    try { return !!sessionStorage.getItem(DISMISS_KEY); }
+    catch { return false; }
+  });
 
   if (!trialActive || dismissed) return null;
 
@@ -60,7 +65,10 @@ export default function TrialBanner() {
           Upgrade →
         </Link>
         <button
-          onClick={() => setDismissed(true)}
+          onClick={() => {
+            try { sessionStorage.setItem(DISMISS_KEY, "1"); } catch {}
+            setDismissed(true);
+          }}
           aria-label="Dismiss trial banner"
           className="transition-opacity hover:opacity-75"
           style={{ color: "rgba(245,158,11,0.45)" }}

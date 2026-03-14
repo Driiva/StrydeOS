@@ -99,8 +99,7 @@ export default function LockedModulePage({ module }: Props) {
 
         {/* Module name */}
         <h2
-          className="text-[28px] text-white mb-3 leading-tight"
-          style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400 }}
+          className="font-display text-[28px] text-white mb-3 leading-tight"
         >
           {name}
         </h2>

@@ -173,12 +173,12 @@ export default function Sidebar() {
           ? "Paused"
           : "Inactive";
 
-  const statusColorClass =
+  const statusBg =
     clinicStatus === "live"
-      ? "bg-success text-success"
+      ? "bg-success"
       : clinicStatus === "onboarding"
-        ? "bg-blue text-blue"
-        : "bg-muted text-muted";
+        ? "bg-blue"
+        : "bg-muted";
 
   return (
     <>
@@ -527,7 +527,7 @@ export default function Sidebar() {
             <div className="flex-1 min-w-0 text-left">
               <p className="text-[13px] font-semibold text-white truncate">{clinicName}</p>
               <div className="flex items-center gap-1.5">
-                <div className={`w-1.5 h-1.5 rounded-full ${statusColorClass.split(" ")[0]}`} />
+                <div className={`w-1.5 h-1.5 rounded-full ${statusBg}`} />
                 <span className="text-[10px] font-medium text-white/35">
                   {statusLabel}
                 </span>

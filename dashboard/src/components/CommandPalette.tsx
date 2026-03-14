@@ -16,6 +16,8 @@ import {
   ArrowRight,
   Command,
   Zap,
+  CreditCard,
+  HelpCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClinicians } from "@/hooks/useClinicians";
@@ -107,6 +109,8 @@ export default function CommandPalette() {
       { id: "receptionist", label: "Ava", icon: Phone, action: () => { router.push("/receptionist"); close(); }, section: "pages" },
       { id: "intelligence", label: "Intelligence", icon: BarChart3, action: () => { router.push("/intelligence"); close(); }, section: "pages" },
       { id: "settings", label: "Settings", icon: Settings, action: () => { router.push("/settings"); close(); }, section: "pages" },
+      { id: "billing", label: "Billing", icon: CreditCard, action: () => { router.push("/billing"); close(); }, section: "pages" },
+      { id: "help", label: "Help", icon: HelpCircle, action: () => { router.push("/help"); close(); }, section: "pages" },
       { id: "onboarding", label: "Setup Wizard", icon: Zap, action: () => { router.push("/onboarding"); close(); }, section: "pages" },
     ];
 

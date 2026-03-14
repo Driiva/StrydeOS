@@ -4,19 +4,29 @@ import { FlaskConical, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
+const DISMISS_KEY = "strydeos_demo_banner_dismissed";
+
 export default function DemoBanner() {
   const { user } = useAuth();
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    try { return !!sessionStorage.getItem(DISMISS_KEY); }
+    catch { return false; }
+  });
   const isDemoUser = user?.uid === "demo";
+
+  function handleDismiss() {
+    try { sessionStorage.setItem(DISMISS_KEY, "1"); } catch {}
+    setDismissed(true);
+  }
 
   if (dismissed) return null;
 
   return (
     <div
-      className="flex items-center justify-between gap-4 px-4 py-2.5 rounded-xl mb-6 text-sm"
+      className="flex items-center justify-between gap-4 px-4 py-2.5 rounded-xl text-sm"
       style={{
-        background: "rgba(26, 92, 219, 0.06)",
-        border: "1px solid rgba(26, 92, 219, 0.15)",
+        background: "rgba(28, 84, 242, 0.06)",
+        border: "1px solid rgba(28, 84, 242, 0.15)",
       }}
     >
       <div className="flex items-center gap-2.5">
@@ -38,7 +48,7 @@ export default function DemoBanner() {
           {isDemoUser ? "Sign in →" : "Connect now →"}
         </a>
         <button
-          onClick={() => setDismissed(true)}
+          onClick={handleDismiss}
           className="text-muted hover:text-navy transition-colors"
           aria-label="Dismiss"
         >
