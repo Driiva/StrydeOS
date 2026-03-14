@@ -173,7 +173,7 @@ export default function FirstLoginTour() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             className="fixed inset-0 z-[90] flex items-center justify-center px-4"
             style={{
               background: "rgba(11, 37, 69, 0.65)",
@@ -181,12 +181,13 @@ export default function FirstLoginTour() {
             }}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.92 }}
+              initial={{ opacity: 0, scale: 0.93, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: -8 }}
               transition={{
-                duration: 0.4,
-                ease: [0.16, 1, 0.3, 1],
+                duration: 0.5,
+                delay: 0.12,
+                ease: [0.22, 1, 0.36, 1],
               }}
               className="w-full max-w-lg rounded-2xl overflow-hidden"
               style={{

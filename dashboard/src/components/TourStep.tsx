@@ -117,7 +117,7 @@ export default function TourStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
         className="fixed inset-0 z-[100]"
       >
         {/* Overlay with cutout */}
@@ -148,7 +148,11 @@ export default function TourStep({
 
         {/* Highlight ring */}
         {highlightRect && (
-          <div
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, delay: 0.1 }}
             className="fixed rounded-xl border-2 border-blue-glow pointer-events-none"
             style={{
               top: highlightRect.top - 6,
@@ -164,10 +168,10 @@ export default function TourStep({
         {pos && (
           <motion.div
             ref={tooltipRef}
-            initial={{ opacity: 0, scale: 0.92, y: pos.arrowSide === "top" ? -8 : 8 }}
+            initial={{ opacity: 0, scale: 0.94, y: pos.arrowSide === "top" ? -10 : 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
+            exit={{ opacity: 0, scale: 0.96, y: pos.arrowSide === "top" ? -6 : 6 }}
+            transition={{ duration: 0.35, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
             className="fixed w-[320px] rounded-2xl bg-white shadow-[var(--shadow-elevated)] overflow-hidden"
             style={{
               top: pos.top,
