@@ -63,6 +63,13 @@ const DEMO_USER: AuthUser = {
   },
 };
 
+const IMPERSONATION_KEY = "stryde_impersonation";
+
+interface ImpersonationState {
+  clinicId: string;
+  clinicProfile: ClinicProfile;
+}
+
 interface AuthContextValue {
   user: AuthUser | null;
   firebaseUser: User | null;
@@ -72,6 +79,10 @@ interface AuthContextValue {
   refreshClinicProfile: () => Promise<void>;
   enterDemoMode: () => void;
   isFirebaseConfigured: boolean;
+  impersonating: boolean;
+  impersonationTarget: ClinicProfile | null;
+  startImpersonation: (clinic: ClinicProfile) => void;
+  stopImpersonation: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -83,6 +94,10 @@ const AuthContext = createContext<AuthContextValue>({
   refreshClinicProfile: async () => {},
   enterDemoMode: () => {},
   isFirebaseConfigured: false,
+  impersonating: false,
+  impersonationTarget: null,
+  startImpersonation: () => {},
+  stopImpersonation: () => {},
 });
 
 export function useAuth() {

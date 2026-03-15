@@ -189,10 +189,154 @@ export const HELP_ENTRIES: HelpEntry[] = [
   },
 ];
 
+  // ─── Setup Guides ─────────────────────────────────────────────────────────────
+  {
+    id: "getting-started",
+    category: "setup",
+    question: "How do I get started with StrydeOS?",
+    answer:
+      "StrydeOS onboarding has three steps: connect your PMS, confirm your clinicians, and set your KPI targets. Once all three are complete, data starts flowing and your dashboard populates automatically.\n\nStep 1 — Connect your PMS: Go to Settings → Integrations. Enter your WriteUpp or Cliniko API credentials. StrydeOS will verify the connection and begin backfilling historical appointments.\n\nStep 2 — Confirm your clinicians: Go to Settings → Team. Review the clinician names synced from your PMS. Make sure names match exactly — this is how appointments get attributed to the right clinician.\n\nStep 3 — Set your targets: Go to Settings → KPI Targets. Enter the performance benchmarks you want to track against. StrydeOS ships with evidence-based UK defaults — adjust them to match your clinic's ambitions.",
+    clinicNote:
+      "Most clinics see their first meaningful data within 24–48 hours of connecting their PMS. The dashboard will show a data-populating state during the initial backfill.",
+    tags: ["getting started", "setup", "onboarding", "pms", "connect"],
+  },
+  {
+    id: "connect-pms",
+    category: "setup",
+    question: "How do I connect my practice management system?",
+    answer:
+      "Go to Settings → Integrations. Select your PMS from the list (WriteUpp, Cliniko, Halaxy, or Zanda). You'll need your API key — here's where to find it:\n\nWriteUpp: Admin → API → Generate API Key\nCliniko: Settings → Integrations → API Keys → Generate\nHalaxy: Admin → Developer → API Key\nZanda: Settings → API Access\n\nPaste the key into StrydeOS and click Connect. StrydeOS will test the connection immediately. If it fails, double-check the key has full read permissions — some PMS systems let you restrict API key access by module.",
+    clinicNote:
+      "StrydeOS stores API keys server-side only. They are never exposed in the browser or included in any client-side code. If you rotate your PMS API key, update it in Settings → Integrations to restore the data feed.",
+    tags: ["pms", "api key", "writeupp", "cliniko", "connect", "integration"],
+  },
+  {
+    id: "add-clinicians",
+    category: "setup",
+    question: "How do I add clinicians to my StrydeOS workspace?",
+    answer:
+      "Clinician profiles in StrydeOS are created in two ways:\n\n1. Automatic sync — when you connect your PMS, StrydeOS imports the clinician list from your appointment data. Review these in Settings → Team.\n\n2. Manual add — go to Settings → Team → Add Clinician. Enter the clinician's name exactly as it appears in your PMS. This name matching is how appointments get attributed correctly.\n\nEach clinician can optionally be given a StrydeOS login (owner-level accounts can invite team members). Clinicians with a login see their own KPI dashboard only — not the full clinic view.",
+    clinicNote:
+      "Name matching is case-sensitive. If your PMS lists a clinician as 'Andrew Smith' and you enter 'andrew smith' in StrydeOS, appointments will not attribute correctly. When in doubt, copy the name directly from your PMS.",
+    tags: ["clinician", "add", "team", "invite", "name matching", "settings"],
+  },
+  {
+    id: "set-kpi-targets",
+    category: "setup",
+    question: "How do I configure my KPI targets?",
+    answer:
+      "Go to Settings → KPI Targets. StrydeOS ships with evidence-based defaults for UK private physiotherapy practice:\n\n• Follow-up Rate: 75%+\n• HEP Compliance: 80%+\n• Utilisation: 85%+\n• DNA Rate: <5%\n• Course Completion: 70%+\n\nAdjust these to match your clinic's current baseline and growth ambitions. Targets drive the performance indicators on the Intelligence dashboard — red/amber/green thresholds are calculated relative to what you set here.\n\nRecommendation: Start with the defaults for your first 4 weeks. Once you have a baseline reading of your actual performance, adjust targets to be challenging but achievable.",
+    clinicNote:
+      "If you're onboarding from a position of strong existing performance, set targets higher from the start. The defaults are designed for clinics that are establishing a measurement baseline for the first time.",
+    tags: ["targets", "kpi", "settings", "thresholds", "follow-up", "hep", "utilisation"],
+  },
+  {
+    id: "invite-team",
+    category: "setup",
+    question: "How do I give my clinicians access to StrydeOS?",
+    answer:
+      "Go to Settings → Team. Click the envelope icon next to a clinician to send them an invite. They'll receive an email with a login link and will be asked to set a password on first login.\n\nRole permissions:\n• Owner — full access to all metrics, all clinicians, billing, and settings\n• Clinician — can only see their own KPI data, not the full clinic view\n\nClinicians do not need a StrydeOS account for their data to appear — the dashboard populates from PMS data regardless. A login is only needed if you want the clinician to view their own numbers.",
+    clinicNote:
+      "Clinician accounts are read-only by design. They cannot modify targets, add team members, or access billing. Owners and admins have full write access.",
+    tags: ["invite", "team", "access", "clinician login", "role", "permissions"],
+  },
+  {
+    id: "ava-setup",
+    category: "setup",
+    question: "How do I set up Ava, the AI receptionist?",
+    answer:
+      "Ava setup is handled by the StrydeOS team during onboarding. The setup process covers:\n\n1. Phone number provisioning — a UK number is assigned to your clinic (or your existing number is forwarded).\n2. Voice and persona configuration — Ava is trained on your clinic's specific details: team, pricing, location, services.\n3. PMS integration — Ava is connected to your booking diary at the appropriate tier (live booking, async capture, or triage — depending on your PMS).\n4. Test calls — your team runs test calls to verify booking flows, edge cases, and handoffs.\n\nOnce live, Ava handles inbound calls 24/7. All call logs appear in the Ava module dashboard.",
+    clinicNote:
+      "Ava is not a self-serve setup. The configuration requires clinical knowledge of your team, schedule, and practice policies. The StrydeOS team handles this in a 45-minute onboarding session.",
+    tags: ["ava", "setup", "receptionist", "phone", "booking", "voice"],
+  },
+  {
+    id: "first-week",
+    category: "setup",
+    question: "What should I expect in my first week?",
+    answer:
+      "Day 1–2: PMS connection + initial data backfill. Your dashboard will show a populating state as historical appointment data is imported. Depending on your appointment volume, this can take a few hours to 48 hours.\n\nDay 2–3: First KPI readings appear. Follow-up rate, HEP compliance, DNA rate, and utilisation will begin showing weekly figures. The first week's data is often incomplete (due to backfill timing) — don't read too much into it.\n\nDay 4–7: Baseline established. By end of week 1, you should have a representative snapshot of where your clinic currently sits against each KPI. This is your starting point — not a final verdict.\n\nEnd of week 1 check-in: Review the Intelligence dashboard with your team. Identify the 1–2 metrics furthest from target. These are your first priorities.",
+    clinicNote:
+      "Expect some noise in week 1. Metrics only become statistically meaningful after 3–4 weeks of data. The dashboard shows a 'low data volume' indicator when sample sizes are small.",
+    tags: ["first week", "onboarding", "backfill", "data", "setup", "expectations"],
+  },
+  {
+    id: "notion-setup-guide",
+    category: "setup",
+    question: "Is there a detailed setup guide I can follow?",
+    answer:
+      "Yes — the StrydeOS Client Setup Guide is a step-by-step Notion document that walks through every configuration step in detail, including screenshots, common pitfalls, and recommended sequence.\n\nIt covers:\n• PMS connection (WriteUpp, Cliniko, Halaxy, Zanda)\n• Clinician mapping and name matching\n• KPI target calibration\n• Team access and permissions\n• Ava onboarding steps\n• First 30-day review checklist\n\nAccess it via the link below. Bookmark it — it's a living document updated as StrydeOS evolves.",
+    clinicNote:
+      "The Notion setup guide is the canonical onboarding reference. If anything in the in-app tooltips contradicts the guide, the guide takes precedence — flag it to support@strydeos.com.",
+    tags: ["setup guide", "notion", "documentation", "onboarding", "walkthrough"],
+  },
+
+  // ─── Troubleshooting ──────────────────────────────────────────────────────────
+  {
+    id: "no-data-showing",
+    category: "troubleshooting",
+    question: "My dashboard is empty — why isn't any data showing?",
+    answer:
+      "There are three common causes:\n\n1. PMS not connected — go to Settings → Integrations. If the connection shows as 'Not connected' or 'Error', re-enter your API key. The key may have expired or been rotated.\n\n2. Data still backfilling — after a fresh connection, it can take up to 48 hours for historical data to fully import. The dashboard shows a backfill indicator during this period.\n\n3. No appointments in the selected time window — check the date range filter on the Intelligence dashboard. If you've just launched or had a quiet period, there may be no appointments to display.\n\nIf none of these apply, contact support@strydeos.com with your clinic name and PMS type.",
+    tags: ["no data", "empty", "dashboard", "troubleshoot", "sync"],
+  },
+  {
+    id: "metrics-wrong",
+    category: "troubleshooting",
+    question: "A metric looks wrong or doesn't match my PMS records.",
+    answer:
+      "KPI calculations in StrydeOS pull directly from your PMS appointment data. Discrepancies usually come from:\n\n1. Appointment type mismatch — StrydeOS classifies appointments as 'Initial Assessment' or 'Follow-up' based on the appointment type label in your PMS. If your PMS uses non-standard type names (e.g. 'First Contact' instead of 'Initial Assessment'), the classification may be off. Fix this in Settings → Integrations → Appointment Types.\n\n2. Clinician name mismatch — if a clinician's name in your PMS doesn't exactly match their StrydeOS profile, some appointments won't attribute to them. Check Settings → Team.\n\n3. Sync delay — if you've just made changes in your PMS, allow up to 30 minutes for the webhook to trigger and update StrydeOS.\n\n4. Cancelled appointments counted — StrydeOS excludes cancelled and DNA appointments from denominator calculations by default. If your PMS marks late cancellations differently, they may be included. Contact support to adjust the classification logic.",
+    tags: ["metrics", "wrong", "inaccurate", "calculation", "mismatch", "appointment type"],
+  },
+  {
+    id: "pms-connection-failing",
+    category: "troubleshooting",
+    question: "My PMS connection keeps failing or shows as disconnected.",
+    answer:
+      "Step 1 — Check your API key is valid. Log into your PMS and verify the key hasn't been revoked or expired. Generate a new one if needed.\n\nStep 2 — Verify key permissions. Some PMS systems let you restrict API key access by module (read-only, appointments only, etc.). StrydeOS needs read access to: appointments, practitioners, and patients.\n\nStep 3 — Check for PMS outages. WriteUpp and Cliniko occasionally have API outages. Check their status pages: status.writeupp.com / status.cliniko.com.\n\nStep 4 — Re-enter the key in StrydeOS. Go to Settings → Integrations, remove the existing key, and paste the new one. Click Connect — you'll see a success or error message immediately.\n\nIf the connection still fails after these steps, email support@strydeos.com with your PMS type and the error message shown.",
+    tags: ["pms", "connection", "failing", "disconnected", "api key", "writeupp", "cliniko"],
+  },
+  {
+    id: "clinician-missing",
+    category: "troubleshooting",
+    question: "A clinician isn't showing up in the dashboard.",
+    answer:
+      "There are two common causes:\n\n1. Name mismatch — the clinician's name in StrydeOS must match exactly how it appears in your PMS. Go to Settings → Team and check the name spelling. Then verify it against your PMS practitioner list.\n\n2. No appointments in the selected period — if the clinician had no completed appointments in the current time window, they won't appear in the performance table. Switch to a broader date range to confirm their historic data is present.\n\nIf the clinician was recently added to your PMS, allow 24 hours for the sync to pick them up. You can also manually trigger a sync in Settings → Integrations → Sync Now.",
+    tags: ["clinician", "missing", "not showing", "name match", "sync"],
+  },
+  {
+    id: "dna-count-off",
+    category: "troubleshooting",
+    question: "My DNA rate or appointment counts seem off.",
+    answer:
+      "DNA (Did Not Attend) rate is calculated from appointments your PMS has marked with a DNA status. If the number looks wrong:\n\n1. Check how your PMS records DNAs — some systems use 'No Show', 'Patient Did Not Attend', or 'DNA' as the status label. StrydeOS maps these automatically, but unusual labels can be missed. Check Settings → Integrations → Appointment Status Mapping.\n\n2. Late cancellations may be mixed in — if your clinic marks late cancellations as DNAs in the PMS, they'll appear in the StrydeOS DNA count too. This is typically correct behaviour, but worth being aware of.\n\n3. Confirm the date range — DNA rate uses completed appointment slots, not booked ones. Future appointments don't count.",
+    tags: ["dna", "did not attend", "count", "wrong", "troubleshoot"],
+  },
+  {
+    id: "ava-not-booking",
+    category: "troubleshooting",
+    question: "Ava completed a call but no appointment was created in the PMS.",
+    answer:
+      "This depends on which Ava tier your PMS uses:\n\nTier 1 (Cliniko — live booking): The booking fires in real-time during the call. If no appointment appeared, check the Ava call log in the Ava module — there will be an error state with a reason code. Common causes: the patient's email was already in use in the PMS, or a slot was taken between Ava checking availability and confirming.\n\nTier 2 (WriteUpp, Jane — async booking): Booking fires via n8n within minutes of the call ending. Check the Ava call log to confirm the booking task was triggered. If it shows 'Pending' for more than 15 minutes, the n8n workflow may have failed — contact support.\n\nTier 3 (TM3, Physitrack — triage handoff): Ava doesn't book directly. A structured summary is delivered to your inbox for manual action. Check your clinic email for the Ava handoff summary.",
+    clinicNote:
+      "All Ava call outcomes are logged in real-time in the Ava module. If a booking failed, the call log entry will show the failure reason and allow you to retry.",
+    tags: ["ava", "booking", "failed", "pms", "cliniko", "writeupp", "n8n", "troubleshoot"],
+  },
+  {
+    id: "stripe-billing-issue",
+    category: "troubleshooting",
+    question: "I'm having a billing or subscription issue.",
+    answer:
+      "For subscription queries — payment failures, plan changes, invoice requests, or cancellations — go to Settings → Billing. You can view your current plan, update your payment method, and download invoices directly from there.\n\nIf your subscription shows as 'Past due', update your payment method in Settings → Billing → Update Card. StrydeOS automatically retries failed payments for up to 7 days before access is restricted.\n\nFor any billing issue that can't be resolved in-app, contact support@strydeos.com with your clinic name and a description of the issue. Include your invoice number if you have it.",
+    tags: ["billing", "subscription", "payment", "invoice", "stripe", "past due"],
+  },
+
 export const CATEGORY_LABELS: Record<HelpCategory, string> = {
   metrics: "Core Metrics",
   modules: "Module Guides",
   general: "General",
+  setup: "Setup Guides",
+  troubleshooting: "Troubleshooting",
 };
 
-export const CATEGORIES: HelpCategory[] = ["metrics", "modules", "general"];
+export const CATEGORIES: HelpCategory[] = ["setup", "metrics", "modules", "general", "troubleshooting"];
