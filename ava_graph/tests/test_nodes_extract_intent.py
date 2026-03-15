@@ -5,11 +5,11 @@ from ava_graph.graph.state import AvaState
 
 @pytest.mark.asyncio
 async def test_extract_intent_parses_webhook_payload():
-    """Verify extract_intent parses ElevenLabs webhook into state."""
+    """Verify extract_intent preserves webhook fields and adds transcript entry."""
     state = AvaState(
-        patient_name="",
-        requested_service="",
-        preferred_time="",
+        patient_name="John Doe",
+        requested_service="Physiotherapy Assessment",
+        preferred_time="Tuesday afternoon",
         clinic_id="clinic_001",
         pms_type="writeupp",
         available_slots=[],
@@ -21,14 +21,7 @@ async def test_extract_intent_parses_webhook_payload():
         messages=[],
     )
 
-    webhook_payload = {
-        "patient_name": "John Doe",
-        "requested_service": "Physiotherapy Assessment",
-        "preferred_time": "Tuesday afternoon",
-        "session_id": "session_abc123",
-    }
-
-    result = await extract_intent(state, webhook_payload)
+    result = await extract_intent(state)
 
     assert result["patient_name"] == "John Doe"
     assert result["requested_service"] == "Physiotherapy Assessment"
@@ -40,9 +33,9 @@ async def test_extract_intent_parses_webhook_payload():
 async def test_extract_intent_preserves_clinic_id_and_pms_type():
     """Verify extract_intent preserves clinic_id and pms_type from state."""
     state = AvaState(
-        patient_name="",
-        requested_service="",
-        preferred_time="",
+        patient_name="Jane Smith",
+        requested_service="Follow-up Assessment",
+        preferred_time="Wednesday morning",
         clinic_id="clinic_spires",
         pms_type="cliniko",
         available_slots=[],
@@ -54,14 +47,7 @@ async def test_extract_intent_preserves_clinic_id_and_pms_type():
         messages=[],
     )
 
-    webhook_payload = {
-        "patient_name": "Jane Smith",
-        "requested_service": "Follow-up Assessment",
-        "preferred_time": "Wednesday morning",
-        "session_id": "session_xyz789",
-    }
-
-    result = await extract_intent(state, webhook_payload)
+    result = await extract_intent(state)
 
     assert result["clinic_id"] == "clinic_spires"
     assert result["pms_type"] == "cliniko"
@@ -71,9 +57,9 @@ async def test_extract_intent_preserves_clinic_id_and_pms_type():
 async def test_extract_intent_adds_message_to_transcript():
     """Verify extract_intent appends entry to messages transcript."""
     state = AvaState(
-        patient_name="",
-        requested_service="",
-        preferred_time="",
+        patient_name="Bob Johnson",
+        requested_service="Assessment",
+        preferred_time="Monday",
         clinic_id="clinic_001",
         pms_type="writeupp",
         available_slots=[],
@@ -85,14 +71,7 @@ async def test_extract_intent_adds_message_to_transcript():
         messages=["Initial message"],
     )
 
-    webhook_payload = {
-        "patient_name": "Bob Johnson",
-        "requested_service": "Assessment",
-        "preferred_time": "Monday",
-        "session_id": "session_test",
-    }
-
-    result = await extract_intent(state, webhook_payload)
+    result = await extract_intent(state)
 
     assert len(result["messages"]) >= 2
     assert "Bob Johnson" in result["messages"][-1]
@@ -100,9 +79,9 @@ async def test_extract_intent_adds_message_to_transcript():
 
 @pytest.mark.asyncio
 async def test_extract_intent_handles_missing_fields():
-    """Verify extract_intent gracefully handles missing webhook fields."""
+    """Verify extract_intent gracefully handles empty webhook fields."""
     state = AvaState(
-        patient_name="",
+        patient_name="Alice Wonder",
         requested_service="",
         preferred_time="",
         clinic_id="clinic_001",
@@ -116,13 +95,7 @@ async def test_extract_intent_handles_missing_fields():
         messages=[],
     )
 
-    webhook_payload = {
-        "patient_name": "Alice Wonder",
-        # Missing requested_service and preferred_time
-        "session_id": "session_test",
-    }
-
-    result = await extract_intent(state, webhook_payload)
+    result = await extract_intent(state)
 
     assert result["patient_name"] == "Alice Wonder"
     assert result["requested_service"] == ""  # Should remain empty

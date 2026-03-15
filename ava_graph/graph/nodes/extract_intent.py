@@ -12,39 +12,32 @@ from ava_graph.graph.state import AvaState
 logger = logging.getLogger(__name__)
 
 
-async def extract_intent(state: AvaState, webhook_payload: dict) -> AvaState:
-    """Extract patient intent from ElevenLabs webhook payload.
+async def extract_intent(state: AvaState) -> AvaState:
+    """Extract patient intent from webhook state.
 
-    Parses incoming webhook data and updates state with extracted fields:
+    Uses fields already populated in state by the webhook handler:
     - patient_name: Patient's name from webhook
     - requested_service: Service type requested (e.g., "Physio Assessment")
     - preferred_time: Patient's time preference (e.g., "Tuesday afternoon")
-    - session_id: Unique identifier for checkpoint threading (preserved from webhook)
+    - session_id: Unique identifier for checkpoint threading
 
     Preserves existing state fields (clinic_id, pms_type) and appends message to transcript.
-    Handles missing fields gracefully by leaving corresponding state fields unchanged.
 
     Args:
-        state: Current AvaState containing clinic_id, pms_type, and messages
-        webhook_payload: Dict from ElevenLabs webhook with patient intent data
+        state: Current AvaState with webhook fields already populated
 
     Returns:
-        Updated AvaState with extracted intent fields and updated messages transcript
+        Updated AvaState with messages transcript updated
     """
     logger.debug(
-        f"Extracting intent from webhook for session {state['session_id']}",
+        f"Extracting intent from state for session {state['session_id']}",
     )
 
-    # Extract fields from webhook, with fallback to current state values
-    patient_name = webhook_payload.get("patient_name", state["patient_name"])
-    requested_service = webhook_payload.get(
-        "requested_service",
-        state["requested_service"],
-    )
-    preferred_time = webhook_payload.get("preferred_time", state["preferred_time"])
-
-    # Session ID should come from webhook but preserve from state as fallback
-    session_id = webhook_payload.get("session_id", state["session_id"])
+    # Use fields from state (already populated by webhook handler)
+    patient_name = state["patient_name"]
+    requested_service = state["requested_service"]
+    preferred_time = state["preferred_time"]
+    session_id = state["session_id"]
 
     logger.info(
         f"Intent extracted: patient={patient_name}, service={requested_service}, "
