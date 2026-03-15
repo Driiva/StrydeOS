@@ -1,4 +1,4 @@
-export type HelpCategory = "metrics" | "modules" | "general";
+export type HelpCategory = "metrics" | "modules" | "general" | "setup" | "troubleshooting";
 
 export interface HelpEntry {
   id: string;
@@ -9,6 +9,8 @@ export interface HelpEntry {
   formula?: string;
   category: HelpCategory;
   tags: string[];
+  /** YouTube video ID for embedded walkthrough */
+  videoId?: string;
 }
 
 export const HELP_ENTRIES: HelpEntry[] = [

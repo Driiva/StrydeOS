@@ -4,6 +4,7 @@ from typing import TypedDict, List
 class AvaState(TypedDict):
     """State container for Ava booking workflow."""
     patient_name: str              # Extracted from webhook or inferred
+    patient_phone: str             # Patient's phone number for SMS
     requested_service: str         # Service type (e.g., "Physio Assessment")
     preferred_time: str            # User's preference (e.g., "Tuesday 3pm")
     clinic_id: str                 # Multi-tenant identifier
@@ -15,3 +16,4 @@ class AvaState(TypedDict):
     session_id: str                # Unique identifier for checkpoint threading
     attempt_count: int             # How many slots have been proposed (prevent loops)
     messages: List[str]            # Full conversation transcript
+    booking_id: str                # PMS booking ID (returned by booking tool)
