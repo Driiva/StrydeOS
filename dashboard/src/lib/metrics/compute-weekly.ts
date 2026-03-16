@@ -132,11 +132,30 @@ function aggregateWeek(
   const weekReviews = reviews.filter(
     (r) => r.date >= weekStart && r.date < weekEndStr
   );
+
+  // Prior week review count for velocity (week-over-week delta)
+  const priorWeekStart = new Date(weekStart);
+  priorWeekStart.setDate(priorWeekStart.getDate() - 7);
+  const priorWeekStartStr = priorWeekStart.toISOString().slice(0, 10);
+  const priorWeekReviewCount = reviews.filter(
+    (r) => r.date >= priorWeekStartStr && r.date < weekStart
+  ).length;
   const reviewCount = weekReviews.length;
-  const npsScore =
+  const avgRating =
     reviewCount > 0
       ? weekReviews.reduce((s, r) => s + r.rating, 0) / reviewCount
       : undefined;
+
+  // NPS-style score from Google reviews: promoters (4-5) minus detractors (1-3)
+  // Scaled 0-100 for consistency with standard NPS range
+  let npsScore: number | undefined;
+  if (reviewCount > 0) {
+    const promoters = weekReviews.filter((r) => r.rating >= 4).length;
+    const detractors = weekReviews.filter((r) => r.rating <= 3).length;
+    npsScore = Math.round(
+      ((promoters - detractors) / reviewCount) * 100
+    );
+  }
 
   return {
     clinicianId,
@@ -156,6 +175,8 @@ function aggregateWeek(
     followUps,
     npsScore,
     reviewCount,
+    avgRating,
+    reviewVelocity: reviewCount - priorWeekReviewCount,
     dnaByDayOfWeek,
     dnaByTimeSlot,
     computedAt: new Date().toISOString(),

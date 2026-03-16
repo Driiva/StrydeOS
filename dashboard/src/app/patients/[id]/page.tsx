@@ -72,7 +72,7 @@ function buildTimeline(patientId: string): TimelineEvent[] {
       type: "comms",
       date: c.sentAt.split("T")[0],
       title: `${c.sequenceType.replace(/_/g, " ")} sent`,
-      detail: `Via ${c.channel.toUpperCase()}${c.openedAt ? " — opened" : ""}${c.outcome === "booked" ? " — patient rebooked" : ""}`,
+      detail: `Via ${c.channel.toUpperCase()}${c.openedAt ? " — opened" : ""}${c.outcome === "booked" ? " — patient rebooked" : ""}${c.outcome === "responded" && c.npsScore != null ? ` — NPS: ${c.npsScore}/10` : ""}`,
       icon: c.channel === "sms" ? MessageSquare : Mail,
       color: "#0891B2",
     });

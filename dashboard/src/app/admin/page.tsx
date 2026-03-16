@@ -21,6 +21,7 @@ import {
   Wifi,
   WifiOff,
   Eye,
+  BookOpen,
 } from "lucide-react";
 import type { ClinicProfile, StripeSubscriptionStatus } from "@/types";
 
@@ -195,6 +196,30 @@ export default function AdminPage() {
           Showing demo clinic data — no Firestore clinics found.
         </div>
       )}
+
+      {/* Internal resources */}
+      <div className="flex items-center gap-3">
+        <a
+          href="https://wild-jaw-b99.notion.site/StrydeOS-Setup-Guide-8d119c6ab90a43d7b6456845c23bb534"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-[12px] font-medium text-[#059669] hover:bg-[#059669]/10 border border-[#059669]/20 transition-colors"
+        >
+          <BookOpen size={13} />
+          Client Setup Guide
+          <ExternalLink size={10} className="opacity-60" />
+        </a>
+        <a
+          href="https://www.notion.so/Client-Journey-Discovery-to-Delivery-f69242cf223d46779c1639db322280fc"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-[12px] font-medium text-purple hover:bg-purple/10 border border-purple/20 transition-colors"
+        >
+          <BookOpen size={13} />
+          Client Journey Playbook
+          <ExternalLink size={10} className="opacity-60" />
+        </a>
+      </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

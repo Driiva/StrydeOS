@@ -37,7 +37,7 @@ export const DEFAULT_SEQUENCES: CommsSequenceConfig[] = [
   {
     type: "review_prompt",
     name: "Discharge Review Prompt",
-    description: "48-72h post-discharge, Google Review link",
+    description: "Step 1: NPS score request (reply with 0-10). Step 2: Google Review link for promoters.",
     channel: "sms",
     delayHours: 60,
     enabled: true,
@@ -206,6 +206,18 @@ export const DEFAULT_SEQUENCE_DEFINITIONS: Omit<SequenceDefinition, "id">[] = [
     priority: 7,
   },
 ];
+
+/**
+ * SMS template bodies for n8n — templateKey → message text.
+ * [Name] and [ClinicName] are substituted by the send route.
+ * review_step1 asks for NPS score; review_step2 follows up with Google Review link for promoters.
+ */
+export const SMS_TEMPLATES: Record<string, string> = {
+  review_step1:
+    "Hi [Name], thank you for choosing [ClinicName]. On a scale of 0-10, how likely are you to recommend us? Simply reply with a number.",
+  review_step2:
+    "Hi [Name], we're glad you had a great experience! If you have a moment, a Google Review would mean the world to us: [ReviewLink]",
+};
 
 // Extended n8n payload — adds step tracking fields
 export interface N8nSequencePayload {

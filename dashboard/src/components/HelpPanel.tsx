@@ -257,7 +257,7 @@ function PanelContent({ onClose }: { onClose: () => void }) {
         style={{ borderColor: "rgba(255,255,255,0.08)" }}
       >
         <a
-          href="https://strydeos.notion.site/StrydeOS-Client-Setup-Guide"
+          href="https://wild-jaw-b99.notion.site/StrydeOS-Setup-Guide-8d119c6ab90a43d7b6456845c23bb534"
           target="_blank"
           rel="noopener noreferrer"
           className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-[12px] font-medium text-white/50 hover:text-white/80 transition-colors group"

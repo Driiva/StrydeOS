@@ -26,7 +26,7 @@ import {
   type HelpEntry,
 } from "@/data/helpContent";
 
-const NOTION_SETUP_GUIDE_URL = "https://strydeos.notion.site/StrydeOS-Client-Setup-Guide";
+const NOTION_SETUP_GUIDE_URL = "https://wild-jaw-b99.notion.site/StrydeOS-Setup-Guide-8d119c6ab90a43d7b6456845c23bb534";
 
 const CATEGORY_META: Record<
   HelpCategory,

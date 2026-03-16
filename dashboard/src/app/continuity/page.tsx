@@ -315,9 +315,15 @@ function ContinuityPage() {
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                             entry.outcome === "booked"
                               ? "bg-success/10 text-success"
-                              : "bg-cloud-dark text-muted"
+                              : entry.outcome === "responded"
+                                ? "bg-[#0891B2]/10 text-[#0891B2]"
+                                : "bg-cloud-dark text-muted"
                           }`}>
-                            {entry.outcome === "booked" ? "Rebooked" : "No action"}
+                            {entry.outcome === "booked"
+                              ? "Rebooked"
+                              : entry.outcome === "responded"
+                                ? "Responded"
+                                : "No action"}
                           </span>
                         </td>
                       </tr>

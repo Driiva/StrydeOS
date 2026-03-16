@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
-import type { CommsOutcome, SequenceType, CommsChannel } from "@/types";
+import type { CommsOutcome, SequenceType, CommsChannel, NpsCategory } from "@/types";
 
 const N8N_SECRET = process.env.N8N_COMMS_WEBHOOK_SECRET;
 
@@ -188,12 +188,86 @@ async function handleInboundReply(body: Record<string, unknown>) {
     return NextResponse.json({ ok: true });
   }
 
-  await recentLogSnap.docs[0].ref.set(
-    { inboundReply: replyText ?? null, inboundAt: now },
-    { merge: true }
-  );
+  const logDoc  = recentLogSnap.docs[0];
+  const logData = logDoc.data();
+
+  // Base update: always write the raw reply
+  const logUpdate: Record<string, unknown> = {
+    inboundReply: replyText ?? null,
+    inboundAt:    now,
+  };
+
+  // ── NPS parsing for review_prompt sequences ──────────────────────────
+  if (logData.sequenceType === "review_prompt" && replyText) {
+    const npsScore = parseNpsScore(replyText);
+
+    if (npsScore !== null) {
+      const npsCategory = classifyNps(npsScore);
+
+      // Enrich comms_log entry with NPS data
+      logUpdate.npsScore    = npsScore;
+      logUpdate.npsCategory = npsCategory;
+      logUpdate.outcome     = "responded" as CommsOutcome;
+
+      // Write NPS response to the reviews collection with platform: "nps_sms"
+      await clinicRef.collection("reviews").add({
+        platform:           "nps_sms",
+        rating:             npsScore,
+        reviewText:         replyText,
+        date:               now,
+        patientId:          targetPatientId,
+        clinicianMentioned: null,
+        verified:           true,
+        npsCategory,
+        source:             "inbound_sms",
+        commsLogId:         logDoc.id,
+        createdAt:          now,
+      });
+    }
+  }
+
+  await logDoc.ref.set(logUpdate, { merge: true });
 
   return NextResponse.json({ ok: true });
+}
+
+// ─── NPS Parsing ──────────────────────────────────────────────────────────────
+
+const WORD_TO_NUMBER: Record<string, number> = {
+  zero: 0, one: 1, two: 2, three: 3, four: 4,
+  five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+};
+
+/**
+ * Parses a free-text SMS reply into an NPS score (0–10).
+ * Handles: "8", "8/10", "8 out of 10", "8.", " 8 ", "eight", "Eight", etc.
+ * Returns null if no valid score can be extracted.
+ */
+function parseNpsScore(text: string): number | null {
+  const trimmed = text.trim().toLowerCase();
+
+  // Word form: "eight", "ten", etc.
+  const wordMatch = WORD_TO_NUMBER[trimmed];
+  if (wordMatch !== undefined) return wordMatch;
+
+  // Numeric patterns: "8", "8/10", "8 out of 10", "8.", "8 /10"
+  const numericPattern = /^(\d{1,2})\s*(?:\/\s*10|out\s+of\s+10)?\.?\s*$/;
+  const match = trimmed.match(numericPattern);
+  if (match) {
+    const score = parseInt(match[1], 10);
+    if (score >= 0 && score <= 10) return score;
+  }
+
+  return null;
+}
+
+/**
+ * Classifies an NPS score (0–10) into promoter / passive / detractor.
+ */
+function classifyNps(score: number): NpsCategory {
+  if (score >= 9) return "promoter";
+  if (score >= 7) return "passive";
+  return "detractor";
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

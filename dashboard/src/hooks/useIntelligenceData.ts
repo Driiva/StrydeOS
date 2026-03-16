@@ -276,23 +276,54 @@ function deriveNps(reviews: Review[], allStats: WeeklyStats[]): NpsData {
     return { score: 0, promoters: 0, passives: 0, detractors: 0, totalResponses: 0, trend: [] };
   }
 
+  // Separate direct NPS SMS responses (0–10 scale) from platform reviews (1–5 star scale)
+  const npsDirectResponses = reviews.filter((r) => r.platform === "nps_sms");
+  const platformReviews    = reviews.filter((r) => r.platform !== "nps_sms");
+
   let promoters = 0, passives = 0, detractors = 0;
-  for (const r of reviews) {
+
+  // Direct NPS responses use the standard NPS scale (0–10)
+  for (const r of npsDirectResponses) {
+    if (r.rating >= 9) promoters++;
+    else if (r.rating >= 7) passives++;
+    else detractors++;
+  }
+
+  // Platform reviews (Google, Trustpilot) use star ratings (1–5) mapped to NPS categories
+  for (const r of platformReviews) {
     if (r.rating >= 5) promoters++;
     else if (r.rating === 4) passives++;
     else detractors++;
   }
+
   const total = reviews.length;
   const score = Math.round(((promoters - detractors) / total) * 100);
 
-  // Monthly trend from metrics_weekly npsScore
-  const monthMap = new Map<string, { total: number; count: number }>();
+  // Monthly trend: prefer direct NPS responses, fall back to metrics_weekly npsScore
+  const monthMap = new Map<string, { total: number; count: number; hasDirect: boolean }>();
+
+  // First pass: direct NPS responses grouped by month
+  for (const r of npsDirectResponses) {
+    const month = r.date.slice(0, 7); // YYYY-MM
+    const ex = monthMap.get(month);
+    // Convert 0–10 NPS score to an NPS-like composite: ((score / 10) * 200) - 100 maps 0→-100, 10→100
+    const npsLike = Math.round(((r.rating / 10) * 200) - 100);
+    if (ex) { ex.total += npsLike; ex.count++; ex.hasDirect = true; }
+    else monthMap.set(month, { total: npsLike, count: 1, hasDirect: true });
+  }
+
+  // Second pass: metrics_weekly npsScore for months without direct NPS data
   for (const stat of allStats) {
     if (stat.clinicianId !== "all" || !stat.npsScore) continue;
     const month = stat.weekStart.slice(0, 7); // YYYY-MM
     const ex = monthMap.get(month);
-    if (ex) { ex.total += stat.npsScore; ex.count++; }
-    else monthMap.set(month, { total: stat.npsScore, count: 1 });
+    const npsLike = Math.round(((stat.npsScore) - 3) * 50); // convert avg rating (1–5) → NPS-like
+    if (ex) {
+      // Only merge metrics_weekly if no direct NPS data exists for this month
+      if (!ex.hasDirect) { ex.total += npsLike; ex.count++; }
+    } else {
+      monthMap.set(month, { total: npsLike, count: 1, hasDirect: false });
+    }
   }
 
   const MONTH_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -300,7 +331,7 @@ function deriveNps(reviews: Review[], allStats: WeeklyStats[]): NpsData {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([ym, { total, count }]) => ({
       month: MONTH_SHORT[parseInt(ym.slice(5, 7), 10) - 1] ?? ym,
-      score: Math.round(((total / count) - 3) * 50), // convert avg rating (1–5) → NPS-like
+      score: Math.round(total / count),
     }));
 
   return { score, promoters, passives, detractors, totalResponses: total, trend };

@@ -14,7 +14,7 @@ const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1";
 
 // Voice ID for ElevenLabs (can be customizable per clinic)
-const DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"; // English (US) - Professional
+const DEFAULT_VOICE_ID = "OnKmvBo8ZskQurHsyps5";
 
 interface ElevenAgentsConfig {
   name: string;

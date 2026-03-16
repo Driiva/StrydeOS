@@ -156,7 +156,42 @@ export async function runPipeline(
     });
   }
 
-  // ── Stage 6: Compute Weekly Metrics ──────────────────────────────────────
+  // ── Stage 6: Sync Google Reviews ─────────────────────────────────────────
+  // Runs before compute-metrics so newly synced reviews are included in weekly stats.
+  const reviewsSnap = await configBase.doc(REVIEWS_DOC_ID).get();
+  const reviewsConfig = reviewsSnap.data() as
+    | { apiKey?: string; placeId?: string }
+    | undefined;
+
+  // Per-clinic config first, env var fallback for single-clinic (Spires) launch
+  const resolvedReviewsApiKey =
+    reviewsConfig?.apiKey?.trim() || process.env.GOOGLE_PLACES_API_KEY || "";
+  const resolvedReviewsPlaceId =
+    reviewsConfig?.placeId?.trim() || process.env.GOOGLE_PLACE_ID || "";
+
+  if (resolvedReviewsApiKey && resolvedReviewsPlaceId) {
+    try {
+      const s6 = await syncReviews(
+        db,
+        clinicId,
+        resolvedReviewsApiKey,
+        resolvedReviewsPlaceId,
+        clinicianMap
+      );
+      stages.push(s6);
+      await logIntegrationHealth(db, clinicId, "google_reviews", "reviews", s6);
+    } catch (err) {
+      stages.push({
+        stage: "sync-reviews",
+        ok: false,
+        count: 0,
+        errors: [err instanceof Error ? err.message : String(err)],
+        durationMs: 0,
+      });
+    }
+  }
+
+  // ── Stage 7: Compute Weekly Metrics ──────────────────────────────────────
   const metricsStart = Date.now();
   try {
     const weeksBack = options.backfill ? BACKFILL_WEEKS : INCREMENTAL_WEEKS + 2;
@@ -179,32 +214,6 @@ export async function runPipeline(
       count: 0,
       errors: [err instanceof Error ? err.message : String(err)],
       durationMs: Date.now() - metricsStart,
-    });
-  }
-
-  // ── Stage 7: Sync Google Reviews ─────────────────────────────────────────
-  const reviewsSnap = await configBase.doc(REVIEWS_DOC_ID).get();
-  const reviewsConfig = reviewsSnap.data() as
-    | { apiKey?: string; placeId?: string }
-    | undefined;
-
-  if (reviewsConfig?.apiKey?.trim() && reviewsConfig?.placeId?.trim()) {
-    const s7 = await syncReviews(
-      db,
-      clinicId,
-      reviewsConfig.apiKey!,
-      reviewsConfig.placeId!,
-      clinicianMap
-    );
-    stages.push(s7);
-    await logIntegrationHealth(db, clinicId, "google_reviews", "reviews", s7);
-  } else {
-    stages.push({
-      stage: "sync-reviews",
-      ok: true,
-      count: 0,
-      errors: ["No Google Reviews config — skipping"],
-      durationMs: 0,
     });
   }
 

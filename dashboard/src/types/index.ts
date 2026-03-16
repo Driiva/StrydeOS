@@ -327,6 +327,7 @@ export interface WeeklyStats {
   followUps: number;
   npsScore?: number;
   reviewCount?: number;
+  avgRating?: number;
   reviewVelocity?: number;
   dnaByDayOfWeek?: Record<string, number>;
   dnaByTimeSlot?: Record<string, number>;
@@ -338,7 +339,7 @@ export interface WeeklyStats {
 // ─── Comms ───────────────────────────────────────────────────────────────────
 
 export type CommsChannel = "email" | "sms" | "whatsapp";
-export type CommsOutcome = "booked" | "no_action" | "unsubscribed";
+export type CommsOutcome = "booked" | "no_action" | "unsubscribed" | "responded";
 export type SequenceType =
   | "hep_reminder"
   | "rebooking_prompt"
@@ -368,11 +369,16 @@ export interface CommsLogEntry {
   // Inbound reply
   inboundReply?: string | null;
   inboundAt?: string | null;
+  // NPS (populated when reply to review_prompt is a valid 0–10 score)
+  npsScore?: number | null;
+  npsCategory?: NpsCategory | null;
 }
+
+export type NpsCategory = "promoter" | "passive" | "detractor";
 
 // ─── Reviews ─────────────────────────────────────────────────────────────────
 
-export type ReviewPlatform = "google" | "trustpilot";
+export type ReviewPlatform = "google" | "trustpilot" | "nps_sms";
 
 export interface Review {
   id: string;
