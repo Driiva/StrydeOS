@@ -24,6 +24,7 @@ import { useWeeklyStats } from "@/hooks/useWeeklyStats";
 import { useIntelligenceData } from "@/hooks/useIntelligenceData";
 import { usePatients } from "@/hooks/usePatients";
 import { recordOutcomeScores } from "@/lib/queries";
+import { brand } from "@/lib/brand";
 import type { OutcomeMeasureType, Patient } from "@/types";
 import { formatPence, formatPercent, formatWeekDate } from "@/lib/utils";
 import {
@@ -51,7 +52,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "reputation", label: "Reputation", icon: Star },
 ];
 
-const BAR_COLORS = ["#1C54F2", "#0891B2", "#8B5CF6", "#059669", "#F59E0B"];
+const BAR_COLORS = [brand.blue, brand.teal, brand.purple, brand.success, brand.warning];
 
 function ChartTooltip({
   active,
@@ -216,7 +217,7 @@ function OutcomeScoreEntry({
               type="submit"
               disabled={Object.keys(scores).filter((k) => scores[k] !== "").length === 0 || saving}
               className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: "#1C54F2" }}
+              style={{ background: brand.blue }}
             >
               {saving ? "Saving…" : "Save Scores"}
             </button>
@@ -247,7 +248,7 @@ function MiniSparkline({ data, color, higherIsBetter }: { data: number[]; color:
       <polyline
         points={points}
         fill="none"
-        stroke={trending ? color : "#EF4444"}
+        stroke={trending ? color : brand.danger}
         strokeWidth={1.8}
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -257,7 +258,7 @@ function MiniSparkline({ data, color, higherIsBetter }: { data: number[]; color:
         const x = (i / (data.length - 1)) * w;
         const y = h - ((v - min) / range) * h;
         return i === data.length - 1 ? (
-          <circle key={i} cx={x} cy={y} r={3} fill={trending ? color : "#EF4444"} />
+          <circle key={i} cx={x} cy={y} r={3} fill={trending ? color : brand.danger} />
         ) : null;
       })}
     </svg>
@@ -319,7 +320,7 @@ export default function IntelligencePage() {
           onRetry={() => window.location.reload()}
         />
       )}
-      {(user?.uid === "demo" || usedDemo || weeklyUsedDemo) && <DemoBanner />}
+      {user?.uid === "demo" && <DemoBanner />}
 
       {/* Summary stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
@@ -402,7 +403,7 @@ export default function IntelligencePage() {
                           <span className={`font-semibold text-sm ${c.rebookRate >= 0.75 ? "text-success" : c.rebookRate >= 0.65 ? "text-warn" : "text-danger"}`}>
                             {Math.round(c.rebookRate * 100)}%
                           </span>
-                          <MiniSparkline data={c.rebookTrend} color="#059669" higherIsBetter />
+                          <MiniSparkline data={c.rebookTrend} color={brand.success} higherIsBetter />
                         </div>
                       </td>
                       <td className="py-4 px-4">
@@ -410,7 +411,7 @@ export default function IntelligencePage() {
                           <span className={`font-semibold text-sm ${c.utilisationRate >= 0.85 ? "text-success" : c.utilisationRate >= 0.70 ? "text-warn" : "text-danger"}`}>
                             {Math.round(c.utilisationRate * 100)}%
                           </span>
-                          <MiniSparkline data={c.utilisationTrend} color="#1C54F2" higherIsBetter />
+                          <MiniSparkline data={c.utilisationTrend} color={brand.blue} higherIsBetter />
                         </div>
                       </td>
                       <td className="py-4 px-4">
@@ -418,7 +419,7 @@ export default function IntelligencePage() {
                           <span className={`font-semibold text-sm ${c.dnaRate <= 0.04 ? "text-success" : c.dnaRate <= 0.08 ? "text-warn" : "text-danger"}`}>
                             {Math.round(c.dnaRate * 100)}%
                           </span>
-                          <MiniSparkline data={c.dnaTrend} color="#EF4444" higherIsBetter={false} />
+                          <MiniSparkline data={c.dnaTrend} color={brand.danger} higherIsBetter={false} />
                         </div>
                       </td>
                       <td className="py-4 px-5 text-right font-semibold text-navy">{c.activePatients}</td>
@@ -519,13 +520,13 @@ export default function IntelligencePage() {
                 <div className="relative h-2.5 bg-cloud-dark rounded-full overflow-hidden">
                   <div
                     className="absolute left-0 top-0 h-full rounded-full opacity-25"
-                    style={{ width: `${peerPct}%`, background: "#6B7280" }}
+                    style={{ width: `${peerPct}%`, background: brand.muted }}
                   />
                   <div
                     className="absolute left-0 top-0 h-full rounded-full transition-all duration-700"
                     style={{
                       width: `${yourPct}%`,
-                      background: beating ? "#059669" : "#F59E0B",
+                      background: beating ? brand.success : brand.warning,
                     }}
                   />
                 </div>
@@ -570,11 +571,11 @@ export default function IntelligencePage() {
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={revByClinician} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                    <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
-                    <XAxis dataKey="clinicianName" tick={{ fontSize: 12, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E2DFDA" }} />
+                    <CartesianGrid strokeDasharray="4 4" stroke={brand.border} vertical={false} />
+                    <XAxis dataKey="clinicianName" tick={{ fontSize: 12, fill: brand.muted }} tickLine={false} axisLine={{ stroke: brand.border }} />
                     <YAxis
                       tickFormatter={(v: number) => `£${(v / 100).toFixed(0)}`}
-                      tick={{ fontSize: 11, fill: "#6B7280" }}
+                      tick={{ fontSize: 11, fill: brand.muted }}
                       tickLine={false}
                       axisLine={false}
                       width={60}
@@ -642,13 +643,13 @@ export default function IntelligencePage() {
                 <p className="text-xs text-muted mb-4">Which days see the most no-shows</p>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={dnaByDay} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
-                    <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
-                    <XAxis dataKey="shortDay" tick={{ fontSize: 12, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E2DFDA" }} />
-                    <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={false} width={30} />
+                    <CartesianGrid strokeDasharray="4 4" stroke={brand.border} vertical={false} />
+                    <XAxis dataKey="shortDay" tick={{ fontSize: 12, fill: brand.muted }} tickLine={false} axisLine={{ stroke: brand.border }} />
+                    <YAxis tick={{ fontSize: 11, fill: brand.muted }} tickLine={false} axisLine={false} width={30} />
                     <Tooltip content={<ChartTooltip />} />
                     <Bar dataKey="dnaCount" name="DNAs" radius={[6, 6, 0, 0]}>
                       {dnaByDay.map((d) => (
-                        <Cell key={d.day} fill={d.dnaRate > 0.1 ? "#EF4444" : d.dnaRate > 0 ? "#F59E0B" : "#059669"} />
+                        <Cell key={d.day} fill={d.dnaRate > 0.1 ? brand.danger : d.dnaRate > 0 ? brand.warning : brand.success} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -661,11 +662,11 @@ export default function IntelligencePage() {
                 <p className="text-xs text-muted mb-4">DNA rate breakdown by appointment time slot</p>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={dnaBySlot} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
-                    <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
-                    <XAxis dataKey="slot" tick={{ fontSize: 10, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E2DFDA" }} />
+                    <CartesianGrid strokeDasharray="4 4" stroke={brand.border} vertical={false} />
+                    <XAxis dataKey="slot" tick={{ fontSize: 10, fill: brand.muted }} tickLine={false} axisLine={{ stroke: brand.border }} />
                     <YAxis
                       tickFormatter={(v: number) => `${Math.round(v * 100)}%`}
-                      tick={{ fontSize: 11, fill: "#6B7280" }}
+                      tick={{ fontSize: 11, fill: brand.muted }}
                       tickLine={false}
                       axisLine={false}
                       width={40}
@@ -677,7 +678,7 @@ export default function IntelligencePage() {
                     />
                     <Bar dataKey="dnaRate" name="DNA Rate" radius={[6, 6, 0, 0]}>
                       {dnaBySlot.map((d) => (
-                        <Cell key={d.slot} fill={d.dnaRate > 0.1 ? "#EF4444" : d.dnaRate > 0 ? "#F59E0B" : "#059669"} />
+                        <Cell key={d.slot} fill={d.dnaRate > 0.1 ? brand.danger : d.dnaRate > 0 ? brand.warning : brand.success} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -702,19 +703,19 @@ export default function IntelligencePage() {
                     return [
                       {
                         icon: AlertTriangle,
-                        color: "#EF4444",
+                        color: brand.danger,
                         title: "Highest DNA day",
                         text: worstDay ? `${worstDay.day} at ${formatPercent(worstDay.dnaRate)} — ${worstDay.dnaCount} of ${worstDay.totalAppointments} appointments` : "No data",
                       },
                       {
                         icon: AlertTriangle,
-                        color: "#F59E0B",
+                        color: brand.warning,
                         title: "Highest DNA slot",
                         text: worstSlot ? `${worstSlot.slot} at ${formatPercent(worstSlot.dnaRate)} — consider SMS reminders 2h before` : "No data",
                       },
                       {
                         icon: TrendingUp,
-                        color: "#059669",
+                        color: brand.success,
                         title: "Weekly total",
                         text: `${totalDna} DNAs this week out of ${dnaByDay.reduce((s, d) => s + d.totalAppointments, 0)} appointments`,
                       },
@@ -838,7 +839,7 @@ export default function IntelligencePage() {
                 <span className="text-purple font-medium">
                   Showing sample data
                   <span className="font-normal text-muted ml-1">
-                    — outcome scores will appear here once clinicians begin recording them via the form below.
+                    — connect outcome measures to see real scores
                   </span>
                 </span>
               </div>
@@ -871,7 +872,7 @@ export default function IntelligencePage() {
                   courses: k.activePatients,
                   color: BAR_COLORS[i % BAR_COLORS.length],
                 })) : [
-                  { name: "—", nprsChange: null as number | null, psfsChange: null as number | null, courses: 0, color: "#1C54F2" },
+                  { name: "—", nprsChange: null as number | null, psfsChange: null as number | null, courses: 0, color: brand.blue },
                 ]).map((c) => (
                   <div key={c.name} className="rounded-xl border border-border p-4">
                     <div className="flex items-center gap-2.5 mb-3">
@@ -911,17 +912,17 @@ export default function IntelligencePage() {
               <p className="text-xs text-muted mb-4">Clinic-wide average scores across all active patients</p>
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={outcomeTrends[0]?.dataPoints ?? []} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
+                  <CartesianGrid strokeDasharray="4 4" stroke={brand.border} vertical={false} />
                   <XAxis
                     dataKey="weekStart"
                     tickFormatter={formatWeekDate}
-                    tick={{ fontSize: 11, fill: "#6B7280" }}
+                    tick={{ fontSize: 11, fill: brand.muted }}
                     tickLine={false}
-                    axisLine={{ stroke: "#E2DFDA" }}
+                    axisLine={{ stroke: brand.border }}
                   />
                   <YAxis
                     domain={[0, 10]}
-                    tick={{ fontSize: 11, fill: "#6B7280" }}
+                    tick={{ fontSize: 11, fill: brand.muted }}
                     tickLine={false}
                     axisLine={false}
                     width={30}
@@ -985,7 +986,7 @@ export default function IntelligencePage() {
                 <span className="text-purple font-medium">
                   Showing sample data
                   <span className="font-normal text-muted ml-1">
-                    — NPS and review data will appear here once your review collection integration is connected.
+                    — connect Google Reviews to see real ratings
                   </span>
                 </span>
               </div>
@@ -1003,9 +1004,9 @@ export default function IntelligencePage() {
                   </div>
                   <div className="flex-1 space-y-2">
                     {[
-                      { label: "Promoters (9-10)", count: nps.promoters, color: "#059669" },
-                      { label: "Passives (7-8)", count: nps.passives, color: "#F59E0B" },
-                      { label: "Detractors (0-6)", count: nps.detractors, color: "#EF4444" },
+                      { label: "Promoters (9-10)", count: nps.promoters, color: brand.success },
+                      { label: "Passives (7-8)", count: nps.passives, color: brand.warning },
+                      { label: "Detractors (0-6)", count: nps.detractors, color: brand.danger },
                     ].map((seg) => (
                       <div key={seg.label} className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-sm" style={{ background: seg.color }} />
@@ -1018,10 +1019,10 @@ export default function IntelligencePage() {
 
                 <ResponsiveContainer width="100%" height={160}>
                   <LineChart data={nps.trend} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
-                    <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E2DFDA" }} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={false} width={30} />
-                    <Line type="monotone" dataKey="score" stroke="#1C54F2" strokeWidth={2.5} dot={{ r: 3, fill: "#1C54F2", strokeWidth: 0 }} />
+                    <CartesianGrid strokeDasharray="4 4" stroke={brand.border} vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: brand.muted }} tickLine={false} axisLine={{ stroke: brand.border }} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: brand.muted }} tickLine={false} axisLine={false} width={30} />
+                    <Line type="monotone" dataKey="score" stroke={brand.blue} strokeWidth={2.5} dot={{ r: 3, fill: brand.blue, strokeWidth: 0 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -1043,8 +1044,8 @@ export default function IntelligencePage() {
                           key={s}
                           size={16}
                           className={s <= Math.round(reviews.avgRating) ? "" : "text-muted/30"}
-                          style={s <= Math.round(reviews.avgRating) ? { color: "#FBBF24" } : undefined}
-                          fill={s <= Math.round(reviews.avgRating) ? "#FBBF24" : "#E5E7EB"}
+                          style={s <= Math.round(reviews.avgRating) ? { color: brand.warning } : undefined}
+                          fill={s <= Math.round(reviews.avgRating) ? brand.warning : brand.border}
                         />
                       ))}
                     </div>
@@ -1054,11 +1055,11 @@ export default function IntelligencePage() {
 
                 <ResponsiveContainer width="100%" height={160}>
                   <BarChart data={reviews.monthlyVelocity} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
-                    <CartesianGrid strokeDasharray="4 4" stroke="#E2DFDA" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E2DFDA" }} />
-                    <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={false} width={20} />
+                    <CartesianGrid strokeDasharray="4 4" stroke={brand.border} vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: brand.muted }} tickLine={false} axisLine={{ stroke: brand.border }} />
+                    <YAxis tick={{ fontSize: 11, fill: brand.muted }} tickLine={false} axisLine={false} width={20} />
                     <Tooltip content={<ChartTooltip />} />
-                    <Bar dataKey="count" name="Reviews" fill="#FBBF24" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="count" name="Reviews" fill={brand.warning} radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
                 {reviews.monthlyVelocity.length >= 5 && reviews.monthlyVelocity[0].count > 0 && (

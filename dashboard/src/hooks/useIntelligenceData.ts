@@ -450,6 +450,19 @@ export function useIntelligenceData(selectedClinician: string): IntelligenceData
   const { user } = useAuth();
   const clinicId = user?.clinicId ?? null;
   const isDemo = user?.uid === "demo";
+  const userRole = user?.role ?? "clinician";
+  const userClinicianId = user?.clinicianId ?? null;
+
+  // Clinician-scoped patient filter: clinicians only see their own patients,
+  // owners/admins/superadmins see all (or the selected clinician filter).
+  const effectivePatientClinicianId = useMemo(() => {
+    if (userRole === "owner" || userRole === "admin" || userRole === "superadmin") {
+      // Owners/admins can view any clinician or all
+      return selectedClinician === "all" ? null : selectedClinician;
+    }
+    // Clinicians are always scoped to their own patients regardless of selection
+    return userClinicianId;
+  }, [userRole, userClinicianId, selectedClinician]);
 
   const [allStats, setAllStats] = useState<WeeklyStats[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -486,7 +499,7 @@ export function useIntelligenceData(selectedClinician: string): IntelligenceData
 
     const unsubPatients = subscribePatients(
       clinicId,
-      null,
+      effectivePatientClinicianId,
       (data) => { setPatients(data); setPatientsReady(true); },
       () => { setFirestoreError("Failed to load patient data. Check your connection and try again."); setPatientsReady(true); }
     );
@@ -509,7 +522,7 @@ export function useIntelligenceData(selectedClinician: string): IntelligenceData
       unsubReviews();
       unsubOutcomes();
     };
-  }, [clinicId, isDemo]);
+  }, [clinicId, isDemo, effectivePatientClinicianId]);
 
   // Collect all unique clinicianIds from patients for per-clinician stat subscriptions
   const clinicianIds = useMemo(

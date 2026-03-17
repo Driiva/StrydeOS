@@ -62,6 +62,7 @@ interface PatientLike {
 interface ReviewLike {
   rating: number;
   date: string;
+  platform?: string;
 }
 
 function aggregateWeek(
@@ -147,12 +148,23 @@ function aggregateWeek(
       ? weekReviews.reduce((s, r) => s + r.rating, 0) / reviewCount
       : undefined;
 
-  // NPS-style score from Google reviews: promoters (4-5) minus detractors (1-3)
-  // Scaled 0-100 for consistency with standard NPS range
+  // NPS score: separate nps_sms (0–10 scale) from platform reviews (1–5 stars)
+  // nps_sms: 9-10 promoter, 7-8 passive, 0-6 detractor
+  // Platform: 5-star promoter, 4-star passive, 1-3 star detractor
+  // Formula: (promoters - detractors) / total * 100
   let npsScore: number | undefined;
   if (reviewCount > 0) {
-    const promoters = weekReviews.filter((r) => r.rating >= 4).length;
-    const detractors = weekReviews.filter((r) => r.rating <= 3).length;
+    let promoters = 0;
+    let detractors = 0;
+    for (const r of weekReviews) {
+      if (r.platform === "nps_sms") {
+        if (r.rating >= 9) promoters++;
+        else if (r.rating <= 6) detractors++;
+      } else {
+        if (r.rating >= 5) promoters++;
+        else if (r.rating <= 3) detractors++;
+      }
+    }
     npsScore = Math.round(
       ((promoters - detractors) / reviewCount) * 100
     );
@@ -227,6 +239,7 @@ export async function computeWeeklyMetricsForClinic(
     return {
       rating: data.rating ?? 0,
       date: data.date ?? "",
+      platform: (data.platform as string) ?? undefined,
     };
   });
 
