@@ -279,10 +279,13 @@ export default function BillingPage() {
   const checkoutSuccess  = searchParams.get("checkout") === "success";
   const checkoutCanceled = searchParams.get("checkout") === "canceled";
 
+  const isSuperadmin = user?.role === "superadmin";
   const statusDisplay =
-    trialActive && !billing?.subscriptionStatus
-      ? { label: "Trial", color: "#0891B2" }
-      : subscriptionStatusLabel(billing?.subscriptionStatus);
+    isSuperadmin
+      ? { label: "Superadmin — full access", color: "#8B5CF6" }
+      : trialActive && !billing?.subscriptionStatus
+        ? { label: "Trial", color: "#0891B2" }
+        : subscriptionStatusLabel(billing?.subscriptionStatus);
 
   const allActive = MODULE_KEYS.every((m) => hasModule(m));
 
