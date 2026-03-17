@@ -1,16 +1,17 @@
 import type { FC } from "react";
 import type { RiskFactors } from "@/types";
+import { brand } from "@/lib/brand";
 
 interface Props {
   factors: RiskFactors;
 }
 
 const FACTOR_CONFIG = [
-  { key: "attendance",        label: "Attendance",           weight: 30, colour: "#0891B2" },
-  { key: "treatmentProgress", label: "Treatment Progress",   weight: 25, colour: "#8B5CF6" },
-  { key: "hepEngagement",     label: "HEP Engagement",       weight: 20, colour: "#1C54F2" },
-  { key: "sentiment",         label: "Outcomes / Sentiment", weight: 15, colour: "#4B8BF5" },
-  { key: "staticRisk",        label: "Patient Profile",      weight: 10, colour: "#64748B" },
+  { key: "attendance",        label: "Attendance",           weight: 30, colour: brand.teal },
+  { key: "treatmentProgress", label: "Treatment Progress",   weight: 25, colour: brand.purple },
+  { key: "hepEngagement",     label: "HEP Engagement",       weight: 20, colour: brand.blue },
+  { key: "sentiment",         label: "Outcomes / Sentiment", weight: 15, colour: brand.blueGlow },
+  { key: "staticRisk",        label: "Patient Profile",      weight: 10, colour: brand.muted },
 ] as const;
 
 export const RiskFactorPanel: FC<Props> = ({ factors }) => {

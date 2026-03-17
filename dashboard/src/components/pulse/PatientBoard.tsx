@@ -105,11 +105,11 @@ export const PatientBoard: FC<Props> = ({
                               return next;
                             })}
                           >
-                            <div className="w-8 h-8 rounded-full bg-[#1C54F2]/10 flex items-center justify-center text-[10px] font-bold text-[#1C54F2] shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-blue/10 flex items-center justify-center text-[10px] font-bold text-blue shrink-0">
                               {p.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-[#0B2545] truncate">{p.name}</p>
+                              <p className="text-sm font-semibold text-navy truncate">{p.name}</p>
                               <p className="text-[11px] text-gray-400">
                                 {visibleMetrics.includes("sessions") && `${p.sessionCount}/${p.courseLength} sessions`}
                                 {visibleMetrics.includes("clinician") && clinician ? ` · ${clinician.name}` : ""}
@@ -122,7 +122,7 @@ export const PatientBoard: FC<Props> = ({
                               )}
                               <button
                                 onClick={(e) => { e.stopPropagation(); onSendReminder(p.id); }}
-                                className="text-[11px] font-semibold text-[#1C54F2] hover:text-[#2E6BFF] transition-colors"
+                                className="text-[11px] font-semibold text-blue hover:text-blue-bright transition-colors"
                               >
                                 Re-engage →
                               </button>

@@ -9,6 +9,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Clock, X } from "lucide-react";
 import { useEntitlements } from "@/hooks/useEntitlements";
+import { brand } from "@/lib/brand";
 
 const DISMISS_KEY = "strydeos_trial_banner_dismissed";
 
@@ -44,8 +45,8 @@ export default function TrialBanner() {
       }}
     >
       <div className="flex items-center gap-2.5 min-w-0">
-        <Clock size={13} style={{ color: "#F59E0B" }} className="shrink-0" />
-        <span className="text-[12px] font-medium truncate" style={{ color: "#F59E0B" }}>
+        <Clock size={13} style={{ color: brand.warning }} className="shrink-0" />
+        <span className="text-[12px] font-medium truncate" style={{ color: brand.warning }}>
           {label}
           <span
             className="font-normal ml-1 hidden sm:inline"
@@ -60,7 +61,7 @@ export default function TrialBanner() {
         <Link
           href="/billing"
           className="text-[11px] font-semibold whitespace-nowrap transition-opacity hover:opacity-75"
-          style={{ color: "#F59E0B" }}
+          style={{ color: brand.warning }}
         >
           Upgrade →
         </Link>

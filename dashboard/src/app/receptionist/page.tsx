@@ -698,7 +698,7 @@ function ReceptionistContent() {
                         disabled={saving}
                         className="relative inline-flex h-5 w-8 items-center rounded-full transition-colors"
                         style={{
-                          background: isEnabled ? "#16A34A" : "#E2DFDA",
+                          background: isEnabled ? "#059669" : "#E2DFDA",
                         }}
                       >
                         <span

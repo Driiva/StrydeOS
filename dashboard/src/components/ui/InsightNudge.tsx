@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, CheckCircle, Lightbulb } from "lucide-react";
 import type { WeeklyStats } from "@/types";
+import { brand } from "@/lib/brand";
 
 interface InsightNudgeProps {
   stats: WeeklyStats | null;
@@ -90,7 +91,7 @@ export default function InsightNudge({ stats, previousStats }: InsightNudgeProps
       style={{
         background: isAllGood ? "rgba(5,150,105,0.04)" : "rgba(28,84,242,0.04)",
         border: isAllGood ? "1px solid rgba(5,150,105,0.10)" : "1px solid rgba(28,84,242,0.10)",
-        borderLeft: `3px solid ${isAllGood ? "#059669" : "#1C54F2"}`,
+        borderLeft: `3px solid ${isAllGood ? brand.success : brand.blue}`,
       }}
     >
       {isAllGood

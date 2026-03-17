@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
+import { brand } from "@/lib/brand";
 import { ChevronRight, ChevronLeft, X } from "lucide-react";
 
 export interface TourStepDef {
@@ -212,7 +213,7 @@ export default function TourStep({
                     className="h-1.5 rounded-full transition-all duration-300"
                     style={{
                       width: i === stepIndex ? 16 : 6,
-                      background: i === stepIndex ? "#1C54F2" : "#E2DFDA",
+                      background: i === stepIndex ? brand.blue : brand.border,
                     }}
                   />
                 ))}
@@ -232,7 +233,7 @@ export default function TourStep({
                 <button
                   onClick={onNext}
                   className="flex items-center gap-1 px-4 py-2 rounded-xl text-[12px] font-semibold text-white transition-all hover:opacity-90"
-                  style={{ background: "#1C54F2" }}
+                  style={{ background: brand.blue }}
                 >
                   {isLast ? "Finish" : "Next"}
                   {!isLast && <ChevronRight size={12} />}

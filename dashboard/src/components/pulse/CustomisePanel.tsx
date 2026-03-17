@@ -48,7 +48,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   return (
     <button
       onClick={() => onChange(!checked)}
-      className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${checked ? "bg-[#0891B2]" : "bg-gray-200"}`}
+      className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${checked ? "bg-teal" : "bg-border"}`}
     >
       <div
         className="w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition-all"
@@ -71,11 +71,11 @@ function ToggleGroup<T extends string>({
 }) {
   return (
     <div>
-      <h3 className="text-xs font-semibold text-[#0B2545] uppercase tracking-wide mb-3">{title}</h3>
+      <h3 className="text-xs font-semibold text-navy uppercase tracking-wide mb-3">{title}</h3>
       <div className="space-y-2.5">
         {items.map(({ value, label }) => (
           <div key={value} className="flex items-center justify-between gap-3">
-            <span className="text-sm text-[#0B2545]">{label}</span>
+            <span className="text-sm text-navy">{label}</span>
             <Toggle
               checked={selected.includes(value)}
               onChange={(v) => onToggle(value, v)}
@@ -118,7 +118,7 @@ export const CustomisePanel: FC<Props> = ({ open, onClose, preferences, onUpdate
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-40 bg-[#0B2545]/20 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-navy/20 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
@@ -130,10 +130,10 @@ export const CustomisePanel: FC<Props> = ({ open, onClose, preferences, onUpdate
           >
             <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal size={15} className="text-[#0891B2]" />
-                <h2 className="text-sm font-semibold text-[#0B2545]">Customise View</h2>
+                <SlidersHorizontal size={15} className="text-teal" />
+                <h2 className="text-sm font-semibold text-navy">Customise View</h2>
               </div>
-              <button onClick={onClose} className="text-gray-400 hover:text-[#0B2545] transition-colors">
+              <button onClick={onClose} className="text-muted hover:text-navy transition-colors">
                 <X size={18} />
               </button>
             </div>
@@ -161,9 +161,9 @@ export const CustomisePanel: FC<Props> = ({ open, onClose, preferences, onUpdate
               />
               <div className="border-t border-gray-100" />
               <div>
-                <h3 className="text-xs font-semibold text-[#0B2545] uppercase tracking-wide mb-3">Revenue</h3>
+                <h3 className="text-xs font-semibold text-navy uppercase tracking-wide mb-3">Revenue</h3>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm text-[#0B2545]">Show attributed revenue</span>
+                  <span className="text-sm text-navy">Show attributed revenue</span>
                   <Toggle
                     checked={preferences.showRevenue}
                     onChange={(v) => onUpdate({ showRevenue: v })}

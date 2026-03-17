@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Lock, Check } from "lucide-react";
 import { MODULE_DISPLAY } from "@/lib/billing";
 import type { ModuleKey } from "@/lib/billing";
+import { brand } from "@/lib/brand";
 
 // ─── Per-module benefit bullets ───────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ export default function LockedModulePage({ module }: Props) {
   return (
     <div
       className="relative min-h-[calc(100vh-120px)] flex items-center justify-center overflow-hidden"
-      style={{ background: "#0B2545" }}
+      style={{ background: brand.navy }}
     >
       {/* Radial glow — breathing animation */}
       <div

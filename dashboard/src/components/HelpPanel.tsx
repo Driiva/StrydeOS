@@ -20,6 +20,7 @@ import {
   type HelpCategory,
   type HelpEntry,
 } from "@/data/helpContent";
+import { brand } from "@/lib/brand";
 
 interface HelpPanelProps {
   open: boolean;
@@ -204,7 +205,7 @@ function PanelContent({ onClose }: { onClose: () => void }) {
             }`}
             style={
               activeCategory === "all"
-                ? { background: "rgba(28,84,242,0.25)", color: "#4B8BF5" }
+                ? { background: "rgba(28,84,242,0.25)", color: brand.blueGlow }
                 : undefined
             }
           >
@@ -221,7 +222,7 @@ function PanelContent({ onClose }: { onClose: () => void }) {
               }`}
               style={
                 activeCategory === cat
-                  ? { background: "rgba(28,84,242,0.25)", color: "#4B8BF5" }
+                  ? { background: "rgba(28,84,242,0.25)", color: brand.blueGlow }
                   : undefined
               }
             >
@@ -266,8 +267,8 @@ function PanelContent({ onClose }: { onClose: () => void }) {
             border: "1px solid rgba(5,150,105,0.15)",
           }}
         >
-          <span className="text-[#34d399]">Setup Guide (Notion)</span>
-          <ExternalLink size={11} className="text-[#34d399]/50 group-hover:text-[#34d399] transition-colors" />
+          <span className="text-success">Setup Guide (Notion)</span>
+          <ExternalLink size={11} className="text-success/50 group-hover:text-success transition-colors" />
         </a>
         <button
           onClick={handleViewFullHelp}
@@ -332,7 +333,7 @@ export default function HelpPanel({ open, onClose }: HelpPanelProps) {
             transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
             className="fixed top-0 right-0 h-full w-[480px] z-[65] flex flex-col shadow-2xl"
             style={{
-              background: "#0B2545",
+              background: brand.navy,
               borderLeft: "1px solid rgba(255,255,255,0.07)",
             }}
           >

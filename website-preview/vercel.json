@@ -3,6 +3,7 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "installCommand": "npm install",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- .",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]

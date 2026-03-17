@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
+import { brand } from "@/lib/brand";
 
 const PUBLIC_PATHS = ["/login"];
 const MFA_EXEMPT_PATHS = ["/login", "/mfa-setup"];
@@ -34,7 +35,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (loading || (!user && !isPublicPath)) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: "#0B2545" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: brand.navy }}>
         <Loader2 size={28} className="animate-spin text-white/50" />
         <p className="text-sm text-white/40">
           {loading ? "Loading…" : "Redirecting to sign in…"}

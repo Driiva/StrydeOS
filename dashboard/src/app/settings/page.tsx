@@ -48,6 +48,7 @@ import {
 } from "lucide-react";
 import type { ClinicProfile, PmsProvider, HepProvider } from "@/types";
 import type { CanonicalField } from "@/lib/csv-import/types";
+import { brand } from "@/lib/brand";
 
 interface PmsProviderOption {
   id: PmsProvider;
@@ -1014,7 +1015,7 @@ const cp = user?.clinicProfile ?? null;
               onClick={handleChangePassword}
               disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
               className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-50"
-              style={{ background: "#1C54F2" }}
+              style={{ background: brand.blue }}
             >
               {changingPassword ? <Loader2 size={14} className="animate-spin" /> : <Lock size={14} />}
               {changingPassword ? "Updating..." : "Update Password"}
@@ -1074,7 +1075,7 @@ const cp = user?.clinicProfile ?? null;
               <button
                 onClick={() => setShowMfaEnrollment(true)}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:opacity-90"
-                style={{ background: "#1C54F2" }}
+                style={{ background: brand.blue }}
               >
                 <Shield size={14} />
                 Enable Two-Factor Authentication
@@ -1178,7 +1179,7 @@ const cp = user?.clinicProfile ?? null;
                 <button
                   onClick={confirmLeave}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors hover:opacity-90"
-                  style={{ background: "#EF4444" }}
+                  style={{ background: brand.danger }}
                 >
                   Discard & leave
                 </button>
@@ -1324,7 +1325,7 @@ const cp = user?.clinicProfile ?? null;
             onClick={handleSaveWithOnboarding}
             disabled={saving}
             className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-50"
-            style={{ background: "#1C54F2" }}
+            style={{ background: brand.blue }}
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             {saving ? "Saving..." : "Save Targets"}
@@ -1450,7 +1451,7 @@ const cp = user?.clinicProfile ?? null;
                   onClick={handleTestPms}
                   disabled={!pmsApiKey.trim() || pmsTesting}
                   className="mt-3 flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-50"
-                  style={{ background: "#059669" }}
+                  style={{ background: brand.success }}
                 >
                   {pmsTesting ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -1624,7 +1625,7 @@ const cp = user?.clinicProfile ?? null;
                   <button
                     onClick={() => setWizardStep(2)}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-white transition-all hover:opacity-90"
-                    style={{ background: "#1C54F2" }}
+                    style={{ background: brand.blue }}
                   >
                     I have my CSV <ChevronRight size={14} />
                   </button>
@@ -1666,7 +1667,7 @@ const cp = user?.clinicProfile ?? null;
                     <button
                       onClick={() => setWizardStep(4)}
                       className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-white transition-all hover:opacity-90"
-                      style={{ background: "#1C54F2" }}
+                      style={{ background: brand.blue }}
                     >
                       Next: recurring <ChevronRight size={14} />
                     </button>
@@ -1698,7 +1699,7 @@ const cp = user?.clinicProfile ?? null;
                   <button
                     onClick={() => { setWizardOpen(false); toast("Setup complete", "success"); }}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-white transition-all hover:opacity-90"
-                    style={{ background: "#059669" }}
+                    style={{ background: brand.success }}
                   >
                     <Check size={14} /> Done
                   </button>
@@ -1791,7 +1792,7 @@ const cp = user?.clinicProfile ?? null;
                 onClick={handleSaveMapping}
                 disabled={mappingSaving}
                 className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
-                style={{ background: "#1C54F2" }}
+                style={{ background: brand.blue }}
               >
                 {mappingSaving ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
                 {mappingSaving ? "Saving..." : "Save mapping & import"}
@@ -2050,7 +2051,7 @@ const cp = user?.clinicProfile ?? null;
                   onClick={handleTestHep}
                   disabled={!hepApiKey.trim() || hepTesting}
                   className="mt-3 flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-50"
-                  style={{ background: "#059669" }}
+                  style={{ background: brand.success }}
                 >
                   {hepTesting ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -2149,7 +2150,7 @@ const cp = user?.clinicProfile ?? null;
               <button
                 onClick={handleConfirmTeam}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white transition-all hover:opacity-90"
-                style={{ background: "#059669" }}
+                style={{ background: brand.success }}
               >
                 <CheckCircle2 size={12} />
                 Confirm team
@@ -2205,7 +2206,7 @@ const cp = user?.clinicProfile ?? null;
                 onClick={handleAddClinician}
                 disabled={!newClinicianName.trim()}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
-                style={{ background: "#1C54F2" }}
+                style={{ background: brand.blue }}
               >
                 <Check size={12} />
                 Add
@@ -2289,7 +2290,7 @@ const cp = user?.clinicProfile ?? null;
                           onClick={() => handleSendInvite(c.id)}
                           disabled={!editingEmail[c.id]?.trim() || sendingInvite[c.id]}
                           className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 shrink-0"
-                          style={{ background: "#1C54F2" }}
+                          style={{ background: brand.blue }}
                         >
                           {sendingInvite[c.id] ? (
                             <Loader2 size={12} className="animate-spin" />
@@ -2342,7 +2343,7 @@ const cp = user?.clinicProfile ?? null;
                                 setExpandedClinicianId(null);
                               }}
                               className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white transition-all hover:opacity-90"
-                              style={{ background: "#EF4444" }}
+                              style={{ background: brand.danger }}
                             >
                               Yes, remove
                             </button>
