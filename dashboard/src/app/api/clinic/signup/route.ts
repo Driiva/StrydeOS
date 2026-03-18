@@ -29,13 +29,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const { clinicName, email, password, profession, clinicSize, country } = body as {
+    const { clinicName, email, password, profession, clinicSize, country, source } = body as {
       clinicName?: string;
       email?: string;
       password?: string;
       profession?: string;
       clinicSize?: string;
       country?: string;
+      source?: string;
     };
 
     if (!clinicName?.trim() || !email?.trim() || !password) {
@@ -180,6 +181,7 @@ export async function POST(request: NextRequest) {
       tourCompleted: false,
       createdAt: now,
       updatedAt: now,
+      signupSource: source === "trial" ? "trial" : "self_serve",
       createdBy: "self_serve_signup",
       updatedBy: "self_serve_signup",
     });
@@ -205,6 +207,7 @@ export async function POST(request: NextRequest) {
       compliance: complianceConfig,
       profession: profession?.trim() || null,
       clinicSize: clinicSize?.trim() || null,
+      signupSource: source === "trial" ? "trial" : "self_serve",
       trialStartedAt: now,
       createdAt: now,
       updatedAt: now,
@@ -218,7 +221,7 @@ export async function POST(request: NextRequest) {
         event: "signup_complete",
         clinicId,
         userId: uid!,
-        metadata: { source: "self_serve_signup" },
+        metadata: { source: source === "trial" ? "trial_signup" : "self_serve_signup" },
         timestamp: now,
       });
     } catch {
