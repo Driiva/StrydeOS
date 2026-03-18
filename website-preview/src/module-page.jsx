@@ -130,7 +130,7 @@ export default function ModulePage({ id, name, color, headline, body, howItWorks
                   <a href={`https://portal.strydeos.com/login?mode=signup&module=${id}`} className="btn-primary" style={{ background: color }}>
                     Start free trial →
                   </a>
-                  <a href={`https://portal.strydeos.com/billing?module=${id}`} className="btn-outline" style={{ color: "white", borderColor: "rgba(255,255,255,0.2)" }}>
+                  <a href={`https://portal.strydeos.com/checkout?module=${id}&tier=${tier}&interval=month`} className="btn-outline" style={{ color: "white", borderColor: "rgba(255,255,255,0.2)" }}>
                     Buy now →
                   </a>
                 </div>
