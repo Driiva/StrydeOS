@@ -22,7 +22,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { getAdminDb } from "@/lib/firebase-admin";
-import { flagsFromSubscriptionItems } from "@/lib/billing";
+import { flagsFromSubscriptionItems, getTierFromMetadata } from "@/lib/billing";
 import type { StripeSubscriptionStatus } from "@/types";
 
 export const runtime = "nodejs";
@@ -165,6 +165,9 @@ async function handleSubscriptionUpsert(subscription: Stripe.Subscription) {
   const status = subscription.status as StripeSubscriptionStatus;
   const now = new Date().toISOString();
 
+  // Extract tier from subscription metadata (set at checkout)
+  const tier = getTierFromMetadata(subscription.metadata as Record<string, string>);
+
   const db = getAdminDb();
   await db
     .collection("clinics")
@@ -176,6 +179,7 @@ async function handleSubscriptionUpsert(subscription: Stripe.Subscription) {
         subscriptionId: subscription.id,
         subscriptionStatus: status,
         currentPeriodEnd: getSubscriptionPeriodEnd(subscription),
+        ...(tier ? { tier } : {}),
       },
       updatedAt: now,
     });
@@ -204,6 +208,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     : { intelligence: false, continuity: false, receptionist: false };
 
   const primary = allItems.length > 0 ? await getPrimaryActiveSubscription(customerId) : null;
+  const tier = getTierFromMetadata(subscription.metadata as Record<string, string>);
   const db = getAdminDb();
   const now = new Date().toISOString();
 
@@ -219,6 +224,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
         currentPeriodEnd: primary
           ? primary.periodEndIso
           : getSubscriptionPeriodEnd(subscription),
+        ...(tier ? { tier } : {}),
       },
       updatedAt: now,
     });

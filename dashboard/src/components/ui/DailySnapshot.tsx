@@ -48,7 +48,7 @@ export default function DailySnapshot({ stats, patients }: DailySnapshotProps) {
       {chips.map((chip, i) => (
         <span
           key={i}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium border"
           style={{
             color: chip.color,
             borderColor: `${chip.color}25`,

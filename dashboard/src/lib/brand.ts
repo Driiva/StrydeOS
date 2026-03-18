@@ -21,6 +21,7 @@ export const brand = {
   cream: "#FAF9F7",
   ink: "#111827",
   muted: "#6B7280",
+  mutedStrong: "#4B5563",
   border: "#E2DFDA",
   success: "#059669",
   warning: "#F59E0B",

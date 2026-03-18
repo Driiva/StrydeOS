@@ -14,7 +14,7 @@ export default function ChipBadge({
   if (variant === "outline") {
     return (
       <span
-        className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold border"
+        className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold border"
         style={{ color, borderColor: `${color}40` }}
       >
         {label}
@@ -24,7 +24,7 @@ export default function ChipBadge({
 
   return (
     <span
-      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
+      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
       style={{ backgroundColor: `${color}15`, color }}
     >
       {label}

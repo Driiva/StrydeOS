@@ -65,7 +65,7 @@ export default function PageHeader({
           </h1>
         </div>
         {subtitle && (
-          <p className="text-sm text-muted mt-1">{subtitle}</p>
+          <p className="text-[14px] text-muted-strong mt-1 leading-relaxed">{subtitle}</p>
         )}
       </div>
 
@@ -73,7 +73,7 @@ export default function PageHeader({
         <div ref={ref} className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-cloud-dark/60 border border-border text-sm font-medium text-navy hover:bg-cloud-dark transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-cloud-dark/60 border border-border text-[14px] font-medium text-navy hover:bg-cloud-dark transition-all duration-200 ease-out"
           >
             {selectedLabel}
             <ChevronDown size={14} className="text-muted" />

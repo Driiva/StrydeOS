@@ -203,7 +203,7 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-full w-60 flex flex-col transition-transform duration-200 ease-out
+        className={`fixed top-0 left-0 z-40 h-full w-60 flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
         style={{ background: brand.navy }}
       >
@@ -244,7 +244,7 @@ export default function Sidebar() {
               <div className="absolute left-0 top-full mt-2 w-72 rounded-xl shadow-[var(--shadow-elevated)] overflow-hidden z-50 animate-fade-in"
                 style={{ background: brand.navyMid, border: "1px solid rgba(255,255,255,0.08)" }}>
                 <div className="px-4 py-3 border-b border-white/8 flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-white/40 uppercase tracking-widest">
+                  <p className="text-[11px] font-semibold text-white/45 uppercase tracking-widest">
                     Alerts this week
                   </p>
                   {unreadCount > 0 && (
@@ -285,10 +285,10 @@ export default function Sidebar() {
                             )}
                           </div>
                           <div>
-                            <p className={`text-[12px] leading-tight ${isUnread ? "font-semibold text-white" : "font-medium text-white/60"}`}>
+                            <p className={`text-[13px] leading-tight ${isUnread ? "font-semibold text-white" : "font-medium text-white/65"}`}>
                               {alert.clinicianName}
                             </p>
-                            <p className={`text-[11px] mt-0.5 ${isUnread ? "text-white/50" : "text-white/30"}`}>
+                            <p className={`text-[12px] mt-0.5 ${isUnread ? "text-white/55" : "text-white/35"}`}>
                               {alert.metric} — {alert.current < 1 ? `${Math.round(alert.current * 100)}%` : alert.current.toFixed(1)} vs target {alert.target < 1 ? `${Math.round(alert.target * 100)}%` : alert.target.toFixed(1)}
                             </p>
                           </div>
@@ -314,7 +314,7 @@ export default function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 overflow-y-auto" data-tour="sidebar-nav">
-          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/25">
+          <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-widest text-white/30">
             Navigation
           </p>
           <div className="space-y-0.5">
@@ -329,12 +329,12 @@ export default function Sidebar() {
                   key={item.label}
                   href={href}
                   onClick={() => setMobileOpen(false)}
-                  className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors active:scale-[0.98] ${
+                  className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
                     isLocked
                       ? "text-white/25 hover:text-white/40 hover:bg-white/[0.03]"
                       : isActive
                         ? "text-white"
-                        : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
+                        : "text-white/50 hover:text-white/80 hover:bg-white/[0.05]"
                   }`}
                   title={isLocked ? `${item.label} — not included in your plan` : undefined}
                 >
@@ -369,7 +369,7 @@ export default function Sidebar() {
           </div>
 
           <div className="mt-6" data-tour="settings-link">
-            <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/25">
+            <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-widest text-white/30">
               System
             </p>
             <div className="space-y-0.5">
@@ -380,10 +380,10 @@ export default function Sidebar() {
                     key={item.label}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors active:scale-[0.98] ${
+                    className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
                       isActive
                         ? "text-white"
-                        : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
+                        : "text-white/50 hover:text-white/80 hover:bg-white/[0.05]"
                     }`}
                   >
                     {isActive && (
@@ -406,10 +406,10 @@ export default function Sidebar() {
               })}
               <button
                 onClick={() => setHelpOpen(true)}
-                className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors active:scale-[0.98] ${
+                className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
                   helpOpen
                     ? "text-white"
-                    : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
+                    : "text-white/50 hover:text-white/80 hover:bg-white/[0.05]"
                 }`}
               >
                 {helpOpen && (
@@ -433,10 +433,10 @@ export default function Sidebar() {
                   <Link
                     href="/admin"
                     onClick={() => setMobileOpen(false)}
-                    className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors active:scale-[0.98] ${
+                    className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
                       pathname === "/admin"
                       ? "text-white"
-                      : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
+                      : "text-white/50 hover:text-white/80 hover:bg-white/[0.05]"
                     }`}
                   >
                     {pathname === "/admin" && (
@@ -458,10 +458,10 @@ export default function Sidebar() {
                   <Link
                     href="/admin/integration-health"
                     onClick={() => setMobileOpen(false)}
-                    className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors active:scale-[0.98] ${
+                    className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ease-out active:scale-[0.98] ${
                       pathname === "/admin/integration-health"
                         ? "text-white"
-                        : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
+                        : "text-white/50 hover:text-white/80 hover:bg-white/[0.05]"
                     }`}
                   >
                     {pathname === "/admin/integration-health" && (
@@ -491,11 +491,11 @@ export default function Sidebar() {
               onClick={() => {
                 window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] text-white/25 hover:text-white/40 hover:bg-white/5 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] text-white/30 hover:text-white/50 hover:bg-white/5 transition-all duration-200"
             >
               <Command size={12} />
               <span className="flex-1 text-left">Quick search</span>
-              <kbd className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/8 border border-white/10">
+              <kbd className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white/8 border border-white/10">
                 {typeof navigator !== "undefined" && /Mac|iPhone|iPad/i.test(navigator.platform) ? "⌘" : "Ctrl+"}K
               </kbd>
             </button>
@@ -505,11 +505,11 @@ export default function Sidebar() {
           <div className="mt-2 px-3">
             <button
               onClick={(e) => toggleTheme(e)}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] text-white/25 hover:text-white/40 hover:bg-white/5 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] text-white/30 hover:text-white/50 hover:bg-white/5 transition-all duration-200"
             >
               {theme === "dark" ? <Sun size={12} /> : <Moon size={12} />}
               <span className="flex-1 text-left">{theme === "dark" ? "Light mode" : "Dark mode"}</span>
-              <kbd className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/8 border border-white/10">
+              <kbd className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white/8 border border-white/10">
                 {typeof navigator !== "undefined" && /Mac|iPhone|iPad/i.test(navigator.platform) ? "⌘" : "Ctrl+"}D
               </kbd>
             </button>
@@ -522,14 +522,14 @@ export default function Sidebar() {
             onClick={() => setProfileOpen(!profileOpen)}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors group"
           >
-            <div className="h-8 w-8 rounded-full bg-navy-mid flex items-center justify-center text-[10px] font-bold text-white/60 shrink-0">
+            <div className="h-8 w-8 rounded-full bg-navy-mid flex items-center justify-center text-[11px] font-bold text-white/65 shrink-0">
               {clinicInitials}
             </div>
             <div className="flex-1 min-w-0 text-left">
               <p className="text-[13px] font-semibold text-white truncate">{clinicName}</p>
               <div className="flex items-center gap-1.5">
                 <div className={`w-1.5 h-1.5 rounded-full ${statusBg}`} />
-                <span className="text-[10px] font-medium text-white/35">
+                <span className="text-[11px] font-medium text-white/40">
                   {statusLabel}
                 </span>
               </div>
@@ -546,21 +546,21 @@ export default function Sidebar() {
               style={{ background: brand.navyMid, border: "1px solid rgba(255,255,255,0.08)" }}
             >
               <div className="px-4 py-3 border-b border-white/8">
-                <p className="text-[12px] font-semibold text-white">{clinicName}</p>
-                <p className="text-[11px] text-white/40 mt-0.5">{user?.email}</p>
+                <p className="text-[13px] font-semibold text-white">{clinicName}</p>
+                <p className="text-[12px] text-white/45 mt-0.5">{user?.email}</p>
               </div>
               <div className="py-1">
                 <Link
                   href="/settings"
                   onClick={() => { setProfileOpen(false); setMobileOpen(false); }}
-                  className="flex items-center gap-3 px-4 py-2.5 text-[12px] text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-white/65 hover:text-white hover:bg-white/5 transition-all duration-200"
                 >
                   <UserCircle size={14} />
                   Account settings
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-[12px] text-white/40 hover:text-danger hover:bg-white/5 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-white/45 hover:text-danger hover:bg-white/5 transition-all duration-200"
                 >
                   <LogOut size={14} />
                   Sign out

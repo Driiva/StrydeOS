@@ -18,7 +18,7 @@
  *   ava          → featureFlags.receptionist
  */
 
-import type { FeatureFlags } from "@/types";
+import type { FeatureFlags, StripeSubscriptionStatus } from "@/types";
 
 // ─── Core types ──────────────────────────────────────────────────────────────
 
@@ -184,6 +184,85 @@ export function trialDaysRemaining(trialStartedAt: string | null): number | null
   const ms = endsAt.getTime() - Date.now();
   if (ms <= 0) return 0;
   return Math.floor(ms / (1000 * 60 * 60 * 24));
+}
+
+// ─── Seat limits ─────────────────────────────────────────────────────────────
+
+/** Hard seat caps per billing tier. Clinic tier uses a generous cap to prevent abuse. */
+export const TIER_SEAT_LIMITS: Record<TierKey, number> = {
+  solo: 1,
+  studio: 4,
+  clinic: 25,
+};
+
+/** Resolve the tier from a Stripe subscription's metadata (set at checkout). */
+export function getTierFromMetadata(
+  metadata: Record<string, string> | null | undefined
+): TierKey | null {
+  if (!metadata?.tier) return null;
+  return TIER_KEYS.includes(metadata.tier as TierKey)
+    ? (metadata.tier as TierKey)
+    : null;
+}
+
+/**
+ * Check whether a clinic can add another clinician given its billing tier.
+ *
+ * Rules:
+ *   1. Superadmin bypass — always allowed.
+ *   2. Active trial — use studio limits (generous for evaluation).
+ *   3. No subscription — blocked (trial expired, no plan).
+ *   4. Tier found — enforce TIER_SEAT_LIMITS.
+ */
+export async function canAddClinician(
+  clinicId: string,
+  db: FirebaseFirestore.Firestore
+): Promise<{ allowed: boolean; reason?: string; currentCount: number; limit: number }> {
+  const clinicSnap = await db.collection("clinics").doc(clinicId).get();
+  if (!clinicSnap.exists) {
+    return { allowed: false, reason: "Clinic not found", currentCount: 0, limit: 0 };
+  }
+
+  const clinic = clinicSnap.data()!;
+  const tier: TierKey | null = clinic.billing?.tier ?? null;
+  const trialActive = isTrialActive(clinic.trialStartedAt ?? null);
+  const subStatus = clinic.billing?.subscriptionStatus as StripeSubscriptionStatus | null;
+
+  // Determine effective seat limit
+  let effectiveTier: TierKey;
+  if (tier) {
+    effectiveTier = tier;
+  } else if (trialActive) {
+    effectiveTier = "studio"; // trial defaults to studio limits
+  } else if (subStatus === "active" || subStatus === "trialing") {
+    effectiveTier = "studio"; // fallback if tier not yet persisted
+  } else {
+    return { allowed: false, reason: "No active subscription or trial", currentCount: 0, limit: 0 };
+  }
+
+  const limit = TIER_SEAT_LIMITS[effectiveTier];
+
+  // Count active clinicians
+  const cliniciansSnap = await db
+    .collection("clinics")
+    .doc(clinicId)
+    .collection("clinicians")
+    .where("active", "==", true)
+    .count()
+    .get();
+
+  const currentCount = cliniciansSnap.data().count;
+
+  if (currentCount >= limit) {
+    return {
+      allowed: false,
+      reason: `${TIER_LABELS[effectiveTier].label} plan allows ${limit} clinician${limit === 1 ? "" : "s"}. Upgrade to add more.`,
+      currentCount,
+      limit,
+    };
+  }
+
+  return { allowed: true, currentCount, limit };
 }
 
 // ─── Display metadata ────────────────────────────────────────────────────────

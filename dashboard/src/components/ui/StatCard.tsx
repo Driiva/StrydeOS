@@ -172,26 +172,26 @@ export default function StatCard({
   return (
     <div
       onClick={onClick}
-      className={`group relative rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] overflow-hidden transition-all duration-200 flex flex-col ${
-        onClick ? "cursor-pointer hover:shadow-[var(--shadow-elevated)] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-[var(--shadow-card)]" : "hover:shadow-[var(--shadow-elevated)]"
+      className={`group relative rounded-[var(--radius-card)] bg-white border border-border shadow-[var(--shadow-card)] overflow-hidden transition-all duration-300 ease-out flex flex-col ${
+        onClick ? "cursor-pointer hover:shadow-[var(--shadow-elevated)] hover:-translate-y-0.5 active:scale-[0.99] active:shadow-[var(--shadow-card)]" : "hover:shadow-[var(--shadow-elevated)]"
       }`}
     >
       {/* Status dot — top right */}
       <div
-        className="absolute top-4 right-4 w-[6px] h-[6px] rounded-full"
+        className="absolute top-4 right-4 w-[7px] h-[7px] rounded-full"
         style={{
           backgroundColor: dotStyle.dot,
-          boxShadow: `0 0 6px ${dotStyle.glow}`,
+          boxShadow: `0 0 8px ${dotStyle.glow}`,
         }}
       />
 
       <div className="p-6 flex-1">
         <div className="flex items-start justify-between mb-3">
-          <span className="text-[10px] font-semibold text-muted uppercase tracking-[0.12em]">
+          <span className="text-[11px] font-semibold text-muted-strong uppercase tracking-[0.1em]">
             {label}
           </span>
           {benchmark && (
-            <span className="text-[10px] font-semibold text-muted bg-cloud-dark/60 px-2 py-0.5 rounded-full mr-4">
+            <span className="text-[11px] font-medium text-muted bg-cloud-dark/60 px-2 py-0.5 rounded-full mr-4">
               {benchmark}
             </span>
           )}
@@ -199,18 +199,18 @@ export default function StatCard({
 
         <div className="flex items-end justify-between mb-1">
           <div className="flex items-baseline gap-2">
-            <span ref={countRef as React.RefObject<HTMLSpanElement>} className="font-display text-5xl text-navy leading-none tabular-nums">
+            <span ref={countRef as React.RefObject<HTMLSpanElement>} className="font-display text-[44px] text-navy leading-none tabular-nums">
               {animatedValue}
             </span>
             {unit && (
-              <span className="text-xs text-muted font-medium">{unit}</span>
+              <span className="text-[13px] text-muted font-medium">{unit}</span>
             )}
             {trend && (
               <span className="flex items-center gap-0.5">
                 <TrendIcon size={14} color={trendColor} strokeWidth={2.5} />
                 {trendPercent !== undefined && (
                   <span
-                    className="text-[10px] font-semibold tabular-nums"
+                    className="text-[11px] font-semibold tabular-nums"
                     style={{ color: trendColor }}
                   >
                     {trendPercent > 0 ? "+" : ""}{trendPercent.toFixed(0)}%
@@ -226,13 +226,13 @@ export default function StatCard({
         </div>
 
         {target !== undefined && (
-          <p className="text-[11px] text-muted mt-1">
+          <p className="text-[12px] text-muted mt-1">
             Target: {target}
           </p>
         )}
 
         {insight && (
-          <p className="text-[11px] text-muted italic mt-2 leading-relaxed">
+          <p className="text-[12px] text-muted italic mt-2 leading-relaxed">
             {insight}
           </p>
         )}
@@ -245,7 +245,7 @@ export default function StatCard({
             <Link
               href={action.href}
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold transition-colors hover:underline"
+              className="inline-flex items-center gap-1 text-[12px] font-semibold transition-colors hover:underline"
               style={{ color: "#1C54F2" }}
             >
               {action.label} <span className="inline-block transition-transform duration-150 group-hover:translate-x-0.5">→</span>
@@ -253,7 +253,7 @@ export default function StatCard({
           ) : (
             <button
               onClick={(e) => { e.stopPropagation(); action.onClick?.(); }}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold transition-colors hover:underline"
+              className="inline-flex items-center gap-1 text-[12px] font-semibold transition-colors hover:underline"
               style={{ color: "#1C54F2" }}
             >
               {action.label} <span className="inline-block transition-transform duration-150 group-hover:translate-x-0.5">→</span>

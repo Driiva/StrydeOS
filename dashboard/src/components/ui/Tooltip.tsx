@@ -46,9 +46,9 @@ export default function Tooltip({ content, children, side = "top", delayMs = 400
             initial={{ opacity: 0, scale: 0.92, y: side === "top" ? 4 : -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: side === "top" ? 4 : -4 }}
-            transition={{ duration: 0.12, ease: [0.2, 0.8, 0.2, 1] }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             style={{ background: "#0B2545", transformOrigin: `center ${originY === 1 ? "bottom" : "top"}` }}
-            className={`absolute ${placement} z-50 whitespace-nowrap px-2.5 py-1.5 rounded-lg text-[11px] font-medium text-white shadow-lg pointer-events-none`}
+            className={`absolute ${placement} z-50 whitespace-nowrap px-3 py-1.5 rounded-lg text-[12px] font-medium text-white shadow-lg pointer-events-none`}
           >
             {content}
           </motion.span>

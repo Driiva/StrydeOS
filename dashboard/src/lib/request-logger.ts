@@ -1,0 +1,73 @@
+/**
+ * Structured request logging for API routes.
+ *
+ * Wraps a route handler to log method, path, status, duration, and clinicId
+ * on every request. Designed for request-level observability without replacing
+ * Sentry (which handles exceptions).
+ *
+ * Usage:
+ *   import { withRequestLog } from "@/lib/request-logger";
+ *
+ *   async function handler(request: NextRequest) { ... }
+ *   export const POST = withRequestLog(handler);
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+
+export interface RequestLogEntry {
+  timestamp: string;
+  method: string;
+  path: string;
+  status: number;
+  durationMs: number;
+  clinicId?: string;
+  userAgent?: string;
+  error?: string;
+}
+
+/**
+ * Wraps a Next.js route handler with structured request logging.
+ * Logs to stdout as JSON for easy parsing by log aggregators.
+ */
+export function withRequestLog(
+  handler: (request: NextRequest, context?: unknown) => Promise<NextResponse>
+) {
+  return async function loggedHandler(
+    request: NextRequest,
+    context?: unknown
+  ): Promise<NextResponse> {
+    const start = performance.now();
+    const method = request.method;
+    const path = new URL(request.url).pathname;
+    let status = 500;
+    let errorMsg: string | undefined;
+
+    try {
+      const response = await handler(request, context);
+      status = response.status;
+      return response;
+    } catch (err) {
+      errorMsg = err instanceof Error ? err.message : String(err);
+      throw err;
+    } finally {
+      const durationMs = Math.round(performance.now() - start);
+
+      // Best-effort clinicId extraction from common header patterns
+      const clinicId =
+        request.headers.get("x-clinic-id") ?? undefined;
+
+      const entry: RequestLogEntry = {
+        timestamp: new Date().toISOString(),
+        method,
+        path,
+        status,
+        durationMs,
+        ...(clinicId ? { clinicId } : {}),
+        ...(errorMsg ? { error: errorMsg } : {}),
+      };
+
+      // Single-line JSON for log aggregator compatibility
+      console.log(JSON.stringify(entry));
+    }
+  };
+}

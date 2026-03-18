@@ -35,7 +35,7 @@ export default function EmptyState({ heading, subtext, action, module }: EmptySt
       </div>
 
       <h3 className="relative font-display text-2xl text-navy mb-2">{heading}</h3>
-      <p className="relative text-sm text-muted max-w-md leading-relaxed mb-6">
+      <p className="relative text-[15px] text-muted-strong max-w-md leading-relaxed mb-6">
         {subtext}
       </p>
       {action && <div className="relative">{action}</div>}

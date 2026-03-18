@@ -52,11 +52,14 @@ export type StripeSubscriptionStatus =
   | "unpaid"
   | "paused";
 
+export type BillingTier = "solo" | "studio" | "clinic";
+
 export interface BillingState {
   stripeCustomerId: string | null;
   subscriptionId: string | null;
   subscriptionStatus: StripeSubscriptionStatus | null;
   currentPeriodEnd: string | null;
+  tier?: BillingTier | null;
 }
 
 export interface ClinicTargets {

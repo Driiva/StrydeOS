@@ -106,9 +106,9 @@ function formatSyncTime(dateStr: string | undefined): { label: string; staleness
 }
 
 const staggerItem = (delay: number) => ({
-  initial: { opacity: 0, y: 12 },
+  initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.35, ease: [0.2, 0.8, 0.2, 1] as const, delay },
+  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const, delay },
 });
 
 export default function DashboardPage() {
@@ -176,18 +176,18 @@ export default function DashboardPage() {
                 <span className="chevron-glyph" style={{ animationDelay: "0.8s" }}>&rsaquo;</span>
               </motion.span>
             </motion.h1>
-            <motion.p className="text-sm text-muted mt-0.5" style={{ opacity: subtextOpacity }}>{subtext}</motion.p>
+            <motion.p className="text-[13px] text-muted-strong mt-1 leading-relaxed" style={{ opacity: subtextOpacity }}>{subtext}</motion.p>
           </div>
           <div className="flex items-center gap-2 shrink-0 mt-2 flex-wrap justify-end">
             {isCurrentWeek && !loading && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cloud-light border border-border text-[11px] font-semibold shrink-0"
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cloud-light border border-border text-[12px] font-semibold shrink-0"
                 style={{ color: "#059669" }}>
                 <span className="pulse-live" style={{ color: "#059669" }}>●</span>
                 Live
               </div>
             )}
             {lastSync && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cloud-light border border-border text-[11px] text-muted shrink-0">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cloud-light border border-border text-[12px] text-muted shrink-0">
                 <span
                   className="w-1.5 h-1.5 rounded-full shrink-0"
                   style={{
@@ -219,13 +219,13 @@ export default function DashboardPage() {
       {(user?.uid === "demo" || usedDemo) && <DemoBanner />}
 
       {/* Week navigation + clinician filter row */}
-      <motion.div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-tour="clinician-filter" {...staggerItem(0.06)}>
+      <motion.div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-tour="clinician-filter" {...staggerItem(0.08)}>
         {/* Week picker */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setWeekOffset((o) => o - 1)}
             disabled={weekOffset <= -(stats.length - 1)}
-            className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted hover:text-navy hover:border-navy/20 transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed bg-white shadow-[var(--shadow-card)] active:scale-95"
+            className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted hover:text-navy hover:border-navy/20 transition-all duration-200 ease-out disabled:opacity-30 disabled:cursor-not-allowed bg-white shadow-[var(--shadow-card)] active:scale-[0.96]"
           >
             <ChevronLeft size={14} />
           </button>
@@ -234,7 +234,7 @@ export default function DashboardPage() {
               isCurrentWeek ? (
                 <span>
                   <span className="text-blue font-semibold">This week</span>
-                  <span className="text-muted ml-2 text-xs">
+                  <span className="text-muted ml-2 text-[12px]">
                     {formatFullDate(latest.weekStart)}
                   </span>
                 </span>
@@ -248,7 +248,7 @@ export default function DashboardPage() {
           <button
             onClick={() => setWeekOffset((o) => Math.min(0, o + 1))}
             disabled={isCurrentWeek}
-            className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted hover:text-navy hover:border-navy/20 transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed bg-white shadow-[var(--shadow-card)] active:scale-95"
+            className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted hover:text-navy hover:border-navy/20 transition-all duration-200 ease-out disabled:opacity-30 disabled:cursor-not-allowed bg-white shadow-[var(--shadow-card)] active:scale-[0.96]"
           >
             <ChevronRight size={14} />
           </button>
@@ -257,11 +257,11 @@ export default function DashboardPage() {
         {/* Clinician filter — hidden for clinician role (they only see their own stats) */}
         {!isClinicianView && clinicians.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted">Viewing:</span>
+            <span className="text-[13px] text-muted-strong font-medium">Viewing:</span>
             <div className="flex gap-1.5">
               <button
                 onClick={() => setSelectedClinician("all")}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 active:scale-[0.97] ${
+                className={`px-3 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-200 ease-out active:scale-[0.97] ${
                   selectedClinician === "all"
                     ? "bg-navy text-white shadow-sm"
                     : "border border-border text-muted hover:text-navy hover:border-navy/20 hover:shadow-sm bg-white"
@@ -273,7 +273,7 @@ export default function DashboardPage() {
                 <button
                   key={c.id}
                   onClick={() => setSelectedClinician(c.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 active:scale-[0.97] ${
+                  className={`px-3 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-200 ease-out active:scale-[0.97] ${
                     selectedClinician === c.id
                       ? "bg-navy text-white shadow-sm"
                       : "border border-border text-muted hover:text-navy hover:border-navy/20 hover:shadow-sm bg-white"
@@ -435,7 +435,7 @@ export default function DashboardPage() {
               Clinician Summary — This Week
             </h3>
             {summaryUsedDemo && (
-              <span className="text-[10px] font-semibold text-muted bg-cloud-light border border-border px-2 py-0.5 rounded-full">
+              <span className="text-[11px] font-semibold text-muted bg-cloud-light border border-border px-2 py-0.5 rounded-full">
                 Demo
               </span>
             )}
